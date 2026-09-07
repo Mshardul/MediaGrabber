@@ -3200,22 +3200,22 @@ private var statusCell: some View {
 
 **Prerequisite:** Tasks 0–19 all handed off and their tests green.
 
-- [ ] **Step 1: Run the full test suite once more**
+- [x] **Step 1: Run the full test suite once more**
 
 Run: `xcodebuild -workspace MediaGrabber.xcworkspace -scheme MediaGrabber-Workspace -destination 'platform=macOS' test`
 Expected: all green.
 
-- [ ] **Step 2: Run lint**
+- [x] **Step 2: Run lint**
 
 Run: `mise exec -- swiftformat --lint . && mise exec -- swiftlint lint --strict`
 Expected: clean.
 
-- [ ] **Step 3: Build and launch the app**
+- [x] **Step 3: Build and launch the app**
 
 Run: `make`
 Expected: app builds, launches. Paste an `archive.org` URL, confirm a normal download still works (no regression).
 
-- [ ] **Step 4: Update the parent design spec** — apply every bullet from the Phase 6 spec's §11 "Parent design spec updates" list:
+- [x] **Step 4: Update the parent design spec** — apply every bullet from the Phase 6 spec's §11 "Parent design spec updates" list:
   - §5.2 — offline indicator is passive, no re-poll control
   - §5.6 — force-start overrides a host cooldown/circuit for the single forced job without clearing `RateState`, still respects the concurrency cap
   - §7.4 — reword to the shipped design (per-host `RateState`, `RateHost` key with YouTube fold, cooldown ladder reusing `Backoff` on the host strike count, per-host circuit tripping on `circuitStrikeThreshold` consecutive strikes including terminal ones, user-only recovery, one global adaptive cap, probes gated on host state)
@@ -3227,7 +3227,7 @@ Expected: app builds, launches. Paste an `archive.org` URL, confirm a normal dow
 
   **No changelog framing** — state the target design as fact. No "was X now Y", no "Phase 6 changed", no edit tallies. Each §-update rewrites the section to read as the current plan.
 
-- [ ] **Step 5: Sync the Phase 6 spec to the implemented signatures** — `docs/superpowers/specs/2026-09-04-media-grabber-phase-6.md`:
+- [x] **Step 5: Sync the Phase 6 spec to the implemented signatures** — `docs/superpowers/specs/2026-09-04-media-grabber-phase-6.md`:
   - **Header** — change "Plan: not yet written" to "Plan: `docs/superpowers/plans/2026-09-04-media-grabber-phase-6.md`".
   - **§3.2** — `RatePolicy.next` gains a `jitter:` param (needed so `Backoff.delay`'s jitter is deterministic in tests). Signature: `next(state:event:now:tuning:jitter:)`.
   - **§4** — `RateLimiter.recordStrike` gains `lastErrorKey: String` (feeds `HostRateDisplayState.lastErrorKey`). `displaySummary` takes `now:` (needed to drop expired cooldowns). Add `concurrencyReducedByStrike` to the listed API. `HostRateDisplayState` gains `concurrencyReducedToOne: Bool`.
@@ -3239,9 +3239,9 @@ Expected: app builds, launches. Paste an `archive.org` URL, confirm a normal dow
 
   Same "no changelog framing" rule.
 
-- [ ] **Step 6: Self-check both specs** — re-read the parent §7.4 / §7.6 / §7.8 / §12.1 / §12.2 and the Phase 6 spec with fresh eyes. No phase-number leakage outside §12. No §7.4 ↔ §12.1 contradiction. No "RESOLVED" / "PARKED" tags.
+- [x] **Step 6: Self-check both specs** — re-read the parent §7.4 / §7.6 / §7.8 / §12.1 / §12.2 and the Phase 6 spec with fresh eyes. No phase-number leakage outside §12. No §7.4 ↔ §12.1 contradiction. No "RESOLVED" / "PARKED" tags.
 
-- [ ] **Step 7: Hand off** — report the two changed spec files, confirm the full suite + lint + `make` launch all pass. No commit — the user handles git.
+- [x] **Step 7: Hand off** — report the two changed spec files, confirm the full suite + lint + `make` launch all pass. No commit — the user handles git.
 
 ---
 

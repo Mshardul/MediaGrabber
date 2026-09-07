@@ -1,7 +1,7 @@
 # Rate limiting and circuit breaker (Phase 6)
 
-**Status:** design complete. Plan:
-`docs/superpowers/plans/2026-09-04-media-grabber-phase-6.md`. Parent spec:
+**Status:** shipped. Plan:
+`docs/superpowers/plans/archived/2026-09-04-media-grabber-phase-6.md`. Parent spec:
 `docs/superpowers/specs/2026-08-28-youtube-downloader-mac-design.md` §7.4, §7.6,
 §7.8, §12.1.
 Phase 2 (shipped): `docs/superpowers/specs/queue-foundation.md`.
@@ -210,7 +210,8 @@ public enum RatePolicy {
         state: RateState,
         event: RatePolicyEvent,
         now: Date,
-        tuning: EngineTuning
+        tuning: EngineTuning,
+        jitter: (ClosedRange<Double>) -> Double = { Double.random(in: $0) }
     ) -> RateState
 }
 ```
@@ -237,7 +238,7 @@ struct RateLimiter {
     init(tuning: EngineTuning, preferencesCap: Int)
 
     // Outcomes
-    mutating func recordStrike(host: RateHost, retryAfter: Int?, now: Date)
+    mutating func recordStrike(host: RateHost, retryAfter: Int?, lastErrorKey: String, now: Date)
     mutating func recordCleanSuccess(host: RateHost, now: Date)
 
     // Queries
@@ -246,7 +247,7 @@ struct RateLimiter {
     var circuitOpenHosts: Set<RateHost>
     func cooldownDeadline(for host: RateHost) -> Date?
     var concurrencyReducedByStrike: Bool              // adaptiveCap == 1 because of a strike, not the pref floor
-    func displaySummary() -> [RateHost: HostRateDisplayState]   // cooling / circuit-open hosts, for the snapshot
+    func displaySummary(now: Date) -> [RateHost: HostRateDisplayState]   // cooling / circuit-open hosts; expired cooldowns omitted
 
     // User actions
     mutating func resetCircuit(host: RateHost)
@@ -305,8 +306,8 @@ addition, in scope here.
 `DownloadEngine+Mutations.swift`. When a job's process exits with a failure:
 
 **Step A — the host strike is unconditional.** If `errorClass == .rateLimited`,
-`rateLimiter.recordStrike(host: job.rateHost, retryAfter:, now:)` runs **before**
-the retry-budget check and regardless of its outcome. The strike is about the
+`rateLimiter.recordStrike(host: job.rateHost, retryAfter:, lastErrorKey:, now:)`
+runs **before** the retry-budget check and regardless of its outcome. The strike is about the
 *host* ("this host just refused a request"), not the job — a job that 429s on its
 final attempt still tells us the host is rate-limiting, so the circuit must still
 be able to trip, siblings must still be gated, the banner must still appear. The
@@ -348,11 +349,12 @@ in-flight transfer is not wasted on a strike; only *new* starts are gated. (This
 is deliberate; do not "fix" it to kill siblings on a strike.)
 
 So `.cooldown(until:)` is entered by **at most one job per host at a time** — the
-one whose exit caused the current strike. Only one deferral path fires per
-failure, so `deferStart` (last-write-wins, unchanged) never composes two live
-reasons for one job. The invariant — **at most one deferral reason is live per
-job** — is a documented contract, not enforced in `deferStart`. `DeferReason`
-gains `.hostCooldown(host: String, strikes: Int)`.
+job whose exit caused the *current* strike. If another job for that host already
+holds `.cooldown`, this one stays `.queued` (gated by `blockedHostIDs`). Only one
+deferral path fires per failure, so `deferStart` (last-write-wins, unchanged)
+never composes two live reasons for one job. The invariant — **at most one
+deferral reason is live per job** — is a documented contract, not enforced in
+`deferStart`. `DeferReason` gains `.hostCooldown(host: String, strikes: Int)`.
 
 ### 5.3 The scheduler
 
@@ -654,8 +656,10 @@ separate parameter — one network truth (§5.5).
    `dot: .attention` + `"offline"` when down. `interaction: .none`.
 2. **cooldown** — present only when `hostRateSummary` is non-empty. **One chip
    for all affected hosts:**
-   - one host: `"YouTube — 2:14"` (the `— m:ss` is a live `TimelineView`
-     suffix, §7.4) or `"YouTube — paused"` when its circuit is open.
+   - one host: label `"YouTube"` with `countdownUntil` set to the deadline (the
+     strip appends a live `— m:ss` via `TimelineView`, §7.4), or `"YouTube —
+     paused"` when its circuit is open (`countdownUntil` nil). `HealthController`
+     does not bake the countdown into `label`.
    - several: `"2 sites cooling down"`, no countdown in the label.
    - `dot: .attention`. `interaction: .popover(.hostRate)`.
 
@@ -670,10 +674,10 @@ Phase 6 builds `HealthController` and the strip's dynamic `ForEach(chips)` to
 final form; Phase 10 emits one more chip from the controller — no relayout, the
 same way Phase 4/5 added row actions to a `Set` the engine emits.
 
-**`ChipInteraction`** gains a **data** case — no closures in the chip value
+**`ChipInteraction`** is **data** — no closures in the chip value
 (closures rebuilt on every `HealthController.update` churn SwiftUI identity and
 can capture stale state; match the row-action pattern — the value is data, the
-view dispatches):
+view dispatches to `AppModel`):
 
 ```swift
 enum ChipInteraction: Equatable {
@@ -684,6 +688,14 @@ enum ChipInteraction: Equatable {
 
 enum PopoverKind: Equatable {
     case hostRate                // the cooldown/circuit chip
+}
+
+struct HealthChip: Identifiable {
+    let id: String
+    let label: String
+    let dot: DotState
+    let interaction: ChipInteraction
+    var countdownUntil: Date?    // strip renders live m:ss; controller does not bake it into label
 }
 ```
 
@@ -772,9 +784,12 @@ it does not half-reset.
 
 ### 7.4 Status cell and the countdown
 
-`RowModel` learns its job's host from `snapshot.rateHost`. `RowModel.statusText`
-(still cached, still recomputed on `patch` only — **no** per-second recompute)
-holds the semantic prefix:
+The Status cell renders `TablePresentation.statusDisplay(for:)` (lowercase). The
+shared semantic prefix lives in `RowStatusText.text(for:maxAutoRetries:rate:)`
+(Title-case); `RowModel.statusText` delegates to it for the status filter and
+failed-row copy. `RowModel` learns its job's host from `snapshot.rateHost`.
+`statusText` is still cached, still recomputed on `patch` only — **no**
+per-second recompute. Prefix table:
 
 | Job state | Extra condition | `statusText` prefix | Countdown? |
 |---|---|---|---|
@@ -809,13 +824,14 @@ cells, once a second, with zero model churn. A `circuitOpen` row's
 real:
 
 - **`.cooldown(until: T)`** — the single job per host whose exit caused the
-  current strike (§5.2 step B). Carries the host deadline `T`; returns to
-  `.queued` when `T` passes (§5.4). The host's *other* queued jobs stay
-  `.queued` and are gated by `blockedHostIDs` — they show "Cooling down" via
-  `hostRateSummary` (§7.4) without a state change, so a big playlist striking
-  once is one mutation, not N. A per-job Phase 4 backoff is **not** this state
-  either — that job stays `.queued` with `cooldownUntil` set. `.cooldown` means
-  exactly "this job's exit just rate-limited its host."
+  current strike (§5.2 step B). If a sibling already holds `.cooldown`, this
+  exit stays `.queued`. Carries the host deadline `T`; returns to `.queued` when
+  `T` passes (§5.4). The host's *other* queued jobs stay `.queued` and are gated
+  by `blockedHostIDs` — they show "Cooling down" via `hostRateSummary` (§7.4)
+  without a state change, so a big playlist striking once is one mutation, not
+  N. A per-job Phase 4 backoff is **not** this state either — that job stays
+  `.queued` with `cooldownUntil` set. `.cooldown` means exactly "this job's exit
+  just rate-limited its host."
 - **`.waitingForNetwork`** — a job that was running when the connection dropped
   (§5.5). Not entered for `.queued` jobs during an outage.
 
@@ -849,10 +865,11 @@ unset / malformed key keeps the default.
 
 ## 9. Logging
 
-`GrabberKit/Logging/LogEvent.swift`:
+`DeferReason` lives in `GrabberKit/Download/SubmitResult.swift` and gains
+`.hostCooldown(host: String, strikes: Int)` — the second case beside
+`.backoff(attempt:)`. Events live in `GrabberKit/Logging/LogEvent.swift` and
+are keyed via `.key` (not `.name`):
 
-- `DeferReason` gains `.hostCooldown(host: String, strikes: Int)` — the second
-  `DeferReason` case beside `.backoff(attempt:)`.
 - New events (JSON Lines, feeding §8.2 and the Phase 10 report):
   - `hostRateStateChanged(host: String, from: String, to: String)`
   - `circuitOpened(host: String, strikes: Int)`
@@ -946,7 +963,8 @@ per-video identifiers — §8.5.
 - `HealthController.update` produces the online chip from `snapshot.isOnline`
   always, and the cooldown chip only when `hostRateSummary` is non-empty; one
   chip for multiple hosts; `ChipInteraction` is `.popover(.hostRate)` (data, no
-  closures).
+  closures); a cooling single-host chip carries `countdownUntil`, not a baked
+  `m:ss` in `label`.
 - The strip view builds the popover body from `hostRateSummary`: a circuit-open
   host row has a "Retry now" calling `appModel.resetCircuit(host:)`; a cooling
   host row has no button; the footer "Retry all" (`resetAllCircuits`) shows only
@@ -954,9 +972,9 @@ per-video identifiers — §8.5.
 - `resolveBanner` picks `depMissing` > `networkDown` > `circuitOpen`; the
   `.networkDown` `BannerContent` has `buttonTitle == nil` and `WarningBanner`
   renders no button for it.
-- `RowModel.statusText` prefix picks "Rate-limited — paused" / "Cooling down" /
-  "Retrying" / "Waiting for network" from the snapshot + `hostRateSummary`, and
-  does not recompute on a progress tick.
+- `RowStatusText.text` / `TablePresentation.statusDisplay` pick
+  "Rate-limited — paused" / "Cooling down" / "Retrying" / "Waiting for network"
+  from the snapshot + `hostRateSummary`, and do not recompute on a progress tick.
 - `MainWindow` applies the measured bottom inset when a banner shows and removes
   it when none does.
 
