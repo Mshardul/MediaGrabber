@@ -629,34 +629,34 @@ Run: `grep -n 'Phase 20' roadmap.md CLAUDE.md` Expected: Phase 20 appears as shi
 
 Run only after Tasks 12 to 16 are done.
 
-- [ ] **Step 1: Retire the old keys**
+- [x] **Step 1: Retire the old keys**
 
 ```bash
 gh secret delete SPARKLE_EDDSA_PRIVATE_KEY --repo Mshardul/Tools
 gh variable delete MG_SPARKLE_PUBLIC_KEY --repo Mshardul/Tools
 ```
 
-- [ ] **Step 2: Turn off Pages on Tools if it served only this app**
+- [x] **Step 2: Turn off Pages on Tools if it served only this app**
 
 Check first: `gh api repos/Mshardul/Tools/pages -q .html_url`. If it serves anything else, skip. Otherwise: `gh api -X DELETE repos/Mshardul/Tools/pages`.
 
-- [ ] **Step 3: Remove the app from Tools**
+- [x] **Step 3: Remove the app from Tools**
 
 ```bash
 cd "$OLD"
 make -C apps/media-grabber drop-build-app
-git rm -rq apps/media-grabber .github/workflows/media-grabber.yml .github/workflows/media-grabber-release.yml
-git ls-files docs/superpowers | grep -Ev '2026-05-25-claude-usage-dashboard|2026-08-21-tools-collection' | xargs git rm -q
+git rm -rqf apps/media-grabber .github/workflows/media-grabber.yml .github/workflows/media-grabber-release.yml
+git ls-files docs/superpowers | grep -Ev '2026-05-25-claude-usage-dashboard|2026-08-21-tools-collection' | xargs git rm -qf
 rm -rf apps/media-grabber
 ```
 
-The last line removes ignored build leftovers that `git rm` does not touch. You run it, so it is your call.
+`-f` is needed because the plan file in Tools has uncommitted edits, which plain `git rm` refuses. The last line is required before Step 5: `git rm` also deletes the app's own `.gitignore`, so the downloaded tools, `node_modules` and Tuist output left on disk become untracked, and `git add -A` stages them and the commit hooks fail on their size. They are all generated and can be rebuilt with `make` in the new repository. You run it, so it is your call.
 
-- [ ] **Step 4: Point Tools at the new repository**
+- [x] **Step 4: Point Tools at the new repository**
 
 Ask the agent to make two edits in Tools: add one line to `$OLD/README.md` linking `https://github.com/Mshardul/MediaGrabber`, and drop the sentence about the Swift app from the first-line comment of `$OLD/pyproject.toml`. This edits Tools, so name each file and say yes first.
 
-- [ ] **Step 5: Commit and push Tools**
+- [x] **Step 5: Commit and push Tools**
 
 ```bash
 cd "$OLD"
@@ -665,7 +665,7 @@ git commit -m "Move MediaGrabber to its own repository"
 git push
 ```
 
-- [ ] **Step 6: Check**
+- [x] **Step 6: Check**
 
 ```bash
 test ! -d "$OLD/apps/media-grabber" && echo app-gone
