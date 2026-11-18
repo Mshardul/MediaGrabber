@@ -140,7 +140,7 @@ jobs:
           EXPECTED_KEY: ${{ vars.MG_SPARKLE_PUBLIC_KEY }}
           DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
-          info="$APP/Contents/Info"
+          info="$(cd "$APP" && pwd)/Contents/Info"
           feed="$(defaults read "$info" SUFeedURL)"
           [ "$feed" = "$FEED" ] || { echo "SUFeedURL is '$feed', expected '$FEED'" >&2; exit 1; }
           if [ -n "$EXPECTED_KEY" ]; then
