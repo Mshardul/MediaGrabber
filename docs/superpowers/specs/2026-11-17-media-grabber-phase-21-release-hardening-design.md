@@ -1,14 +1,20 @@
 # Release hardening
 
-**Status:** proposed, awaiting review. Written before the repository split (Phase 20); the workflow, update-feed and release-asset parts are rewritten against the new repository once the split lands.
+**Status:** proposed, under discussion.
 
-**Scope:** what a release must prove before it is published: the licenses it ships under, the behaviour of the built and signed app, the update path, and the risks the release plan flagged. The manual run on a clean account is a checklist run before each release, and which phase finishes the pre-release work is decided separately.
+**Scope:** what a release must prove before it is published: the licenses it ships under, the behaviour of the built and signed app, the update path, the publish path and the feed it creates, what the app says about its connections, and the notes a user reads. The checks that cannot be automated are a short checklist run before each release. The product page and the test suite review are separate phases.
 
 ---
 
 ## Intent
 
 A release is published only when the built, signed app has shown that it works on a Mac with nothing else installed. Unit tests prove the logic; this phase proves the artifact. The sign-in helper shipped broken in 0.1.1 while every unit test was green, because no test ever ran the helper from inside the bundle. The same class of fault must not reach a user again.
+
+Two faults cannot be repaired from the app's side once it is installed: the feed address and the update key are baked into every copy. Both are proven before each release publishes, and the feed is proven again after it publishes.
+
+The release gate blocks only on faults in the app and the pipeline. It never blocks on a third-party site being down or having changed.
+
+Every step of the release pipeline is a script under `scripts/` that runs the same way on a developer's Mac and in CI. `release.yml` is a list of calls to those scripts, so a step is tried locally and not by re-running the workflow.
 
 ## 1. Licenses
 
@@ -17,55 +23,84 @@ The app is MIT. It bundles tools under other licenses, and each one is stated in
 | Component | License | How it is bundled |
 | --- | --- | --- |
 | yt-dlp | Unlicense | standalone binary |
-| FFmpeg, LAME | LGPL 2.1 or later | one separate executable, built from the pinned source without GPL options |
+| FFmpeg, LAME | LGPL 2.1 or later | one separate executable, built from the pinned source without GPL or non-free options |
 | Node | MIT | the `node` executable |
 | Sign-in helper (bgutil) | GPL 3.0 only | a separate Node program and a yt-dlp plugin; the app never links it |
 | Sparkle | MIT with bundled third-party notices | framework |
 
-- **Where it is shown.** A **Licenses** pane in Preferences (System group) lists every component with its license and a button that opens the full text. About's "Read licenses" row opens this pane. The pane states that MediaGrabber is MIT-licensed and that the listed tools keep their own licenses.
-- **Full texts.** `Contents/Resources/Licenses/` holds each license text, copied by `scripts/fetch-tools.sh` from the pinned sources so the text always matches the shipped version. A component with no entry in the catalogue, or a catalogue entry with no text file, fails a test.
-- **Source.** Each release carries the pinned source tarballs for FFmpeg, LAME and the sign-in helper as release assets, listed in `SHA256SUMS`, so the source stays available for as long as that version does.
+- **Where it is shown.** A **Licenses** pane in Preferences, in the System group after Logs, lists every component with its license in plain words and a **Read** button that opens that component's license text in the default text editor. The pane states that MediaGrabber is MIT-licensed and that each listed tool keeps its own license, and that the steps used to build FFmpeg are in the public repository. About's "Read licenses" row opens this pane. Build commands and flags are not shown.
+- **Full texts.** `Contents/Resources/Licenses/<id>.txt` holds one plain-text file per component (`yt-dlp`, `ffmpeg`, `lame`, `node`, `shield`, `sparkle`), written by `scripts/fetch-tools.sh` from the pinned sources so the text always matches the shipped version: FFmpeg, LAME, Node and the helper from their pinned archives, yt-dlp and Sparkle from entries in `scripts/tools.lock`. A catalogue in `GrabberKit` names each component, its license and its plain-language line. A unit test fails when a component named in `scripts/tools.lock` has no catalogue entry, and a shell test fails when a text file is missing or empty.
+- **Source.** Each release carries the pinned source files for FFmpeg, LAME and the sign-in helper as release assets, taken from the entries in `scripts/tools.lock` marked `mirror` and listed in `SHA256SUMS`, so the source stays available for as long as that version does.
+- **LGPL stays true.** A shell test fails if the FFmpeg build in `scripts/fetch-tools.sh` loses `--disable-gpl` or `--disable-nonfree`.
+- **Asset list.** The publish script accepts exactly the disk image, `SHA256SUMS`, `appcast.xml` and one source file per `mirror` entry in `scripts/tools.lock`. A `mirror` entry without its attached source fails the asset check.
 - **Replacement.** A permissively licensed replacement for the helper is tracked in `future-ideas.md`. Nothing in this phase depends on it.
 
 ## 2. End-to-end run on the built app
 
-A test target `E2ETests` runs against a real `MediaGrabber.app` path given by `MG_E2E_APP`, and skips when it is unset, so `make test` is unchanged. `make e2e` builds the Release app, signs it with `scripts/sign-app.sh`, runs the target against it and removes the build copy.
+`scripts/e2e/run.sh <app>` runs against a real `MediaGrabber.app`. Every check except the launch check runs with a temporary home directory and `PATH=/usr/bin:/bin`, which is the Mac with no Homebrew, no Node and nothing else, and uses no internet.
 
-Every case runs with a temporary home directory and `PATH=/usr/bin:/bin`, which is the Mac with no Homebrew, no Node and nothing else.
-
-- Every bundled tool runs and reports its version.
-- The setup check passes with the bundled downloader.
-- A video downloads from the Creative Commons fixture to a temporary folder, and the file exists and is not empty.
+- Every bundled tool (yt-dlp, ffmpeg, ffprobe, node) runs and reports a version.
+- A standalone fixture server, `scripts/e2e/fixture-server.py`, serves a short clip generated by the bundled FFmpeg. The bundled yt-dlp downloads it to a temporary folder, and the file exists and is not empty.
 - Audio extraction produces an m4a and an mp3 that `ffprobe` reads as audio.
-- The sign-in helper starts from inside the bundle with the bundled Node, answers `/ping`, and returns a token for a test video.
-- An updated downloader in Application Support is chosen over the bundled one when newer, and ignored when older.
-- Homebrew tools and a leftover `bgutil-server` folder in Application Support are never run.
-- Uninstall against the temporary home removes the footprint, leaves a sibling `Downloads` file, and does not recreate `queue.json` while a save is pending.
+- The sign-in helper starts from inside the bundle with the bundled Node and answers its ping, and its plugin archive is present and not empty.
+- Every license text in `Resources/Licenses/` and `Resources/Privacy.txt` is present and not empty.
+- In CI, where the machine's home folder is empty, the app starts, writes its `app.launched` line to `app.log` within 15 seconds, is still running at that point, and is then quit. A hard timeout ends a hang. The app does not honour a changed `HOME`, so this check runs only when `MG_E2E_LAUNCH=1`, which the release workflow sets; a local `make e2e` prints that the launch check was skipped and never starts the app against a real home.
 
-Cases that need the internet (the download, the setup check, the token) retry once and are the only ones allowed to retry.
+`make e2e` builds the Release app, signs it with `scripts/sign-app.sh`, runs the script and removes the build copy, so no second `MediaGrabber.app` is left on the machine. The release workflow runs the same script on the signed app it built.
 
-## 3. Update test
+The fixture server serves a directory, answers `HEAD` and `Range` requests, and can redirect one path to another, so other scripts reuse it.
 
-`scripts/e2e/update-test.sh` proves Sparkle updates the app in place. It builds two throwaway versions signed with a test EdDSA key pair whose public key goes in through `TUIST_SPARKLE_PUBLIC_KEY` and whose feed URL points at a local server, serves a generated appcast and the newer disk image, runs the older app from an Applications folder under the temporary home, and asserts that the installed bundle is the newer version afterwards. The real signing key is never used.
+## 3. Update path
 
-## 4. Review Focus coverage
+Three checks together prove the update path, and a fourth is on the checklist.
 
-Each risk named in the release plan has a test or a written manual check.
+- **Feed and key in the app.** `verify-app.sh` requires the built app's code signature to verify, its `SUFeedURL` to be the release feed address and its `SUPublicEDKey` to equal the repository's public key.
+- **Signature.** `scripts/release/check-signature.sh` verifies the disk image's EdDSA signature in the generated appcast against the public key embedded in the built app, and requires the newest item to carry the release version. It catches a public key and a private key taken from two different pairs.
+- **Feed after publishing.** See section 4.
+- **Real update.** The checklist's in-place update from one real release to the next, run before anyone is told about a release, proves Sparkle installs the update.
+
+## 4. Publish path and feed
+
+The scripts live in `scripts/release/`, one per step: `derive-version.sh`, `verify-app.sh`, `package-dmg.sh`, `verify-dmg.sh`, `sign-update.sh`, `check-signature.sh`, `publish-release.sh` and `check-feed.sh`. They share one assets folder: `package-dmg.sh` puts the disk image, the source files and `SHA256SUMS` in it, `sign-update.sh` adds `appcast.xml`, and `publish-release.sh` publishes exactly that folder.
+
+- **Publish script.** `publish-release.sh` clears stale drafts for the tag, refuses an existing release unless `overwrite` is set, creates the release as a draft with its assets and notes, checks the draft's assets against the allowed list, then publishes and marks it latest. It then runs the feed check. A shell test runs it against a stub `gh` and covers the order of steps, the asset check refusing a wrong list, the refusal of an existing release, the `overwrite` branch that deletes a release and its tag, and the revert to draft after a failed feed check.
+- **Feed check.** `check-feed.sh` fetches `https://github.com/Mshardul/MediaGrabber/releases/latest/download/appcast.xml`, following redirects, and requires the newest item to carry the released version, the disk image link to answer, and its size to match the item. It retries for up to two minutes while GitHub's download address catches up, so a slow update of the address does not undo a good release. On a failure the release is set back to draft and the workflow fails. Because it runs after every release, the latest release always carries a working appcast. A shell test runs it against the fixture server, including a stale top version, a missing disk image and a size mismatch.
+- **Disk image.** `verify-dmg.sh` mounts the disk image and requires the app inside to carry the release version and a valid code signature, because it is the only check of what users run before publishing.
+- **Latest.** GitHub treats the most recent non-draft, non-prerelease release by the date of its commit as latest. The publish script sets latest explicitly.
+- **Recovery.** Pulling a bad release makes the previous release latest. The checklist lists the steps and ends with a re-check of the feed.
+
+## 5. Release notes
+
+Each version has a hand-written plain-language `release-notes/X.Y.Z.md`. `publish-release.sh` publishes it as the release body, and the update window links to that page. `derive-version.sh` fails in the first step of the workflow when the file for the released version is missing or empty, so a release does not build before it is known to have notes. First-launch instructions are a link to the README's install steps; commands are not part of the notes.
+
+## 6. Connections and front door
+
+- **`PRIVACY.md`** is the repository's privacy statement and lists every connection the app makes: the site being downloaded from, the update check against GitHub and the update download, the daily fetch of the ordered list of player clients from `raw.githubusercontent.com/Mshardul/MediaGrabber/main/config/player-clients.json` (so a blocked client can be reordered without a new release, with a built-in list as the fallback), and the requests the sign-in helper makes. Each entry says when it happens and whether it can be turned off.
+- **Privacy pane.** Preferences has a **Privacy** pane that shows `Resources/Privacy.txt`, a plain-text conversion of `PRIVACY.md` made by `scripts/privacy-text.sh` and committed. A shell test fails when the committed text differs from a fresh conversion, so the pane and the repository statement cannot drift. The Logs pane keeps the log files and verbose logging, and is titled **Logs**.
+- **`SECURITY.md`** says how to report a vulnerability privately.
+- **Issue template.** `.github/ISSUE_TEMPLATE/` holds a problem-report form that asks for a Diagnostics export and says what the export contains.
+- **README** carries a "Report a problem" line linking to the form.
+
+## 7. Release checklist
+
+`docs/release-checklist.md` lists the checks that cannot be automated: the clean-account install and Gatekeeper's Open Anyway, an in-place update on a real second release, a YouTube link that needs the sign-in helper, uninstall from a read-only copy, `make e2e`, on major and minor releases that the `yt-dlp` pin in `scripts/tools.lock` is the latest yt-dlp release, recovery from a bad release, and confirming the feed after publishing. `make release-patch`, `release-minor` and `release-major` first run the whole gate as a dry run on `main` through `gh`, wait for it, and stop unless it succeeds. They then print the checklist and require a typed yes before tagging, so a failing gate never leaves a tag on a bad commit.
+
+## 8. Review Focus coverage
+
+Each risk named in the release plan has a test or a written check.
 
 | Risk | Covered by |
 | --- | --- |
 | Run from Downloads or a disk image | unit tests for the location check and the disabled update copy |
-| Uninstall while a download is running | persistence test plus the end-to-end uninstall case |
-| Bundle cannot be moved to the Trash | sequence test, plus a manual check on a read-only copy |
+| Uninstall while a download is running | persistence test, plus the footprint test |
+| Bundle cannot be moved to the Trash | sequence test, plus the checklist's read-only copy |
 | Downloader update with a bad or truncated download | updater unit tests |
 | Downloader update that fails the check | updater unit test, and the bundled copy stays in use |
 | Mac with no Homebrew, Node or `PATH` entries | the end-to-end environment |
-| Old Homebrew tools and old helper folder | end-to-end case and a unit test |
+| Old Homebrew tools and old helper folder | the helper resolves only from the bundle, pinned by a unit test |
+| Sign-in helper broken only inside the bundle | end-to-end start-and-ping check |
+| Update path or feed address broken | feed and key check, signature check, feed check, and the checklist's real update |
 
-## 5. Release gate in CI
+## 9. Release gate in CI
 
-The release workflow runs the end-to-end target against the signed app after the smoke test and before the disk image is built. A failure stops the release. A dry run runs it too.
-
-## Not in this phase
-
-The review of the existing unit tests is its own phase, after this one (`2026-11-17-media-grabber-phase-22-test-suite-review-design.md`). The user-facing README and the portfolio showcase page are planned in their own threads and land in this phase or a later one.
+The release workflow calls, in order: `derive-version.sh`, the build and signing, `verify-app.sh`, `scripts/e2e/run.sh` on the signed app, `package-dmg.sh`, `verify-dmg.sh`, the checksums with the source files, `sign-update.sh`, `check-signature.sh`, and `publish-release.sh`, which ends with the feed check. Third-party actions in the workflow are pinned to full commit SHAs. A failure stops the release. A dry run runs everything up to publishing and skips the publish and feed check, and skips the signing steps and the signature check when their secrets are unset.

@@ -1,6 +1,6 @@
 # MediaGrabber — Phase 20: Repo split
 
-**Status:** design agreed in discussion, awaiting review. Implementation plan follows.
+**Status:** accepted. Implementation is complete: the repository, its history, the release and Pages workflows, the signing keys and the Tools cleanup are in place, and a release dry run passes.
 
 ## Intent
 

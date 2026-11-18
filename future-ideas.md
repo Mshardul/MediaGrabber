@@ -21,3 +21,13 @@ Subtitles and embed, a menu-bar extra, schedules, stats, bandwidth graphs, a lig
 ### A permissively licensed replacement for the sign-in helper
 
 The bundled YouTube sign-in helper (bgutil-ytdlp-pot-provider) is GPL-3.0, so the app ships it as a separate program with its licence text and source, and that is the only copyleft piece in the app. Its token generation is the MIT library `bgutils-js` (https://github.com/LuanRT/BgUtils) plus `youtubei.js` (MIT). A small server and a yt-dlp plugin written on those two would be MIT and keep the app free of copyleft, at the cost of owning the upkeep when YouTube changes its checks. `yt-dlp-getpot-wpc` (MIT) is not a fit because it needs a visible browser. Decide when the app is sold or distributed more widely.
+
+## Distribution
+
+### Developer ID signing and notarization
+
+The app is signed ad hoc, so the first launch needs Open Anyway in System Settings, Privacy & Security. Developer ID signing and notarization remove that step. They need an Apple Developer Program membership, which is not planned. The release workflow's sign step marks where they slot in, and the install steps in the README and on the product page are the user-facing text that changes.
+
+### Weekly live-network check
+
+A scheduled workflow that runs the built app against the real network once a week: the setup check, a download from a Creative Commons source, m4a and mp3 extraction, and a token request from the sign-in helper. It would report through GitHub's failure email and never block a release. The downloader updater is what keeps downloads working when a site changes, so this only adds an early warning.
