@@ -6,9 +6,9 @@ You can keep several downloads going, pause or cancel one, and paste a playlist 
 
 ## Download
 
-[Download MediaGrabber](https://github.com/Mshardul/Tools/releases?q=media-grabber-v)
+[Download MediaGrabber](https://github.com/Mshardul/MediaGrabber/releases/latest)
 
-Take the latest `MediaGrabber-N.N.N.dmg` from that list. Do not use the repository’s overall “latest” release; other tools in this repo publish releases too.
+Take `MediaGrabber-N.N.N.dmg` from that release.
 
 Apple Silicon Mac, macOS 14 or later.
 

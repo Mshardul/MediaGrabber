@@ -1,0 +1,7 @@
+.claude/
+.superpowers/
+node_modules/
+.venv/
+build/
+Derived/
+.build/

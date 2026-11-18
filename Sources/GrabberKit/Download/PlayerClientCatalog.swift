@@ -29,7 +29,7 @@ public struct LivePlayerClientOrder: PlayerClientOrdering {
 
 public enum PlayerClientCatalog {
     public static let remoteURL = URL(
-        string: "https://raw.githubusercontent.com/Mshardul/Tools/main/apps/media-grabber/config/player-clients.json"
+        string: "https://raw.githubusercontent.com/Mshardul/MediaGrabber/main/config/player-clients.json"
     )!
 
     public static func request() -> URLRequest {

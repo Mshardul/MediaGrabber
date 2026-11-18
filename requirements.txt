@@ -1,0 +1,2 @@
+# Dev tooling. Install into the repo-root .venv with `make venv`.
+pytest==9.2.0

@@ -6,7 +6,6 @@ People who use the app should follow [the README](../README.md). This page is fo
 
 ```bash
 brew install mise
-cd apps/media-grabber
 mise install
 make
 ```
@@ -16,8 +15,6 @@ make
 A build you compile yourself is not quarantined. A copy downloaded from a release is. See the README for **Open Anyway**.
 
 ## Test and lint
-
-From `apps/media-grabber`:
 
 ```bash
 make test

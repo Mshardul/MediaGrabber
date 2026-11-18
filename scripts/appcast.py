@@ -6,7 +6,7 @@ import re
 import sys
 from email.utils import formatdate
 
-FEED = "https://mshardul.github.io/Tools/media-grabber/appcast.xml"
+FEED = "https://github.com/Mshardul/MediaGrabber/releases/latest/download/appcast.xml"
 ITEM = re.compile(r"<item>(.*?)</item>", re.DOTALL)
 FIELD = {
     "version": re.compile(r"<sparkle:version>([^<]*)</sparkle:version>"),

@@ -19,7 +19,7 @@ var appInfoPlist: [String: Plist.Value] = [
             "CFBundleURLSchemes": ["mediagrabber"]
         ]
     ],
-    "SUFeedURL": "https://mshardul.github.io/Tools/media-grabber/appcast.xml",
+    "SUFeedURL": "https://github.com/Mshardul/MediaGrabber/releases/latest/download/appcast.xml",
     "SUEnableAutomaticChecks": true,
     "SUAutomaticallyUpdate": false,
     "NSServices": [

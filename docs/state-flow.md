@@ -2,7 +2,7 @@
 
 Two state machines drive the download queue, plus a small third for the bot-check shield. This doc enumerates every state, every transition, and the trigger for each, and marks parked capabilities with their owning phase (§4).
 
-Paths are relative to `apps/media-grabber/`. Engine files live under `Sources/GrabberKit/Download/`, rate files under `Sources/GrabberKit/RateLimiting/`. Revisit this doc whenever a phase adds a state. Phase 11 **product** contract for row labels, rail filters, and actions (final look — not this as-shipped doc): `job-status-and-actions.md`.
+Paths are relative to the repository root. Engine files live under `Sources/GrabberKit/Download/`, rate files under `Sources/GrabberKit/RateLimiting/`. Revisit this doc whenever a phase adds a state. Phase 11 **product** contract for row labels, rail filters, and actions (final look — not this as-shipped doc): `job-status-and-actions.md`.
 
 ---
 

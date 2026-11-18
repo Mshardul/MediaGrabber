@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tests for fetch-tools.sh — run: apps/media-grabber/scripts/tests/test_fetch_tools.sh
+# Tests for fetch-tools.sh — run: scripts/tests/test_fetch_tools.sh
 
 set -euo pipefail
 

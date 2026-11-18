@@ -1,6 +1,6 @@
 # Release, install, update and uninstall
 
-**Status:** accepted. Implementation is complete: install location, uninstall, and Sparkle are in the app. The name stays MediaGrabber, and the Dock icon is the existing Aurora orb. The appcast is published once the EdDSA key pair is stored as `MG_SPARKLE_PUBLIC_KEY` and `SPARKLE_EDDSA_PRIVATE_KEY`. Bundled tools resolve through `ManagedTools` and are fetched by `scripts/fetch-tools.sh`. The user-facing README is `apps/media-grabber/README.md`; build notes are in `apps/media-grabber/docs/development.md`. This is the Phase 19 branding and release gate; the checks before a release are planned in `apps/media-grabber/roadmap.md`. Renumbered from Phase 18 on 2026-11-05.
+**Status:** accepted. Implementation is complete: install location, uninstall, and Sparkle are in the app. The name stays MediaGrabber, and the Dock icon is the existing Aurora orb. The appcast is published once the EdDSA key pair is stored as `MG_SPARKLE_PUBLIC_KEY` and `SPARKLE_EDDSA_PRIVATE_KEY`. Bundled tools resolve through `ManagedTools` and are fetched by `scripts/fetch-tools.sh`. The user-facing README is `README.md`; build notes are in `docs/development.md`. This is the Phase 19 branding and release gate; the checks before a release are planned in `roadmap.md`. Renumbered from Phase 18 on 2026-11-05.
 
 **Scope:** how MediaGrabber reaches testers and ordinary users, how it updates itself, and how it removes itself. Covers CI, the update mechanism, the in-app uninstall action, install-location handling and the user-facing README.
 
@@ -18,16 +18,16 @@ The app is Apple Silicon only and requires macOS 14 or later. It is signed ad-ho
 
 The repository is public, so release assets download anonymously and no separate releases repository exists.
 
-- A release is created by pushing a tag `media-grabber-vN.N.N` (the existing `make release-patch|minor|major` flow). CI builds the app, signs it, packages `MediaGrabber-N.N.N.dmg`, verifies the DMG, writes `SHA256SUMS`, and publishes a GitHub Release carrying both files.
-- Published releases are never deleted or replaced. A bad release is superseded by a higher version, and its entry is removed from the appcast (section 2) if it must stop being offered.
-- The repository is a monorepo, so `releases/latest` can resolve to another tool's release. The README download link therefore points at the release list filtered by the tag prefix (`releases?q=media-grabber-v`), never at `releases/latest`.
+- A release is created by pushing a tag `vN.N.N` (the existing `make release-patch|minor|major` flow). CI builds the app, signs it, packages `MediaGrabber-N.N.N.dmg`, verifies the DMG, writes `SHA256SUMS`, and publishes a GitHub Release carrying both files.
+- A published release is replaced only by running the release workflow with its explicit `overwrite` input. A bad release is superseded by a higher version, and its entry is removed from the appcast (section 2) if it must stop being offered.
+- The README download link points at `releases/latest`, which resolves to the newest published release of this repository.
 - The marketing version `N.N.N` is used for both `CFBundleShortVersionString` and `CFBundleVersion`. Sparkle compares dotted versions natively.
 
 ## 2. Updates
 
 Updates use Sparkle 2, embedded in the app. The user never downloads or drags anything to update.
 
-- **Feed.** The app reads `https://mshardul.github.io/Tools/media-grabber/appcast.xml`, served by the repository's GitHub Pages site. It is not a release asset, because release-asset URLs for "latest" are ambiguous in a monorepo.
+- **Feed.** The app reads `https://github.com/Mshardul/MediaGrabber/releases/latest/download/appcast.xml`, the `appcast.xml` asset of the latest release. The GitHub Pages site serves only the product page.
 - **Archive.** Each appcast item's enclosure is the release DMG. One artifact serves both first install and update. The enclosure URL is the GitHub Release asset URL for that version.
 - **Verification.** Every enclosure carries an EdDSA signature. The public key is in the app's Info.plist (`SUPublicEDKey`); the private key is a CI secret and exists nowhere else. Updates are accepted on the EdDSA signature alone, so they work with ad-hoc code signing.
 - **Quarantine.** Sparkle-installed updates are not quarantined, so Open Anyway is needed once, on first install only.
@@ -41,7 +41,7 @@ Updates use Sparkle 2, embedded in the app. The user never downloads or drags an
 
 1. Sign `Sparkle.framework`'s nested helpers and the framework itself, then the app, inside-out (ad-hoc), before the existing `codesign --verify --strict`.
 2. After the DMG is verified, produce its EdDSA signature with the CI-held key.
-3. Generate `appcast.xml` from the published releases and publish it to the Pages site under `/media-grabber/`.
+3. Generate `appcast.xml` from the published releases and attach it to the release as an asset.
 
 ## 3. Install location
 
@@ -98,16 +98,16 @@ The app ships every tool it runs. A user installs nothing else: no Homebrew, no 
 
 ## 6. README
 
-`apps/media-grabber/README.md` is written for people who use the app, not people who build it.
+`README.md` is written for people who use the app, not people who build it.
 
 - What the app does, in plain language, with screenshots.
-- **Download:** a button linking to the filtered release list, and the requirements line (Apple Silicon, macOS 14 or later).
+- **Download:** a button linking to the latest release, and the requirements line (Apple Silicon, macOS 14 or later).
 - **Install:** drag to Applications; first launch via Open Anyway, with a screenshot for each step.
 - **Updating:** automatic; where to find Check for Updates.
 - **Uninstalling:** the Preferences button, and the folders it removes, for anyone who prefers to do it by hand.
 - **Getting help:** how to share a diagnostic bundle.
 
-Build, test, lint and debug-flag content moves to `apps/media-grabber/docs/development.md`.
+Build, test, lint and debug-flag content moves to `docs/development.md`.
 
 ## 7. Testing
 

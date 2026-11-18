@@ -19,3 +19,8 @@ Resources/Tools/*
 !Resources/Tools/.gitkeep
 Resources/Shield/*
 !Resources/Shield/.gitkeep
+
+# Python tooling
+.venv/
+.ruff_cache/
+.pytest_cache/

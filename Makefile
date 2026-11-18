@@ -7,7 +7,7 @@ INSTALLED := /Applications/$(APP_NAME).app
 LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
 .DEFAULT_GOAL := run
-.PHONY: generate build install drop-build-app run plugin-test test lint tools tools-test appcast-test release release-patch release-minor release-major
+.PHONY: generate build install drop-build-app run plugin-test test lint venv tools tools-test appcast-test release release-patch release-minor release-major release-dry-run release-overwrite site-deploy
 
 tools:
 	scripts/fetch-tools.sh
@@ -49,7 +49,11 @@ drop-build-app:
 
 run: install
 
-PY ?= $(abspath ../../.venv/bin/python)
+PY ?= .venv/bin/python
+
+venv:
+	python3 -m venv .venv
+	.venv/bin/pip install -r requirements.txt
 
 # Runs the bundled yt-dlp plugin's tests against the yt-dlp version pinned in requirements.txt.
 plugin-test:
@@ -73,8 +77,9 @@ lint:
 
 # --- Release ---
 
-CURRENT_VERSION = $(shell git tag --list 'media-grabber-v*' --sort=-v:refname \
-	| head -1 | sed 's/^media-grabber-v//' | grep . || echo 0.0.0)
+CURRENT_VERSION = $(shell git tag --list 'v[0-9]*' | scripts/current-version.sh)
+
+VERSION_CHECK = test -n "$(VERSION)" || { echo "VERSION=X.Y.Z required"; exit 1; } ; echo "$(VERSION)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "VERSION must be N.N.N"; exit 1; }
 
 release-patch: BUMP := patch
 release-minor: BUMP := minor
@@ -89,8 +94,23 @@ release:
 	@test "`git rev-parse HEAD`" = "`git rev-parse origin/main`" || { echo "local main != origin/main — push or pull first"; exit 1; }
 	@next=$$(scripts/bump-version.sh $(CURRENT_VERSION) $(BUMP)) || exit 1 ; \
 		echo "$(CURRENT_VERSION)  ->  $$next" ; \
-		read -p "tag media-grabber-v$$next and push? [y/N] " ok ; \
+		read -p "tag v$$next and push? [y/N] " ok ; \
 		[ "$$ok" = y ] || { echo aborted; exit 1; } ; \
-		git tag -a "media-grabber-v$$next" -m "media-grabber v$$next" ; \
-		git push origin "media-grabber-v$$next" ; \
-		echo "pushed media-grabber-v$$next — CI builds the release now"
+		git tag -a "v$$next" -m "MediaGrabber v$$next" ; \
+		git push origin "v$$next" ; \
+		echo "pushed v$$next — CI builds the release now"
+
+# make release-dry-run VERSION=X.Y.Z; builds and signs without publishing.
+release-dry-run:
+	@$(VERSION_CHECK)
+	gh workflow run release.yml -f version=$(VERSION) -f dry_run=true
+
+# make release-overwrite VERSION=X.Y.Z; replaces an already published release.
+release-overwrite:
+	@$(VERSION_CHECK)
+	@read -p "replace the published release v$(VERSION)? [y/N] " ok ; \
+		[ "$$ok" = y ] || { echo aborted; exit 1; }
+	gh workflow run release.yml -f version=$(VERSION) -f overwrite=true
+
+site-deploy:
+	gh workflow run pages.yml

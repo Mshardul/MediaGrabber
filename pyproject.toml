@@ -1,0 +1,12 @@
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+extend-exclude = [".venv", "build", "Derived"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.format]
+
+[tool.pytest.ini_options]
+addopts = "-q"

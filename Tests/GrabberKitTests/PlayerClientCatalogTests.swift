@@ -17,6 +17,13 @@ final class PlayerClientCatalogTests: XCTestCase {
         super.tearDown()
     }
 
+    func testRemoteURLPointsAtMediaGrabberRepo() {
+        XCTAssertEqual(
+            PlayerClientCatalog.remoteURL.absoluteString,
+            "https://raw.githubusercontent.com/Mshardul/MediaGrabber/main/config/player-clients.json"
+        )
+    }
+
     func testCatalogRequestTimesOutQuickly() {
         XCTAssertEqual(PlayerClientCatalog.request().timeoutInterval, 5)
     }

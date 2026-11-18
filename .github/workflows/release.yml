@@ -1,8 +1,8 @@
-name: media-grabber-release
+name: release
 
 on:
   push:
-    tags: ['media-grabber-v*']
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
@@ -18,7 +18,7 @@ on:
         default: false
 
 concurrency:
-  group: media-grabber-release
+  group: release
   cancel-in-progress: false
 
 jobs:
@@ -27,9 +27,6 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
-    defaults:
-      run:
-        working-directory: apps/media-grabber
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,7 +34,6 @@ jobs:
 
       - name: Derive version
         id: version
-        working-directory: .
         env:
           EVENT_NAME: ${{ github.event_name }}
           REF_NAME: ${{ github.ref_name }}
@@ -46,7 +42,7 @@ jobs:
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             v="$INPUT_VERSION"
           else
-            v="${REF_NAME#media-grabber-v}"
+            v="${REF_NAME#v}"
           fi
           case "$v" in
             [0-9]*.[0-9]*.[0-9]*) ;;
@@ -58,31 +54,29 @@ jobs:
           echo "version=$v" >> "$GITHUB_OUTPUT"
 
       - name: Tag commit must be on main
-        working-directory: .
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         run: |
           git fetch --quiet origin main
           git merge-base --is-ancestor "$GITHUB_SHA" origin/main \
             || { echo "built commit is not on origin/main" >&2; exit 1; }
 
-      - name: No clobbering an existing release
-        working-directory: .
-        if: ${{ !(github.event_name == 'workflow_dispatch' && (inputs.dry_run || inputs.overwrite)) }}
+      - name: Clear stale drafts and refuse an existing release
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: media-grabber-v${{ steps.version.outputs.version }}
+          TAG: v${{ steps.version.outputs.version }}
+          OVERWRITE: ${{ github.event_name == 'workflow_dispatch' && inputs.overwrite }}
         run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
+          id="$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate -q ".[] | select(.draft and .tag_name==\"$TAG\") | .id")"
+          for d in $id; do gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$d"; done
+          if [ "$OVERWRITE" != "true" ] && gh release view "$TAG" >/dev/null 2>&1; then
             echo "release $TAG already exists — re-run with overwrite:true to replace" >&2
             exit 1
           fi
 
       - id: xcodever
-        working-directory: .
-        run: echo "v=$(cat apps/media-grabber/.xcode-version)" >> "$GITHUB_OUTPUT"
+        run: echo "v=$(cat .xcode-version)" >> "$GITHUB_OUTPUT"
       - uses: jdx/mise-action@v2
-        with:
-          working_directory: apps/media-grabber
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: ${{ steps.xcodever.outputs.v }}
@@ -139,6 +133,26 @@ jobs:
           done
           curl -fsS http://127.0.0.1:4999/ping || { cat shield-smoke.log; echo "sign-in helper did not start from the app" >&2; exit 1; }
 
+      - name: Verify the update feed and key in the built app
+        env:
+          APP: ${{ steps.app.outputs.path }}
+          FEED: https://github.com/Mshardul/MediaGrabber/releases/latest/download/appcast.xml
+          EXPECTED_KEY: ${{ vars.MG_SPARKLE_PUBLIC_KEY }}
+          DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          info="$APP/Contents/Info"
+          feed="$(defaults read "$info" SUFeedURL)"
+          [ "$feed" = "$FEED" ] || { echo "SUFeedURL is '$feed', expected '$FEED'" >&2; exit 1; }
+          if [ -n "$EXPECTED_KEY" ]; then
+            key="$(defaults read "$info" SUPublicEDKey 2>/dev/null || true)"
+            [ "$key" = "$EXPECTED_KEY" ] || { echo "SUPublicEDKey in the app does not match MG_SPARKLE_PUBLIC_KEY" >&2; exit 1; }
+          elif [ "$DRY" = "true" ]; then
+            echo "MG_SPARKLE_PUBLIC_KEY is unset; the dry run is not checking the update key"
+          else
+            echo "MG_SPARKLE_PUBLIC_KEY is required to publish an update" >&2
+            exit 1
+          fi
+
       - name: Package DMG
         id: dmg
         env:
@@ -150,7 +164,7 @@ jobs:
           dmg="MediaGrabber-${VERSION}.dmg"
           scripts/create-dmg --volname "MediaGrabber ${VERSION}" "$dmg" "$staging"
           test -f "$dmg" || { echo "dmg not created" >&2; exit 1; }
-          echo "path=apps/media-grabber/$dmg" >> "$GITHUB_OUTPUT"
+          echo "path=$dmg" >> "$GITHUB_OUTPUT"
           echo "name=$dmg" >> "$GITHUB_OUTPUT"
 
       - name: Verify DMG
@@ -185,18 +199,19 @@ jobs:
           shasum -a 256 "$DMG" > SHA256SUMS
           shasum -c SHA256SUMS
 
-      - name: Previous release tag exists?
+      - name: Earlier published release exists?
         id: prev
-        working-directory: .
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version.outputs.version }}
         run: |
-          n="$(git tag --list 'media-grabber-v*' | grep -vc "^media-grabber-v${VERSION}$" || true)"
+          n="$(gh release list --exclude-drafts --json tagName -q "[.[] | select(.tagName != \"$TAG\")] | length")"
           if [ "$n" -gt 0 ]; then echo "exists=true" >> "$GITHUB_OUTPUT"; else echo "exists=false" >> "$GITHUB_OUTPUT"; fi
 
       - name: Sign the disk image for Sparkle
         id: sparkle
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SPARKLE_EDDSA_PRIVATE_KEY: ${{ secrets.SPARKLE_EDDSA_PRIVATE_KEY }}
           VERSION: ${{ steps.version.outputs.version }}
           DMG: ${{ steps.dmg.outputs.name }}
@@ -218,50 +233,60 @@ jobs:
           printf '%s\n' "$SPARKLE_EDDSA_PRIVATE_KEY" > "$key"
           chmod 600 "$key"
           "$tool" --ed-key-file "$key" "$DMG" > sparkle-signature.txt
-          curl -fsSL "https://mshardul.github.io/Tools/media-grabber/appcast.xml" -o appcast-current.xml || : > appcast-current.xml
+          if gh release view --json tagName >/dev/null 2>&1; then
+            gh release download --pattern appcast.xml --output appcast-current.xml --clobber \
+              || { echo "the latest release has no appcast.xml, so the update feed is broken" >&2; exit 1; }
+          else
+            : > appcast-current.xml
+          fi
           signature="$(sed -n 's/.*edSignature="\([^"]*\)".*/\1/p' sparkle-signature.txt)"
           test -n "$signature" || { echo "sign_update did not print an edSignature" >&2; cat sparkle-signature.txt >&2; exit 1; }
           length="$(stat -f%z "$DMG")"
-          mkdir -p appcast-publish
           python3 scripts/appcast.py \
             --existing appcast-current.xml \
             --version "$VERSION" \
-            --url "https://github.com/Mshardul/Tools/releases/download/media-grabber-v${VERSION}/MediaGrabber-${VERSION}.dmg" \
+            --url "https://github.com/Mshardul/MediaGrabber/releases/download/v${VERSION}/MediaGrabber-${VERSION}.dmg" \
             --signature "$signature" \
             --length "$length" \
-            --notes "https://github.com/Mshardul/Tools/releases/tag/media-grabber-v${VERSION}" \
-            --out appcast-publish/appcast.xml
-          cp appcast-publish/appcast.xml appcast.xml
+            --notes "https://github.com/Mshardul/MediaGrabber/releases/tag/v${VERSION}" \
+            --out appcast.xml
           echo "signed=true" >> "$GITHUB_OUTPUT"
 
       - name: Upload the appcast
         if: ${{ steps.sparkle.outputs.signed == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: media-grabber-appcast
-          path: apps/media-grabber/appcast.xml
+          name: appcast
+          path: appcast.xml
 
       - name: Publish release
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: media-grabber-v${{ steps.version.outputs.version }}
-          files: |
-            apps/media-grabber/${{ steps.dmg.outputs.name }}
-            apps/media-grabber/SHA256SUMS
-          generate_release_notes: ${{ steps.prev.outputs.exists }}
-          body: |
-            ${{ steps.prev.outputs.exists == 'true' && '' || 'Initial release.' }}
-
-            MediaGrabber is not yet signed with an Apple Developer ID. On first launch,
-            right-click the app and choose **Open**, or run
-            `xattr -dr com.apple.quarantine /Applications/MediaGrabber.app`.
-
-      - name: Publish the appcast
-        if: ${{ steps.sparkle.outputs.signed == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: apps/media-grabber/appcast-publish
-          destination_dir: media-grabber
-          keep_files: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.version.outputs.version }}
+          VERSION: ${{ steps.version.outputs.version }}
+          DMG: ${{ steps.dmg.outputs.name }}
+          OVERWRITE: ${{ github.event_name == 'workflow_dispatch' && inputs.overwrite }}
+          PREVIOUS: ${{ steps.prev.outputs.exists }}
+        run: |
+          if [ "$PREVIOUS" = "true" ]; then
+            : > release-notes.md
+          else
+            printf 'Initial release.\n\n' > release-notes.md
+          fi
+          cat >> release-notes.md <<'NOTE'
+          MediaGrabber is not yet signed with an Apple Developer ID. On first launch,
+          right-click the app and choose **Open**, or run
+          `xattr -dr com.apple.quarantine /Applications/MediaGrabber.app`.
+          NOTE
+          if [ "$OVERWRITE" = "true" ] && gh release view "$TAG" >/dev/null 2>&1; then
+            gh release delete "$TAG" --yes --cleanup-tag
+          fi
+          args=(--draft --target "$GITHUB_SHA" --title "MediaGrabber $VERSION" --notes-file release-notes.md)
+          [ "$PREVIOUS" != "true" ] || args+=(--generate-notes)
+          gh release create "$TAG" "$DMG" SHA256SUMS appcast.xml "${args[@]}"
+          id="$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate -q ".[] | select(.draft and .tag_name==\"$TAG\") | .id")"
+          test -n "$id" || { echo "draft release for $TAG not found" >&2; exit 1; }
+          names="$(gh api "repos/$GITHUB_REPOSITORY/releases/$id" -q '.assets[].name' | LC_ALL=C sort | tr '\n' ' ')"
+          [ "$names" = "MediaGrabber-$VERSION.dmg SHA256SUMS appcast.xml " ] || { echo "assets incomplete: $names" >&2; exit 1; }
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$id" -F draft=false -f make_latest=true
