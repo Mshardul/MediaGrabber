@@ -17,7 +17,7 @@ if [ -z "${SPARKLE_EDDSA_PRIVATE_KEY:-}" ]; then
     exit 1
 fi
 
-tool="$(find . "$HOME/Library/Caches/tuist" "$HOME/Library/Developer/Xcode/DerivedData" -path '*Sparkle/bin/sign_update' -type f 2>/dev/null | head -1)"
+tool="$(find . "$HOME/Library/Caches/tuist" "$HOME/Library/Developer/Xcode/DerivedData" -path '*Sparkle/bin/sign_update' -type f 2>/dev/null | head -1 || true)"
 [ -n "$tool" ] || { echo "sign_update not found" >&2; exit 1; }
 
 key="$(mktemp)"

@@ -35,6 +35,7 @@ jobs:
       - run: scripts/tests/test_check_signature.sh
       - run: scripts/tests/test_verify_app.sh
       - run: scripts/tests/test_derive_version.sh
+      - run: scripts/tests/test_sign_update.sh
 
   test:
     strategy:

@@ -27,6 +27,7 @@ release-scripts-test:
 	scripts/tests/test_check_signature.sh
 	scripts/tests/test_verify_app.sh
 	scripts/tests/test_derive_version.sh
+	scripts/tests/test_sign_update.sh
 
 e2e:
 	$(MAKE) build CONFIG=Release
