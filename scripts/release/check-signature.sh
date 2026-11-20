@@ -29,6 +29,7 @@ got_version="$(printf '%s' "$item" | grep -o '<sparkle:version>[^<]*' | head -1 
 signature="$(printf '%s' "$item" | grep -o 'sparkle:edSignature="[^"]*' | head -1 | sed 's/.*"//')"
 [ -n "$signature" ] || { echo "newest appcast item has no signature" >&2; exit 1; }
 
+app="$(cd "$app" && pwd)"
 info="$app/Contents/Info"
 if [ -f "$info.plist" ]; then
     info="$info.plist"

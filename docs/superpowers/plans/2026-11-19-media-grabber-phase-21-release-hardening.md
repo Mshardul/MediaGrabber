@@ -141,9 +141,26 @@ No git commands anywhere. Each task ends at its gate (`make lint` plus the named
 - [x] **Step 1: Rewrite the job** so each step is one call, in this order: `derive-version.sh`; the existing main-ancestor check; tool fetch; build; locate and sign; `verify-app.sh`; `scripts/e2e/run.sh` on the signed app; `package-dmg.sh` (assets folder with the disk image, sources and `SHA256SUMS`); `verify-dmg.sh`; `sign-update.sh`; `check-signature.sh`; `publish-release.sh` (which ends with the feed check). Pin `jdx/mise-action` and `maxim-lobanov/setup-xcode` to full commit SHAs (look each up with `gh api repos/<owner>/<repo>/git/ref/tags/<tag>`, follow a tag object to its commit) with the tag in a comment. The end-to-end step sets `MG_E2E_LAUNCH=1`. Remove the old inline smoke step. Dry runs run everything before publishing, skip the publish and feed check, and skip the signing steps and `check-signature.sh` when their secrets are unset, as today.
 - [ ] **Step 2: Run** `make lint`; ask the user to run `make release-dry-run VERSION=0.1.0` and confirm the steps run in order and publish nothing. Record the result.
 
+### Task 7: One logo in every theme
+
+**Files:**
+- Modify: `Sources/App/Theme/MotifView.swift`, `Sources/App/Theme/Theme.swift` (remove `MotifKind` and `motif`)
+- Modify: `Sources/App/Theme/Palette.swift` (remove `orbStops` from every palette; the fixed stops live in `MotifView`), and the `orbStops.count` assertion in `Tests/AppUnitTests/ThemeTests.swift`
+- Modify: `Tests/AppUnitTests/ThemeTests.swift`
+- Modify: `docs/design-system.md` (§2 motif rows, §3 line on the motif, token table `--orb`), `docs/mockups/screens.css` and `screens.html` only where they draw the reel
+
+**Interfaces:**
+- Produces: `MotifView` draws the same orb, with the same fixed colours, under every theme and palette. The Dock icon and the in-app mark are the same image.
+
+- [x] **Step 1: Rewrite the tests.** Replace `test_auroraTheme_motifIsOrb` with `testLogoIsTheSameUnderEveryTheme`: the mark's colour stops are identical for Aurora and Tape Deck and for every palette. Keep `test_motifView_staticUnderReduceMotion`.
+- [x] **Step 2: Run** `make test ONLY=AppUnitTests/ThemeTests`. Expected: the new test FAILS.
+- [x] **Step 3: Remove the reel branch, `MotifKind` and `Theme.motif`.** The orb uses one fixed set of stops and no theme-dependent stroke. `MotifView` callers do not change.
+- [x] **Step 4: Docs.** `docs/design-system.md` states one fixed logo in both themes and drops the per-theme motif rows; the mockups no longer draw the reel as the logo.
+- [x] **Step 5: Run** `make lint`, `make test`. Expected: PASS.
+
 ---
 
 ## Self-review
 
-- Spec coverage: licenses (T2), end-to-end (T4), update path (T3 signature and feed, T5 checklist item), publish and feed (T3), notes (T3 `derive-version.sh`, `publish-release.sh`), connections and front door (T5), checklist (T5), Review Focus table (T1, T3, T4), gate in CI (T6).
+- Spec coverage: licenses (T2), end-to-end (T4), update path (T3 signature and feed, T5 checklist item), publish and feed (T3), notes (T3 `derive-version.sh`, `publish-release.sh`), connections and front door (T5), checklist (T5), Review Focus table (T1, T3, T4), gate in CI (T6), one logo (T7).
 - Types and names: script names, flags and make targets match across tasks and the spec.

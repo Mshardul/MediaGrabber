@@ -15,9 +15,9 @@ final class ThemeTests: XCTestCase {
         XCTAssertEqual(theme.hairlineWidth, 1)
     }
 
-    func test_auroraTheme_motifIsOrb() {
-        XCTAssertEqual(Theme(.aurora).motif, .orb)
-        XCTAssertEqual(MotifView.style(for: Theme(.aurora)), .orb)
+    func testLogoColoursArePinned() {
+        let hexes = ["#5EF2C8", "#8B7BFF", "#FF7A6B", "#5EF2C8"]
+        XCTAssertEqual(MotifView.stops, hexes.map { Color(hex: $0) })
     }
 
     func test_tapeDeckTheme_shapeAndBorder() {
@@ -31,7 +31,6 @@ final class ThemeTests: XCTestCase {
         XCTAssertEqual(theme.controlBorderWidth, 1.5)
         XCTAssertEqual(theme.cardShadowOffset, 8)
         XCTAssertEqual(theme.cardShadowRadius, 0)
-        XCTAssertEqual(MotifView.style(for: theme), .reel)
         XCTAssertEqual(palette(for: .tapeDeckA).brand, Color(hex: "#0E5C57"))
         XCTAssertEqual(palette(for: .tapeDeckB).brand, Color(hex: "#5A2E52"))
         XCTAssertEqual(palette(for: .tapeDeckC).brand, Color(hex: "#1F3350"))
@@ -45,7 +44,6 @@ final class ThemeTests: XCTestCase {
         XCTAssertEqual(palette.accent, Color(hex: "#5EF2C8"))
         XCTAssertEqual(palette.danger, Color(hex: "#FF7A6B"))
         XCTAssertEqual(palette.ground, Color(hex: "#0C1013"))
-        XCTAssertEqual(palette.orbStops.count, 4)
     }
 
     func test_eachPalette_usesItsOwnAccent() {

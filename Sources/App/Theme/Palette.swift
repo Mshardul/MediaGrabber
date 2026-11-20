@@ -22,7 +22,6 @@ struct PaletteTokens {
 
     let goFillStart: Color
     let goFillEnd: Color
-    let orbStops: [Color]
     let barFillStart: Color
     let barFillEnd: Color
     let bannerFillStart: Color
@@ -62,12 +61,6 @@ extension PaletteTokens {
         danger: Color(hex: "#FF7A6B"),
         goFillStart: Color(hex: "#5EF2C8"),
         goFillEnd: Color(hex: "#8B7BFF"),
-        orbStops: [
-            Color(hex: "#5EF2C8"),
-            Color(hex: "#8B7BFF"),
-            Color(hex: "#FF7A6B"),
-            Color(hex: "#5EF2C8")
-        ],
         barFillStart: Color(hex: "#5EF2C8"),
         barFillEnd: Color(hex: "#8B7BFF"),
         bannerFillStart: Color(hex: "#FF7A6B"),
@@ -90,7 +83,6 @@ extension PaletteTokens {
         warn: "#F2C14E",
         danger: "#FF6F6F",
         goEnd: "#4ED6A0",
-        orbWarn: "#F2C14E",
         bannerStart: "#FF6F6F",
         glowA: ("#B6F04A", 0.16),
         glowB: ("#4ED6A0", 0.14)
@@ -109,7 +101,6 @@ extension PaletteTokens {
         warn: "#FFC24B",
         danger: "#FF6B6B",
         goEnd: "#9B6BFF",
-        orbWarn: "#5ED6E8",
         bannerStart: "#FF6B6B",
         glowA: ("#F25C9E", 0.16),
         glowB: ("#9B6BFF", 0.16)
@@ -165,7 +156,6 @@ extension PaletteTokens {
         warn: String,
         danger: String,
         goEnd: String,
-        orbWarn: String,
         bannerStart: String,
         glowA: (String, Double),
         glowB: (String, Double)
@@ -188,12 +178,6 @@ extension PaletteTokens {
             danger: Color(hex: danger),
             goFillStart: Color(hex: accent),
             goFillEnd: Color(hex: goEnd),
-            orbStops: [
-                Color(hex: accent),
-                Color(hex: accent2),
-                Color(hex: orbWarn),
-                Color(hex: accent)
-            ],
             barFillStart: Color(hex: accent),
             barFillEnd: Color(hex: goEnd),
             bannerFillStart: Color(hex: bannerStart),
@@ -236,7 +220,6 @@ extension PaletteTokens {
             danger: Color(hex: danger),
             goFillStart: Color(hex: go),
             goFillEnd: Color(hex: go),
-            orbStops: [accentColor, Color(hex: accent2), Color(hex: warn), accentColor],
             barFillStart: accentColor,
             barFillEnd: accentColor,
             bannerFillStart: accentColor,

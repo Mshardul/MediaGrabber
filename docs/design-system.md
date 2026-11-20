@@ -43,8 +43,8 @@ This is the source of truth for visual design. Mockups in `mockups/` mirror thes
 
 | Term | Meaning |
 | --- | --- |
-| **Theme** | Visual identity: **Tape Deck** or **Aurora**. Sets type, shape language, elevation style, and the signature motif. |
-| **Palette** | A colour variant _within_ a theme. Three per theme. Swaps colour tokens only — type, radii, spacing, motif are unchanged by palette. |
+| **Theme** | Visual identity: **Tape Deck** or **Aurora**. Sets type, shape language, elevation style. The logo is the same in every theme. |
+| **Palette** | A colour variant _within_ a theme. Three per theme. Swaps colour tokens only — type, radii, spacing and the logo are unchanged by palette. |
 
 User picks a theme, then a palette. Default: **Aurora / Mint & Iris**.
 
@@ -66,7 +66,6 @@ Warm, tactile, nostalgic hi-fi. Light-first.
 | Border | 2px solid `--ink` on structural edges; 1.5px on chips / pills / small controls |
 | Radius | window 14 · card 12 · control 8 · pill 20 · chip 6 (px) |
 | Elevation | **hard offset shadow** — `8px 8px 0 rgba(0,0,0,.35)` on the window; controls get none |
-| Motif | **spinning tape reel** — in the wordmark, and on any actively-downloading row (14px reel, 2s linear spin) |
 | Header ground | `--brand` (the palette's deep hue), text in `--surface` |
 
 ### 2.2 Aurora
@@ -81,7 +80,6 @@ Luminous, calm, premium. Dark-first.
 | Border | hairline — `1px solid --stroke` (a low-alpha white) on structural edges; `--hair` for table row rules |
 | Radius | window 18 · card 14 · control 9 · pill 20 · chip 7 (px) |
 | Elevation | **glow** — `0 0 0 1px --glow-a, 0 0 32px --glow-b` on the paste console; window uses a deep soft shadow `0 24px 60px rgba(0,0,0,.6)` |
-| Motif | **conic-gradient orb** — 20px in the wordmark (6s spin), 14px on actively-downloading rows (2s spin) |
 | Header ground | transparent (same as body); divider only |
 
 ---
@@ -153,7 +151,7 @@ Within a theme every glyph comes from that one library — never mixed. Only the
 | nav-preferences      | `gear`               | `settings`         |
 | nav-diagnostics      | `stethoscope`        | `stethoscope`      |
 
-The signature motif (reel / orb) is **not** in this set — it is `MotifView`, a drawn SwiftUI shape, not a bundled icon.
+The logo is **not** in this set — it is `MotifView`, a drawn SwiftUI shape: one conic-gradient orb (`#5EF2C8, #8B7BFF, #FF7A6B, #5EF2C8`), identical under every theme and palette. 20px in the wordmark (6s spin while a download runs), 14px on actively-downloading rows (2s spin).
 
 The `warning` glyph is reused for the Preferences concurrency note (§4.6) — no new glyph is introduced for it.
 
@@ -526,7 +524,6 @@ Every palette defines the full set. Names are stable across palettes; only value
 --danger        failure / error
 --go            Go button fill (Tape Deck: solid; Aurora: use --go-fill)
 --go-fill       Go button gradient (Aurora)
---orb           conic-gradient motif (Aurora)
 --bar-fill      progress bar fill
 --banner-fill   warning banner fill
 --glow-a        glow inner colour (Aurora elevation)
@@ -624,7 +621,6 @@ Shared: `--panel` = `rgba(255,255,255,.05)`, `--panel-hi` = `rgba(255,255,255,.0
 | --warn | `#FFC24B` |
 | --danger | `#FF7A6B` |
 | --go-fill | `linear-gradient(135deg,#5EF2C8,#8B7BFF)` |
-| --orb | `conic-gradient(from 0deg,#5EF2C8,#8B7BFF,#FF7A6B,#5EF2C8)` |
 | --bar-fill | `linear-gradient(90deg,#5EF2C8,#8B7BFF)` |
 | --banner-fill | `linear-gradient(90deg,#FF7A6B,#FFC24B)` |
 | --glow-a / --glow-b | `rgba(94,242,200,.14)` / `rgba(139,123,255,.16)` |
@@ -645,7 +641,6 @@ Shared: `--panel` = `rgba(255,255,255,.05)`, `--panel-hi` = `rgba(255,255,255,.0
 | --warn | `#F2C14E` |
 | --danger | `#FF6F6F` |
 | --go-fill | `linear-gradient(135deg,#B6F04A,#4ED6A0)` |
-| --orb | `conic-gradient(from 0deg,#B6F04A,#4ED6A0,#F2C14E,#B6F04A)` |
 | --bar-fill | `linear-gradient(90deg,#B6F04A,#4ED6A0)` |
 | --banner-fill | `linear-gradient(90deg,#FF6F6F,#F2C14E)` |
 | --glow-a / --glow-b | `rgba(182,240,74,.16)` / `rgba(78,214,160,.14)` |
@@ -666,7 +661,6 @@ Shared: `--panel` = `rgba(255,255,255,.05)`, `--panel-hi` = `rgba(255,255,255,.0
 | --warn | `#FFC24B` |
 | --danger | `#FF6B6B` |
 | --go-fill | `linear-gradient(135deg,#F25C9E,#9B6BFF)` |
-| --orb | `conic-gradient(from 0deg,#F25C9E,#9B6BFF,#5ED6E8,#F25C9E)` |
 | --bar-fill | `linear-gradient(90deg,#F25C9E,#9B6BFF)` |
 | --banner-fill | `linear-gradient(90deg,#FF6B6B,#FFC24B)` |
 | --glow-a / --glow-b | `rgba(242,92,158,.16)` / `rgba(155,107,255,.16)` |
@@ -676,6 +670,6 @@ Shared: `--panel` = `rgba(255,255,255,.05)`, `--panel-hi` = `rgba(255,255,255,.0
 ## 6. Implementation notes
 
 - SwiftUI: express palettes as a `Palette` struct of `Color`s selected by `@AppStorage` theme + palette keys; themes differ in more than colour (fonts, corner radii, elevation modifier) so model a `Theme` protocol/enum with those as properties, not just a colour set.
-- The signature motif (reel / orb) is one small reusable view driven by an `isActive` flag; honour `accessibilityReduceMotion`.
+- The logo (the orb) is one small reusable view driven by an `isActive` flag; honour `accessibilityReduceMotion`.
 - Quality floor: full keyboard navigation, visible focus rings, VoiceOver labels on every icon button, `prefers-reduced-motion` respected, window usable down to a narrow width (table scrolls horizontally inside its own container; the page never scrolls sideways).
 - Column state (order, visibility, sort, filters) persists as `ColumnConfig` in `columns.json` via `Persistence` (the same mechanism as queue/history), keyed independently of both `Preferences` and window state.

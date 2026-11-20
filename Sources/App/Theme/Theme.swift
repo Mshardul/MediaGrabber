@@ -1,11 +1,6 @@
 import GrabberKit
 import SwiftUI
 
-enum MotifKind {
-    case reel
-    case orb
-}
-
 struct Theme {
     let kind: ThemeKind
     let palette: PaletteTokens
@@ -114,10 +109,6 @@ struct Theme {
 
     var cardShadowColor: Color {
         Color.black.opacity(0.35)
-    }
-
-    var motif: MotifKind {
-        isAurora ? .orb : .reel
     }
 }
 

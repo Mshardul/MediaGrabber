@@ -104,3 +104,7 @@ Each risk named in the release plan has a test or a written check.
 ## 9. Release gate in CI
 
 The release workflow calls, in order: `derive-version.sh`, the build and signing, `verify-app.sh`, `scripts/e2e/run.sh` on the signed app, `package-dmg.sh`, `verify-dmg.sh`, the checksums with the source files, `sign-update.sh`, `check-signature.sh`, and `publish-release.sh`, which ends with the feed check. Third-party actions in the workflow are pinned to full commit SHAs. A failure stops the release. A dry run runs everything up to publishing and skips the publish and feed check, and skips the signing steps and the signature check when their secrets are unset.
+
+## 10. One logo in every theme
+
+The mark in the wordmark, About and onboarding is the Aurora orb in the same colours under every theme and palette, so it matches the Dock icon and the product page. The tape reel stops being a logo; the theme no longer picks the mark.

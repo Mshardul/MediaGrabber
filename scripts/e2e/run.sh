@@ -4,7 +4,7 @@
 # Run: scripts/e2e/run.sh APP
 set -euo pipefail
 
-app="${1:?app bundle}"
+app="$(cd "${1:?app bundle}" && pwd)"
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 
 home="$(mktemp -d)"

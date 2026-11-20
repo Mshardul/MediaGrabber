@@ -3,12 +3,13 @@
 # Run: scripts/release/package-dmg.sh APP VERSION ASSETS_DIR
 set -euo pipefail
 
-app="${1:?app bundle}"
+app="$(cd "${1:?app bundle}" && pwd)"
 version="${2:?version}"
 assets="${3:?assets directory}"
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 
 mkdir -p "$assets"
+assets="$(cd "$assets" && pwd)"
 dmg="$assets/MediaGrabber-$version.dmg"
 staging="$(mktemp -d)"
 trap 'rm -rf "$staging"' EXIT

@@ -50,6 +50,10 @@ Every sentence is checked against the shipped app. Contrast, keyboard use and re
 
 The first release has been published, so the download link and the captures are real. The fixture server from the release-hardening phase exists. The release checklist gains the `make page-shots` step.
 
+## 9. App mark
+
+Decided before the screenshots, because the wordmark and the Dock icon appear in them. The question is whether a new mark replaces the orb. The brief: one fixed mark in every theme; it says "if you can watch it, you can download it" from any site, not a file type or a particular site; it reads at 16px and as a Dock tile; it works on dark and light grounds; it is not tied to the Aurora colours. Directions looked at and not chosen: a flat glyph (frame, drop-in tray, M-arrow, queue, pin), a type-only wordmark, a one-eye character, a claw, a jar, a letter G and creature mascots. The look of a character was not settled and needs real illustration craft, so a designer or illustrator is an option.
+
 ## Deferred decisions
 
 Hero layout, where the screenshot sits in the page, and the layout of the install section. They are decided in a mockup pass when the phase starts planning.

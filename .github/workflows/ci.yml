@@ -33,6 +33,7 @@ jobs:
       - run: scripts/tests/test_publish_release.sh
       - run: scripts/tests/test_check_feed.sh
       - run: scripts/tests/test_check_signature.sh
+      - run: scripts/tests/test_verify_app.sh
 
   test:
     strategy:

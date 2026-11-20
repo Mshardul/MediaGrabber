@@ -3,7 +3,7 @@
 # Run: scripts/release/verify-app.sh APP  (EXPECTED_KEY and DRY from the environment)
 set -euo pipefail
 
-app="${1:?app bundle}"
+app="$(cd "${1:?app bundle}" && pwd)"
 feed="https://github.com/Mshardul/MediaGrabber/releases/latest/download/appcast.xml"
 info="$app/Contents/Info"
 if [ -f "$info.plist" ]; then

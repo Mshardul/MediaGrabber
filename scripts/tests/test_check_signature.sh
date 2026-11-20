@@ -60,6 +60,9 @@ make_appcast 0.1.0 "$other_signature" "$work/other.xml"
 check "a signature from a different key fails" \
     bash -c "! bash '$script' --appcast '$work/other.xml' --app '$app' --dmg '$dmg' --version 0.1.0"
 
+check "a relative app path passes" \
+    bash -c "cd '$work' && bash '$script' --appcast appcast.xml --app MediaGrabber.app --dmg '$dmg' --version 0.1.0"
+
 printf 'tampered\n' >> "$dmg"
 check "a tampered disk image fails" \
     bash -c "! bash '$script' --appcast '$work/appcast.xml' --app '$app' --dmg '$dmg' --version 0.1.0"
