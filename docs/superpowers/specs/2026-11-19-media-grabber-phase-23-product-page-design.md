@@ -18,7 +18,7 @@ The page is the app's public face and the first thing a visitor sees before the 
 
 ## 2. Screenshot script
 
-`make page-shots` launches the built app against a temporary home with a prepared queue (a few rows in fixed states, one in progress at a fixed percentage) and the fixture server from the release-hardening phase, sets each theme in turn, captures the window at a fixed size and writes to `site/assets/shots/` under fixed names. It fails when a capture is blank or the wrong size. The app does not honour a changed `HOME`, so this phase decides how the script runs the app against fixture data without touching a real home, for example by giving the app a single home-folder setting. The terminal needs Screen Recording permission once. The release checklist runs it every release, so the shots are always current and a changed shot shows up in the diff.
+`make page-shots` launches the built app against a temporary home with a prepared queue (a few rows in fixed states, one in progress at a fixed percentage) and the fixture server from the release-hardening phase, sets each theme in turn, captures the window at a fixed size and writes to `site/assets/shots/` under fixed names. It fails when a capture is blank or the wrong size. The script sets the app's home setting (`MG_HOME`, from the code cleanup phase) so the app runs against fixture data without touching a real home. The terminal needs Screen Recording permission once. The release checklist runs it every release, so the shots are always current and a changed shot shows up in the diff.
 
 ## 3. Links
 
@@ -48,7 +48,7 @@ Every sentence is checked against the shipped app. Contrast, keyboard use and re
 
 ## 8. Dependencies
 
-The first release has been published, so the download link and the captures are real. The fixture server from the release-hardening phase exists. The release checklist gains the `make page-shots` step.
+The first release has been published, so the download link and the captures are real. The fixture server from the release-hardening phase and the home setting from the code cleanup phase exist. The release checklist gains the `make page-shots` step.
 
 ## 9. App mark
 

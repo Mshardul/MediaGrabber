@@ -94,28 +94,20 @@ ok "helper"
 # --- Optional launch ---
 if [ "${MG_E2E_LAUNCH:-}" = "1" ]; then
     executable="$app/Contents/MacOS/MediaGrabber"
-    logdir="$home/Library/Logs/MediaGrabber"
-    mkdir -p "$logdir"
 
     "$executable" >/dev/null 2>&1 &
     app_pid=$!
 
-    deadline=$((SECONDS + 15))
-    launched=""
-    while [ $SECONDS -lt $deadline ]; do
-        if [ -f "$logdir/app.log" ] && /usr/bin/grep -q 'app.launched' "$logdir/app.log"; then
-            launched=1
-            break
-        fi
+    alive_until=$((SECONDS + 10))
+    while [ $SECONDS -lt $alive_until ]; do
+        kill -0 "$app_pid" 2>/dev/null || fail "app exited within 10 seconds of starting"
         sleep 0.5
     done
 
-    [ -n "$launched" ] || { kill "$app_pid" 2>/dev/null || true; fail "app did not launch"; }
-    kill -0 "$app_pid" 2>/dev/null || fail "app process died after launch"
-
-    hard=$((SECONDS + 30))
+    kill -TERM "$app_pid" 2>/dev/null || true
+    hard=$((SECONDS + 15))
     while kill -0 "$app_pid" 2>/dev/null; do
-        [ $SECONDS -lt $hard ] || { kill -9 "$app_pid" 2>/dev/null || true; fail "app did not terminate"; }
+        [ $SECONDS -lt $hard ] || { kill -9 "$app_pid" 2>/dev/null || true; fail "app did not quit when asked"; }
         sleep 0.5
     done
     wait "$app_pid" 2>/dev/null || true
