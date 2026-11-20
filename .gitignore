@@ -19,8 +19,14 @@ Resources/Tools/*
 !Resources/Tools/.gitkeep
 Resources/Shield/*
 !Resources/Shield/.gitkeep
+# License texts are written from the pinned sources by scripts/fetch-tools.sh.
+Resources/Licenses/*
+!Resources/Licenses/.gitkeep
 
 # Python tooling
 .venv/
 .ruff_cache/
 .pytest_cache/
+
+# Playwright MCP captures
+.playwright-mcp/

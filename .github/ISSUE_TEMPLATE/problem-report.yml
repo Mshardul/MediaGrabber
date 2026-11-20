@@ -1,0 +1,37 @@
+name: Problem Report
+description: Report a bug or problem with MediaGrabber
+title: "[Problem] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Describe the problem in plain words.
+      placeholder: What did you do, and what went wrong?
+    validations:
+      required: true
+  - type: input
+    id: site
+    attributes:
+      label: Which site
+      description: If the problem is with a specific site, which one?
+      placeholder: e.g. YouTube
+    validations:
+      required: false
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: The version shown in About → version.
+      placeholder: e.g. 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics export
+      description: Export from Preferences → Diagnostics → Share diagnostic bundle. It contains logs and health data — no account or cookie data. Paste the redacted text here, or attach the zip.
+      placeholder: Paste diagnostics export here...
+    validations:
+      required: false

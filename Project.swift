@@ -71,12 +71,12 @@ let project = Project(
             infoPlist: .extendingDefault(with: appInfoPlist),
             sources: ["Sources/App/**"],
             resources: [
-                "PRIVACY.md",
                 "Resources/Fonts/**",
                 "Resources/AppIcon.icns",
                 .folderReference(path: "Resources/Tools"),
                 .folderReference(path: "Resources/Shield"),
-                "Resources/NOTICES.md"
+                .folderReference(path: "Resources/Licenses"),
+                "Resources/Privacy.txt"
             ],
             dependencies: [
                 .target(name: "GrabberKit"),

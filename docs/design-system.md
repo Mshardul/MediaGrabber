@@ -305,7 +305,7 @@ Opens automatically when a resolved link is a playlist, **before** any rows are 
 - **Left rail content** — three group captions, each item highlighted when selected:
   - **General:** Downloads · Appearance · Network
   - **YouTube:** Sign-in & cookies
-  - **System:** Updates · Logs & privacy · Advanced · Diagnostics
+  - **System:** Updates · Logs · Privacy · Licenses · Advanced · Diagnostics
 - **Right pane** — the selected pane. Two-column rows: `label` (13, `--text`, semibold) + optional `helper` (11.5, `--dim`) stacked on the left; control right-aligned; a `--hair` divider between rows. A row with no helper renders label-only. Pane title 20 / heavy in `--headline` with a rule under it, a one-line `--dim` sub above the rule.
 - **Stepless panes** (Sign-in & cookies) render title + sub + one plain-language "coming in a later update" line — no rows, no controls.
 - Diagnostics is a rail item here, not a top-level nav destination (§4.1) — it is a status/support tool a small share of users open, not a page most users need regularly.
@@ -356,13 +356,30 @@ Changing Theme resets `palette` to that theme's default. Both controls apply liv
 
 New `Preferences` fields this pane introduces: `autoCheckAppUpdates: Bool` (default true), `autoCheckYtDlpUpdates: Bool` (default true).
 
-**Logs & privacy** — sub _"What the app records, and where to find it."_
+**Logs** — sub _"What the app records, and where to find it."_
 
 | Label | Helper | Control | Action |
 | --- | --- | --- | --- |
 | Log files | — | button "Show in Finder" | reveal `~/Library/Logs/MediaGrabber` |
 | Verbose logging | More detail for troubleshooting. | toggle | `verboseLogging` |
-| Privacy details | — | button "Open" | open the bundled `PRIVACY.md` externally |
+
+**Privacy** — sub _"What MediaGrabber collects and why."_
+
+| Label | Helper | Control | Action |
+| --- | --- | --- | --- |
+| Privacy statement | — | scrollable, selectable text | shows `Resources/Privacy.txt` |
+
+**Licenses** — sub _"What MediaGrabber is made of."_
+
+| Label | Helper | Control | Action |
+| --- | --- | --- | --- |
+| MediaGrabber | MIT-licensed; each tool keeps its own license | — | — |
+| yt-dlp | Unlicense | button "Read" | opens `yt-dlp.txt` |
+| FFmpeg | LGPL 2.1 or later | button "Read" | opens `ffmpeg.txt` |
+| LAME | LGPL 2.1 or later | button "Read" | opens `lame.txt` |
+| Node | MIT | button "Read" | opens `node.txt` |
+| YouTube check helper | GPL 3.0 only | button "Read" | opens `shield.txt` |
+| Sparkle | MIT | button "Read" | opens `sparkle.txt` |
 
 **Advanced** — sub _"Reset options. These don't touch your downloaded files."_
 

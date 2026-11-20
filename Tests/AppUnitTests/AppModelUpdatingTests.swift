@@ -73,17 +73,30 @@ final class AppModelUpdatingTests: XCTestCase {
         XCTAssertTrue(InstallLocation.updateBlockedMessage.contains("Applications"))
     }
 
-    func test_openNotices_opensTheBundledLicensesFile() throws {
+    func test_openLicenseText_opensTheBundledTextFile() throws {
         let folder = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("mg-notices-\(UUID().uuidString)")
-        let resources = folder.appendingPathComponent("Contents/Resources")
-        try FileManager.default.createDirectory(at: resources, withIntermediateDirectories: true)
-        try Data("licenses".utf8).write(to: resources.appendingPathComponent("NOTICES.md"))
+            .appendingPathComponent("mg-licenses-\(UUID().uuidString)")
+        let licenses = folder.appendingPathComponent("Contents/Resources/Licenses")
+        try FileManager.default.createDirectory(at: licenses, withIntermediateDirectories: true)
+        try Data("lgpl".utf8).write(to: licenses.appendingPathComponent("ffmpeg.txt"))
         defer { try? FileManager.default.removeItem(at: folder) }
         let opener = FakeOpenURLSink()
         let model = AppModelTestHelpers.makeModel(defaults: defaults, logDirectory: logDirectory, openURLSink: opener)
         let bundle = try XCTUnwrap(Bundle(url: folder))
-        model.openNotices(in: bundle)
-        XCTAssertEqual(opener.opened.map(\.lastPathComponent), ["NOTICES.md"])
+        model.openLicenseText(id: "ffmpeg", in: bundle)
+        XCTAssertEqual(opener.opened.map(\.lastPathComponent), ["ffmpeg.txt"])
+    }
+
+    func test_openLicenseText_missingFile_opensNothing() throws {
+        let folder = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("mg-licenses-\(UUID().uuidString)")
+        let licenses = folder.appendingPathComponent("Contents/Resources/Licenses")
+        try FileManager.default.createDirectory(at: licenses, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let opener = FakeOpenURLSink()
+        let model = AppModelTestHelpers.makeModel(defaults: defaults, logDirectory: logDirectory, openURLSink: opener)
+        let bundle = try XCTUnwrap(Bundle(url: folder))
+        model.openLicenseText(id: "ffmpeg", in: bundle)
+        XCTAssertTrue(opener.opened.isEmpty)
     }
 }

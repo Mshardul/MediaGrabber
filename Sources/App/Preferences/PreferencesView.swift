@@ -20,9 +20,11 @@ struct PreferencesView: View {
         case .network: NetworkPane()
         case .cookies: SignInCookiesPane()
         case .updates: UpdatesPane()
-        case .logsPrivacy: LogsPrivacyPane()
+        case .logs: LogsPane()
+        case .privacy: PrivacyPane()
         case .advanced: AdvancedPane()
         case .diagnostics: DiagnosticsPane()
+        case .licenses: LicensesPane()
         }
     }
 }

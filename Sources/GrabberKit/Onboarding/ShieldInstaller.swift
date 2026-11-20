@@ -12,8 +12,6 @@ public struct ShieldInstaller: Sendable {
     private let fileExists: @Sendable (String) -> Bool
     private let bundledServer: URL
     private let bundledPlugin: URL
-    private let supportServer: URL
-    private let supportPlugin: URL
 
     public init(
         runner _: ProcessRunning = ProcessRunner(),
@@ -29,14 +27,11 @@ public struct ShieldInstaller: Sendable {
         let tools = ManagedTools.live(home: home)
         self.bundledServer = bundledServer ?? tools.shieldServer
         self.bundledPlugin = bundledPlugin ?? tools.shieldPlugin
-        let support = home.appendingPathComponent("Library/Application Support/MediaGrabber")
-        supportServer = support.appendingPathComponent("bgutil-server/server/build/main.js")
-        supportPlugin = support.appendingPathComponent("bgutil-plugin.zip")
     }
 
     public func install(onProgress _: @escaping @Sendable (String) -> Void = { _ in }) async -> ShieldInstallOutcome {
-        let serverReady = fileExists(bundledServer.path) || fileExists(supportServer.path)
-        let pluginReady = fileExists(bundledPlugin.path) || fileExists(supportPlugin.path)
+        let serverReady = fileExists(bundledServer.path)
+        let pluginReady = fileExists(bundledPlugin.path)
         if serverReady, pluginReady {
             return .installed
         }

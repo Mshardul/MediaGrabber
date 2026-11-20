@@ -12,7 +12,10 @@ final class PreferencesPaneTests: XCTestCase {
     func test_railOrder() {
         XCTAssertEqual(PreferencesRailGroup.general.panes, [.downloads, .appearance, .network])
         XCTAssertEqual(PreferencesRailGroup.youtube.panes, [.cookies])
-        XCTAssertEqual(PreferencesRailGroup.system.panes, [.updates, .logsPrivacy, .advanced, .diagnostics])
+        XCTAssertEqual(
+            PreferencesRailGroup.system.panes,
+            [.updates, .logs, .privacy, .licenses, .advanced, .diagnostics]
+        )
     }
 
     func test_pageDeepLinkDefault() {
@@ -21,7 +24,8 @@ final class PreferencesPaneTests: XCTestCase {
 
     func test_titles() {
         XCTAssertEqual(PreferencesPane.cookies.title, "Sign-in & cookies")
-        XCTAssertEqual(PreferencesPane.logsPrivacy.title, "Logs & privacy")
+        XCTAssertEqual(PreferencesPane.logs.title, "Logs")
+        XCTAssertEqual(PreferencesPane.privacy.title, "Privacy")
     }
 
     func test_cookieSourceDisplayNames() {

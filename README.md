@@ -50,6 +50,8 @@ Then drag MediaGrabber from Applications to the Trash.
 
 **Preferences → Diagnostics → Share diagnostic bundle** sends a report through the Mac share sheet. Logs stay on your Mac unless you share them. [PRIVACY.md](PRIVACY.md) says what they contain.
 
+**Report a problem** — [use the issue form](.github/ISSUE_TEMPLATE/problem-report.yml) to tell us what happened, which site, and the app version. Include a Diagnostics export if you can; it contains logs and health data, no account or cookie data.
+
 ## License
 
 MIT.

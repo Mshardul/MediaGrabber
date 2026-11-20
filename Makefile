@@ -7,7 +7,7 @@ INSTALLED := /Applications/$(APP_NAME).app
 LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
 .DEFAULT_GOAL := run
-.PHONY: generate build install drop-build-app run plugin-test test lint venv tools tools-test appcast-test release release-patch release-minor release-major release-dry-run release-overwrite site-deploy
+.PHONY: generate build install drop-build-app run plugin-test test lint venv tools tools-test appcast-test release-assets-test release-scripts-test e2e release release-patch release-minor release-major release-dry-run release-overwrite site-deploy
 
 tools:
 	scripts/fetch-tools.sh
@@ -17,6 +17,22 @@ tools-test:
 
 appcast-test:
 	scripts/tests/test_appcast.sh $(PY)
+
+release-assets-test:
+	scripts/tests/test_release_assets.sh
+
+release-scripts-test:
+	scripts/tests/test_publish_release.sh
+	scripts/tests/test_check_feed.sh
+	scripts/tests/test_check_signature.sh
+
+e2e:
+	$(MAKE) build CONFIG=Release
+	app="$(abspath $(DERIVED))/Build/Products/Release/$(APP_NAME).app" ; \
+		scripts/sign-app.sh "$$app" - && scripts/e2e/run.sh "$$app" ; \
+		status=$$? ; \
+		$(MAKE) --no-print-directory drop-build-app ; \
+		exit $$status
 
 generate:
 	mise exec -- tuist generate --no-open
@@ -61,7 +77,7 @@ plugin-test:
 	$(PY) -I -B -m unittest discover -s Tests/PluginTests -p 'test_*.py'
 
 # make test [ONLY=AppUnitTests/SomeSuite]; builds into the same build/ dir as `make`, never DerivedData.
-test: plugin-test tools-test appcast-test generate
+test: plugin-test tools-test appcast-test release-assets-test release-scripts-test generate
 	xcodebuild -workspace $(APP_NAME).xcworkspace -scheme $(APP_NAME)-Workspace \
 		-destination 'platform=macOS' \
 		-derivedDataPath $(DERIVED) \
@@ -94,8 +110,21 @@ release:
 	@test "`git rev-parse HEAD`" = "`git rev-parse origin/main`" || { echo "local main != origin/main — push or pull first"; exit 1; }
 	@next=$$(scripts/bump-version.sh $(CURRENT_VERSION) $(BUMP)) || exit 1 ; \
 		echo "$(CURRENT_VERSION)  ->  $$next" ; \
-		read -p "tag v$$next and push? [y/N] " ok ; \
-		[ "$$ok" = y ] || { echo aborted; exit 1; } ; \
+		trigger="$$(date -u +%Y-%m-%dT%H:%M:%SZ)" ; \
+		gh workflow run release.yml -f version=$$next -f dry_run=true >/dev/null ; \
+		id="" ; \
+		for i in $$(seq 1 30); do \
+			id="$$(gh run list --workflow release.yml --json databaseId,event,createdAt -q '[.[] | select(.event=="workflow_dispatch" and .createdAt > "'"$$trigger"'")] | .[0].databaseId // empty' 2>/dev/null)" ; \
+			[ -n "$$id" ] && break ; \
+			sleep 5 ; \
+		done ; \
+		[ -n "$$id" ] || { echo "no dry-run workflow found"; exit 1; } ; \
+		gh run watch $$id --exit-status || { echo "dry-run release failed"; exit 1; } ; \
+		cat docs/release-checklist.md ; \
+		read -p "type yes to proceed: " ok ; \
+		[ "$$ok" = yes ] || { echo aborted; exit 1; } ; \
+		read -p "tag v$$next and push? [y/N] " confirm ; \
+		[ "$$confirm" = y ] || { echo aborted; exit 1; } ; \
 		git tag -a "v$$next" -m "MediaGrabber v$$next" ; \
 		git push origin "v$$next" ; \
 		echo "pushed v$$next — CI builds the release now"

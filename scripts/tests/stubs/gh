@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# A stand-in for the GitHub CLI used by test_publish_release.sh.
+# Logs every call, and answers listings from files in MG_GH_STATE.
+set -euo pipefail
+
+printf '%s\n' "$*" >> "${MG_GH_LOG:?MG_GH_LOG is required}"
+state="${MG_GH_STATE:?MG_GH_STATE is required}"
+
+case "$1" in
+    release)
+        case "$2" in
+            list)
+                cat "$state/drafts" 2>/dev/null || true
+                ;;
+            view)
+                if [ "${4:-}" = "--json" ]; then
+                    case "${5:-}" in
+                        databaseId) cat "$state/id" 2>/dev/null || echo 1 ;;
+                        assets) cat "$state/assets" 2>/dev/null || true ;;
+                        *) exit 0 ;;
+                    esac
+                else
+                    [ -f "$state/existing" ] && exit 0 || exit 1
+                fi
+                ;;
+            create|delete)
+                exit 0
+                ;;
+            *) exit 0 ;;
+        esac
+        ;;
+    *) exit 0 ;;
+esac

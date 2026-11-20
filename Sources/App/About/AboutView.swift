@@ -197,7 +197,7 @@ private struct AboutTabView: View {
             subtitle: "The downloader, media tools, Node, and the YouTube check are part of the app.",
             trailing: AnyView(
                 textButton("Read licenses") {
-                    appModel.openNotices()
+                    appModel.showLicenses()
                 }
             )
         )

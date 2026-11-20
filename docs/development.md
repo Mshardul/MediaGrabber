@@ -35,4 +35,8 @@ make lint
 
 `-MGForceOnboarding`, `-MGResetState`, `-MGConcurrencyCap N`.
 
+## Release
+
+`make e2e` builds Release, signs, and runs `scripts/e2e/run.sh` end-to-end. Release scripts live in `scripts/release/`; `make release-dry-run VERSION=X.Y.Z` runs the full pipeline through CI without publishing; `make release-patch | release-minor | release-major` runs the dry run, prints `docs/release-checklist.md`, requires a literal `yes`, then tags and pushes. `release-notes/X.Y.Z.md` is required before a version is accepted.
+
 How the pieces fit: [architecture.md](architecture.md) and [state-flow.md](state-flow.md). What is left to ship: [roadmap.md](../roadmap.md).

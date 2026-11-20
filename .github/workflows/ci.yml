@@ -28,6 +28,11 @@ jobs:
       - uses: actions/checkout@v4
       - run: scripts/tests/test_bump_version.sh
       - run: scripts/tests/test_current_version.sh
+      - run: scripts/tests/test_fetch_tools.sh
+      - run: scripts/tests/test_release_assets.sh
+      - run: scripts/tests/test_publish_release.sh
+      - run: scripts/tests/test_check_feed.sh
+      - run: scripts/tests/test_check_signature.sh
 
   test:
     strategy:

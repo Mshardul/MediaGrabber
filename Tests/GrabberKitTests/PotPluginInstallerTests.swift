@@ -38,41 +38,25 @@ final class PotPluginInstallerTests: XCTestCase {
         XCTAssertEqual(launch?.arguments, [mainJS.path, "--host", "127.0.0.1", "--port", "4416"])
     }
 
-    func testFallsBackToNodeAndAppSupportMainJS() {
+    func testIgnoresALeftoverAppSupportServer() {
         let node = URL(fileURLWithPath: "/bundle/Resources/Tools/node")
         let mainJS = home.appendingPathComponent(
             "Library/Application Support/MediaGrabber/bgutil-server/server/build/main.js"
         )
         let sut = installer(executable: [node.path], existing: [node.path, mainJS.path])
         let launch = sut.resolveServerLaunch(port: 4420)
-        XCTAssertEqual(launch?.executableURL, node)
-        XCTAssertEqual(
-            launch?.arguments,
-            [mainJS.path, "--host", "127.0.0.1", "--port", "4420"]
-        )
+        XCTAssertNil(launch)
     }
 
-    func testPluginDirsCopiesYtDlpPluginsBesideMainJS() {
-        let node = URL(fileURLWithPath: "/bundle/Resources/Tools/node")
-        let mainJS = home.appendingPathComponent(
-            "Library/Application Support/MediaGrabber/bgutil-server/server/build/main.js"
-        )
-        let plugins = home.appendingPathComponent(
-            "Library/Application Support/MediaGrabber/bgutil-server/yt_dlp_plugins"
-        )
+    func testPluginDirsUsesBundledZip() {
+        let zip = URL(fileURLWithPath: "/bundle/Resources/Shield/plugin.zip")
         let store = FakePluginStore()
-        store.files = [plugins.path]
-        let sut = installer(
-            executable: [node.path],
-            existing: [node.path, mainJS.path, plugins.path],
-            store: store
-        )
+        store.files = [zip.path]
+        let sut = installer(existing: [zip.path], store: store)
         let dirs = sut.pluginDirs()
         let dest = home.appendingPathComponent(
             "Library/Application Support/MediaGrabber/yt-dlp-plugins"
         )
         XCTAssertEqual(dirs, [dest])
-        XCTAssertEqual(store.copies.map(\.from), [plugins])
-        XCTAssertEqual(store.copies.map(\.to.path), [dest.appendingPathComponent("yt_dlp_plugins").path])
     }
 }

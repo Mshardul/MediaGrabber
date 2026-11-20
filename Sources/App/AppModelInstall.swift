@@ -18,9 +18,17 @@ extension AppModel {
         appUpdating.start(automaticChecks: prefs.autoCheckAppUpdates)
     }
 
-    func openNotices(in bundle: Bundle = .main) {
-        guard let notices = bundle.url(forResource: "NOTICES", withExtension: "md") else { return }
-        openURLSink.open(notices)
+    func showLicenses() {
+        page = .preferences(.licenses)
+    }
+
+    func openLicenseText(id: String, in bundle: Bundle = .main) {
+        guard let text = bundle.url(
+            forResource: id,
+            withExtension: "txt",
+            subdirectory: "Licenses"
+        ) else { return }
+        openURLSink.open(text)
     }
 
     func setAutomaticUpdateChecks(_ enabled: Bool) {

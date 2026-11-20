@@ -30,4 +30,18 @@ final class ShieldInstallerTests: XCTestCase {
         XCTAssertEqual(outcome, .failed(detail: "This copy of the app doesn't include the YouTube check."))
         XCTAssertTrue(runner.launches.isEmpty)
     }
+
+    func testLeftoverSupportFilesDoNotCountAsInstalled() async {
+        let runner = FakeProcessRunner()
+        let home = URL(fileURLWithPath: "/tmp/mg-shield-home")
+        let support = home.appendingPathComponent("Library/Application Support/MediaGrabber")
+        let leftovers: Set<String> = [
+            support.appendingPathComponent("bgutil-server/server/build/main.js").path,
+            support.appendingPathComponent("bgutil-plugin.zip").path
+        ]
+        let installer = ShieldInstaller(runner: runner, home: home, fileExists: { leftovers.contains($0) })
+        let outcome = await installer.install()
+        XCTAssertEqual(outcome, .failed(detail: "This copy of the app doesn't include the YouTube check."))
+        XCTAssertTrue(runner.launches.isEmpty)
+    }
 }

@@ -4,7 +4,9 @@ enum PreferencesPane: String, CaseIterable, Hashable {
     case network
     case cookies
     case updates
-    case logsPrivacy
+    case logs
+    case privacy
+    case licenses
     case advanced
     case diagnostics
 
@@ -15,9 +17,11 @@ enum PreferencesPane: String, CaseIterable, Hashable {
         case .network: "Network"
         case .cookies: "Sign-in & cookies"
         case .updates: "Updates"
-        case .logsPrivacy: "Logs & privacy"
+        case .logs: "Logs"
+        case .privacy: "Privacy"
         case .advanced: "Advanced"
         case .diagnostics: "Diagnostics"
+        case .licenses: "Licenses"
         }
     }
 
@@ -33,12 +37,16 @@ enum PreferencesPane: String, CaseIterable, Hashable {
             "Sign in to reach private or age-restricted videos on sites that need it."
         case .updates:
             "Check for new versions of the app and the downloader."
-        case .logsPrivacy:
+        case .logs:
             "What the app records, and where to find it."
+        case .privacy:
+            "What MediaGrabber collects and why."
         case .advanced:
             "Reset options. These don't touch your downloaded files."
         case .diagnostics:
             "Check the app's health when something looks wrong."
+        case .licenses:
+            "What MediaGrabber is made of."
         }
     }
 
@@ -46,7 +54,7 @@ enum PreferencesPane: String, CaseIterable, Hashable {
         switch self {
         case .downloads, .appearance, .network: .general
         case .cookies: .youtube
-        case .updates, .logsPrivacy, .advanced, .diagnostics: .system
+        case .updates, .logs, .privacy, .advanced, .diagnostics, .licenses: .system
         }
     }
 }

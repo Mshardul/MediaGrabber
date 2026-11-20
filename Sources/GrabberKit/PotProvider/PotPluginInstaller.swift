@@ -63,37 +63,11 @@ public struct PotPluginInstaller: Sendable {
     }
 
     private func nodeEntry() -> URL? {
-        if let bundled = existing(tools.shieldServer) {
-            return bundled
-        }
-        return existing(appSupportMainJS)
-    }
-
-    private var appSupportMainJS: URL {
-        home.appendingPathComponent(
-            "Library/Application Support/MediaGrabber/bgutil-server/server/build/main.js"
-        )
+        existing(tools.shieldServer)
     }
 
     private func pluginSource() -> URL? {
-        if let zip = existing(tools.shieldPlugin) {
-            return zip
-        }
-        if let fromJS = nodeEntry().flatMap(pluginsBesideMainJS), fileExists(fromJS) {
-            return fromJS
-        }
-        let zip = home.appendingPathComponent(
-            "Library/Application Support/MediaGrabber/bgutil-plugin.zip"
-        )
-        return existing(zip)
-    }
-
-    private func pluginsBesideMainJS(_ mainJS: URL) -> URL {
-        mainJS
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .appendingPathComponent("yt_dlp_plugins")
+        existing(tools.shieldPlugin)
     }
 
     private func existing(_ url: URL) -> URL? {

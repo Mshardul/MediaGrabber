@@ -6,7 +6,6 @@ import socket
 import tempfile
 import unittest
 from unittest import mock
-from urllib.parse import parse_qs
 
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.common import InfoExtractor
@@ -43,78 +42,6 @@ def load_plugin():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
-
-
-def page(data):
-    return f"<html><script>window.__data__ = {json.dumps(data)};</script></html>"
-
-
-class FakeZoom:
-    def __init__(
-        self,
-        plugin,
-        passcode="secret",
-        share_info=None,
-        component=None,
-        validation=None,
-        share_page=None,
-    ):
-        self.share_page = share_page
-        self.calls = []
-        self.bodies = {}
-        self.share_info = share_info or {
-            "componentName": "need-password",
-            "meetingId": "MEET",
-            "redirectUrl": "/rec/component-page",
-            "accessLevel": "meeting",
-        }
-        self.component = component or {
-            "meeting_id": "ENC",
-            "fileId": "",
-            "action": "viewdetailpage",
-            "useWhichPasswd": "meeting",
-            "sharelevel": "meeting",
-            "needRecaptcha": False,
-        }
-        self.validation = {"status": True} if validation is None else validation
-        self.share_info_count = 0
-        params = {"quiet": True, "no_warnings": True}
-        if passcode is not None:
-            params["videopassword"] = passcode
-        self.ie = plugin.ZoomIE(YoutubeDL(params))
-        self.ie._download_webpage = self.download_webpage
-        self.ie._download_json = self.download_json
-
-    def url_of(self, request):
-        return getattr(request, "url", request)
-
-    def download_webpage(self, request, video_id, note=None, headers=None, **kwargs):
-        url = self.url_of(request)
-        self.calls.append(url)
-        if url == SHARE_URL:
-            return self.share_page or page({"meetingId": "MEET"})
-        if "component-page" in url:
-            return page(self.component)
-        if "csrf_js" in url:
-            return "ZOOM-CSRFTOKEN:TOKEN-1234"
-        raise AssertionError(f"unexpected webpage request {url}")
-
-    def download_json(self, url, video_id, note=None, data=None, headers=None, **kwargs):
-        self.calls.append(url)
-        if "share-info" in url:
-            self.share_info_count += 1
-            if self.share_info_count == 1:
-                return {"result": self.share_info}
-            return {"result": {"redirectUrl": "/rec/play/FILE?accessLevel=meeting"}}
-        if "validate-context" in url:
-            return {"status": True}
-        if "validate-meeting-passwd" in url:
-            self.bodies["passwd"] = parse_qs(data.decode())
-            return self.validation
-        raise AssertionError(f"unexpected json request {url}")
-
-    def count(self, fragment):
-        return sum(1 for call in self.calls if fragment in call)
 
 
 class PacingTests(unittest.TestCase):
@@ -185,113 +112,166 @@ class PacingTests(unittest.TestCase):
         self.assertEqual(order, ["pace", "send", "pace", "send"])
 
 
+UNIFIED_PAGE = (
+    "<html><script>window.__zm_unified_player__ = {\n"
+    "enableUseCommonZak: false,\n"
+    'apiDomain: "https://us06web.zoom.us",\n'
+    'playInfoApi: "\\/nws\\/recording\\/2.0\\/share\\/UUID-1?pageType=web&startTime=5",\n'
+    'featureConfigApi: "\\/nws\\/recording\\/2.0\\/share\\/UUID-1\\/feature-config?pageType=web"\n'
+    "};</script></html>"
+)
+PLAY_URL = "https://ssrweb.zoom.us/replay02/2026/11/14/UUID-1/GMT20261114-121249_Recording_1920x1080.mp4"
+LOCKED = {"status": True, "result": {"middlePageInfo": {"pageType": "verifyPasscode"}}}
+UNLOCKED = {
+    "status": True,
+    "result": {
+        "mediaInfo": {
+            "mediaTopic": "Business Valuation",
+            "mediaDuration": 14804,
+            "createdTime": 1794658367000,
+            "ownerName": "EMBA Office",
+            "playUrl": PLAY_URL + "?sig=1",
+        }
+    },
+}
+
+
+class FakeZoom:
+    def __init__(self, plugin, passcode="secret", responses=None, verify=None, share_page=UNIFIED_PAGE):
+        self.calls = []
+        self.verify_body = None
+        self.verify_headers = None
+        self.responses = list(responses if responses is not None else [LOCKED, UNLOCKED])
+        self.verify = {"status": True} if verify is None else verify
+        self.share_page = share_page
+        params = {"quiet": True, "no_warnings": True}
+        if passcode is not None:
+            params["videopassword"] = passcode
+        self.ie = plugin.ZoomIE(YoutubeDL(params))
+        self.ie._download_webpage = self.download_webpage
+        self.ie._download_json = self.download_json
+
+    def download_webpage(self, request, video_id, note=None, headers=None, **kwargs):
+        url = getattr(request, "url", request)
+        self.calls.append(url)
+        if url == SHARE_URL:
+            return self.share_page
+        if "csrf_js" in url:
+            return "ZOOM-CSRFTOKEN:TOKEN-1234"
+        raise AssertionError(f"unexpected webpage request {url}")
+
+    def download_json(self, url, video_id, note=None, data=None, headers=None, **kwargs):
+        self.calls.append(url)
+        if "verify-passcode" in url:
+            self.verify_body = json.loads(data)
+            self.verify_headers = headers
+            return self.verify
+        if "/nws/recording/2.0/share/UUID-1?" in url:
+            return self.responses.pop(0)
+        raise AssertionError(f"unexpected json request {url}")
+
+    def count(self, fragment):
+        return sum(1 for call in self.calls if fragment in call)
+
+
 class ShareFlowTests(unittest.TestCase):
     def setUp(self):
         self.plugin = load_plugin()
 
-    def test_missing_passcode_raises_the_stock_sentence_without_validating(self):
+    def test_passcode_flow_reads_the_recording_from_the_play_info(self):
+        fake = FakeZoom(self.plugin)
+        info = fake.ie._real_extract(SHARE_URL)
+        self.assertEqual(info["id"], "TOKEN.ABC")
+        self.assertEqual(info["title"], "GMT20261114-121249_Recording_1920x1080")
+        self.assertEqual(info["duration"], 14804)
+        self.assertEqual(info["timestamp"], calendar.timegm((2026, 11, 14, 12, 12, 49)))
+        self.assertEqual([fmt["url"] for fmt in info["formats"]], [PLAY_URL + "?sig=1"])
+        self.assertEqual(info["http_headers"], {"Referer": BASE})
+        self.assertEqual((info["formats"][0]["width"], info["formats"][0]["height"]), (1920, 1080))
+
+    def test_requests_go_to_the_api_domain_in_order(self):
+        fake = FakeZoom(self.plugin)
+        fake.ie._real_extract(SHARE_URL)
+        api = "https://us06web.zoom.us/nws/recording/2.0/share/UUID-1"
+        self.assertEqual(
+            fake.calls,
+            [
+                SHARE_URL,
+                f"{api}?pageType=web&startTime=5",
+                f"{BASE}csrf_js?t_x_zm_rid=1",
+                f"{api}/verify-passcode?pageType=web&startTime=5",
+                f"{api}?pageType=web&startTime=5",
+            ],
+        )
+
+    def test_passcode_is_sent_as_json_with_the_csrf_token(self):
+        fake = FakeZoom(self.plugin, passcode="-ab c+")
+        fake.ie._real_extract(SHARE_URL)
+        self.assertEqual(fake.verify_body, {"passwd": "-ab c+"})
+        self.assertEqual(fake.verify_headers["zoom-csrftoken"], "TOKEN-1234")
+
+    def test_missing_passcode_raises_the_stock_sentence_without_verifying(self):
         fake = FakeZoom(self.plugin, passcode=None)
         with self.assertRaisesRegex(ExtractorError, "protected by a passcode"):
             fake.ie._real_extract(SHARE_URL)
-        self.assertEqual(fake.count("validate-meeting-passwd"), 0)
+        self.assertEqual(fake.count("verify-passcode"), 0)
 
     def test_rejected_passcode_raises_once_and_sends_one_attempt(self):
-        fake = FakeZoom(self.plugin, validation={"status": False})
+        fake = FakeZoom(self.plugin, verify={"status": False, "errorCode": 3302, "errorMessage": "Wrong passcode", "result": None})
         with self.assertRaisesRegex(ExtractorError, "Zoom rejected the passcode"):
             fake.ie._real_extract(SHARE_URL)
-        self.assertEqual(fake.count("validate-meeting-passwd"), 1)
+        self.assertEqual(fake.count("verify-passcode"), 1)
 
-    def test_captcha_page_raises_before_any_passcode_is_sent(self):
-        component = {
-            "meeting_id": "ENC",
-            "fileId": "",
-            "action": "viewdetailpage",
-            "useWhichPasswd": "meeting",
-            "sharelevel": "meeting",
-            "needRecaptcha": True,
-        }
-        fake = FakeZoom(self.plugin, component=component)
-        with self.assertRaisesRegex(ExtractorError, "confirm you're not a bot"):
+    def test_recording_without_a_passcode_skips_csrf_and_verify(self):
+        fake = FakeZoom(self.plugin, passcode=None, responses=[UNLOCKED])
+        info = fake.ie._real_extract(SHARE_URL)
+        self.assertEqual(info["title"], "GMT20261114-121249_Recording_1920x1080")
+        self.assertEqual(fake.count("csrf_js"), 0)
+        self.assertEqual(fake.count("verify-passcode"), 0)
+
+    def test_expired_recording_says_no_longer_available(self):
+        gone = {"status": False, "errorMessage": "This recording has expired.", "result": {}}
+        fake = FakeZoom(self.plugin, passcode=None, responses=[gone])
+        with self.assertRaisesRegex(ExtractorError, "This Zoom recording is no longer available"):
             fake.ie._real_extract(SHARE_URL)
-        self.assertEqual(fake.count("validate-meeting-passwd"), 0)
 
-    def test_accepted_passcode_hands_the_play_url_to_the_stock_extractor(self):
-        fake = FakeZoom(self.plugin)
-        with mock.patch.object(
-            BaseZoomIE, "_real_extract", return_value={"id": "file-id"}
-        ) as stock:
-            info = fake.ie._real_extract(SHARE_URL)
-        stock.assert_called_once_with("https://example.zoom.us/rec/play/FILE?accessLevel=meeting")
-        self.assertEqual(info["id"], "TOKEN.ABC")
+    def test_play_info_with_no_recording_and_no_message_says_zoom_changed(self):
+        fake = FakeZoom(self.plugin, passcode=None, responses=[{"status": True, "result": {}}])
+        with self.assertRaisesRegex(ExtractorError, "Zoom changed how its recordings work"):
+            fake.ie._real_extract(SHARE_URL)
 
-    def _extract_with_formats(self, *file_names):
+    def test_a_topic_title_is_kept_when_the_file_name_has_no_zoom_pattern(self):
+        media = {"mediaTopic": "Business Valuation", "playUrl": "https://ssrweb.zoom.us/x/video.mp4?s=1"}
+        fake = FakeZoom(
+            self.plugin, passcode=None, responses=[{"status": True, "result": {"mediaInfo": media}}]
+        )
+        self.assertEqual(fake.ie._real_extract(SHARE_URL)["title"], "Business Valuation")
+
+    def test_title_and_timestamp_come_from_the_zoom_file_name_of_a_play_link(self):
         fake = FakeZoom(self.plugin)
-        formats = [
-            {
-                "url": f"https://ssrweb.zoom.us/cmr/replay/2026/10/31/ABC/{name}.mp4?data=1&s=2",
-                "preference": rank,
-            }
-            for rank, name in enumerate(file_names)
-        ]
+        formats = [{"url": f"https://ssrweb.zoom.us/cmr/{name}.mp4?s=2", "preference": rank} for rank, name in enumerate(
+            ["GMT20261031-105457_Recording_1760x900", "GMT20261031-105457_Recording_gallery_1920x1080"]
+        )]
         stock_info = {"id": "file-id", "title": "Product & Brand Management", "formats": formats}
         with mock.patch.object(BaseZoomIE, "_real_extract", return_value=stock_info):
-            return fake.ie._real_extract(SHARE_URL)
-
-    def test_title_and_timestamp_come_from_the_zoom_file_name(self):
-        info = self._extract_with_formats("GMT20261031-105457_Recording_1760x900")
-        self.assertEqual(info["title"], "GMT20261031-105457_Recording_1760x900")
-        self.assertEqual(info["timestamp"], calendar.timegm((2026, 10, 31, 10, 54, 57)))
-
-    def test_the_best_ranked_format_names_the_recording(self):
-        info = self._extract_with_formats(
-            "GMT20261031-105457_Recording_1760x900",
-            "GMT20261031-105457_Recording_gallery_1920x1080",
-        )
+            info = fake.ie._real_extract("https://example.zoom.us/rec/play/ABC")
         self.assertEqual(info["title"], "GMT20261031-105457_Recording_gallery_1920x1080")
-
-    def test_a_file_name_without_the_zoom_pattern_keeps_the_topic_title(self):
-        info = self._extract_with_formats("something-else")
-        self.assertEqual(info["title"], "Product & Brand Management")
-        self.assertNotIn("timestamp", info)
-
-    def test_passcode_with_leading_dash_and_space_is_sent_unchanged(self):
-        fake = FakeZoom(self.plugin, passcode="-ab c+")
-        with mock.patch.object(BaseZoomIE, "_real_extract", return_value={"id": "x"}):
-            fake.ie._real_extract(SHARE_URL)
-        self.assertEqual(fake.bodies["passwd"]["passwd"], ["-ab c+"])
+        self.assertEqual(info["timestamp"], calendar.timegm((2026, 10, 31, 10, 54, 57)))
+        self.assertEqual(fake.calls, [])
 
     def test_zoom_error_page_for_a_missing_recording_says_no_longer_available(self):
         error_page = (
-            '<html><head><title>Error - Zoom</title></head><body><div class="error-container">'
-            '<span class="error-message"> This recording does not exist. (3,301) '
-            "</span></div></body></html>"
+            '<html><div class="error-container"><span class="error-message">'
+            " This recording does not exist. (3,301) </span></div></html>"
         )
         fake = FakeZoom(self.plugin, share_page=error_page)
         with self.assertRaisesRegex(ExtractorError, "This Zoom recording is no longer available"):
             fake.ie._real_extract(SHARE_URL)
-        self.assertEqual(fake.count("share-info"), 0)
 
-    def test_other_zoom_error_page_quotes_zoom_without_the_code(self):
-        error_page = (
-            '<html><span class="error-message"> Something odd happened. (9,999) </span></html>'
-        )
-        fake = FakeZoom(self.plugin, share_page=error_page)
-        with self.assertRaisesRegex(
-            ExtractorError, r"^Zoom could not show this recording: Something odd happened\.$"
-        ):
-            fake.ie._real_extract(SHARE_URL)
-
-    def test_page_with_no_data_and_no_error_message_says_zoom_changed(self):
+    def test_page_with_no_player_and_no_error_message_says_zoom_changed(self):
         fake = FakeZoom(self.plugin, share_page="<html><body>nothing useful</body></html>")
         with self.assertRaisesRegex(ExtractorError, "Zoom changed how its recordings work"):
             fake.ie._real_extract(SHARE_URL)
-
-    def test_non_share_url_goes_straight_to_the_stock_extractor(self):
-        fake = FakeZoom(self.plugin)
-        with mock.patch.object(BaseZoomIE, "_real_extract", return_value={"id": "play"}) as stock:
-            fake.ie._real_extract("https://example.zoom.us/rec/play/ABC")
-        stock.assert_called_once()
-        self.assertEqual(fake.calls, [])
 
 
 if __name__ == "__main__":
