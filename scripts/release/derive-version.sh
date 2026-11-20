@@ -17,3 +17,6 @@ if [[ ! -s "$notes" ]]; then
     exit 1
 fi
 printf '%s\n' "$version"
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+    printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+fi

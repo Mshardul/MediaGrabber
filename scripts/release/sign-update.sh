@@ -46,3 +46,6 @@ python3 "$root/scripts/appcast.py" \
     --notes "https://github.com/Mshardul/MediaGrabber/releases/tag/v${version}" \
     --out "$assets/appcast.xml"
 echo "ok   - signed the disk image and wrote appcast.xml"
+if [ -n "${GITHUB_OUTPUT:-}" ]; then
+    echo "signed=true" >> "$GITHUB_OUTPUT"
+fi
