@@ -34,6 +34,10 @@ A test fails when source code outside `AppLocations` reads `homeDirectoryForCurr
 
 The end-to-end script sets `MG_HOME` to its temporary home when it starts the app, and checks that `app.launched` appears in the log under that home, in addition to the app staying alive.
 
-## 5. Dependencies
+## 5. Process spawning and dead surface
+
+The yt-dlp version check that runs at launch goes through `ProcessRunner`, asynchronously and with a timeout, so a slow binary cannot hold up launch. The app-relaunch helper starts a detached waiter that opens the app only after this process has exited, so the waiter must outlive the app and two copies never share the queue files; it is the one place besides `ProcessRunner` that starts a process, and `CLAUDE.md` says so. The Shield installer drops the parameters it accepts and ignores, and the onboarding progress wiring built around them.
+
+## 6. Dependencies
 
 The release-hardening phase's end-to-end script exists. The product page's screenshot script and the test review use the home setting.

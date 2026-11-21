@@ -282,6 +282,10 @@ final class AppModel {
 }
 
 extension AppModel {
+    func navigateToPreferences(_ pane: PreferencesPane) {
+        page = .preferences(pane)
+    }
+
     func onAppear() async {
         guard !didRunLaunchSetup else { return }
         didRunLaunchSetup = true

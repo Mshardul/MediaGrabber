@@ -1,0 +1,16 @@
+# Review: preferences, About and onboarding (`Sources/App/Preferences`, `Sources/App/About`, `Sources/App/Onboarding`)
+
+Source: `/code-review high`. Every item below was checked by reading the cited code. The app was not run.
+
+## Confirmed
+
+1. `DeveloperView.swift:5`, `repoName` is `"Tools"`, so Source code, Report an issue and License open `github.com/Mshardul/Tools/...`. The project's repo is `Mshardul/MediaGrabber`. The file's own comment calls the links placeholders.
+2. `AboutView.swift:24`, `AboutViewModel.updateYtDlp()` discards the `updateToLatest()` result and never re-probes. `environmentReport` is `private(set)` and set once at init. After an update the row keeps "update available" with the Update button enabled, and a failed update shows nothing. `AppModel.restartYtDlp` (`AppModelDiagnostics.swift:21`) already does the update, re-probe, health refresh and failure toast.
+3. `DiagnosticsPane.swift:336`, `makeModel()` runs once and uses `UnavailableMetadataProbe` when `latestEnvironmentReport?.ytDlp` is nil. `runCheck` (`DiagnosticsPane*.swift:112`) runs the canary with that stand-in first, so Test run shows "failed" even though the environment probe right after finds yt-dlp. The probe also keeps the path it was built with after the downloader is updated.
+4. `OnboardingView.swift:32` calls only `installer.check()`. When the tools are missing, `check()` leaves the test-run step `.pending`; the row's `actions(for:)` shows no button for a pending test run and no reason is set, so the screen stays locked with no explanation. (The reviewer's second claim, that the Continue hint is false when the canary fails, does not hold: the hint is shown only while Continue is disabled.)
+5. `AboutView.swift:150`, `case .current, nil` draws the downloader row in the OK colour. `ytDlpDriftVerdict` is nil exactly when yt-dlp is not found, so the row shows "not found" as a success.
+6. `CookiePaneModel.swift:92`, `testSignIn()` writes `signInTest` after its `await` without checking that `source` is unchanged. The `source` setter resets `signInTest` to `.idle`, so the old browser's result is shown under the new selection and a second test can start.
+7. `AppModelDiagnostics.swift:51`, `resetAllSettings()` only calls `prefs.resetToDefaults()`, which removes `mg.autoCheckAppUpdates`. Only `UpdatesPane`'s `onChange` calls `setAutomaticUpdateChecks`, so Sparkle keeps the old value while the Updates pane shows the default.
+8. `LogsPane.swift:28`, `verboseLogging` is read nowhere except the pane's toggle and `Preferences`; `LogWriter.minLevel` is never set from it. `autoCheckYtDlpUpdates` (the "Notify when the downloader is outdated" toggle, `UpdatesPane.swift:30`) is read nowhere except its own pane. The second one is the existing backlog ticket for the dead toggle.
+9. `SignInCookiesPane.swift:270`, with "Only these sites" and no sites the pane says "Cookies go nowhere until you add a site", but it has no add control, only Remove. Sites are added from a failed row (`AppModelRowActions.swift:71`). `CookiePaneModel` copies `signInSites` at init and writes the whole array back on change, so a site added elsewhere while the pane is open is overwritten by the next Remove.
+10. Comment rule: stacked `//` lines in `AppLogReader.swift:4-5` and `DiagnosticsPane.swift:368-369`, and commented-out code in `DeveloperView.swift:8-10`.

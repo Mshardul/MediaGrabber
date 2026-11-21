@@ -8,7 +8,7 @@
 
 **Tech Stack:** bash, Python 3 (stdlib only for the fixture server), Swift script with CryptoKit, Swift 6 / XCTest, Tuist, GitHub Actions.
 
-**Spec:** `docs/superpowers/specs/2026-11-17-media-grabber-phase-21-release-hardening-design.md`
+**Spec:** `docs/superpowers/specs/archived/2026-11-17-media-grabber-phase-21-release-hardening-design.md`
 
 No git commands anywhere. Each task ends at its gate (`make lint` plus the named tests, all green) and hands the files to the user. Use `make` only, never `xcodebuild`. Comments are single-line and explain why only; no `///`; no phase, ticket or spec-section references in source or UI copy.
 
@@ -139,7 +139,7 @@ No git commands anywhere. Each task ends at its gate (`make lint` plus the named
 - Consumes: every script from Tasks 2 to 4.
 
 - [x] **Step 1: Rewrite the job** so each step is one call, in this order: `derive-version.sh`; the existing main-ancestor check; tool fetch; build; locate and sign; `verify-app.sh`; `scripts/e2e/run.sh` on the signed app; `package-dmg.sh` (assets folder with the disk image, sources and `SHA256SUMS`); `verify-dmg.sh`; `sign-update.sh`; `check-signature.sh`; `publish-release.sh` (which ends with the feed check). Pin `jdx/mise-action` and `maxim-lobanov/setup-xcode` to full commit SHAs (look each up with `gh api repos/<owner>/<repo>/git/ref/tags/<tag>`, follow a tag object to its commit) with the tag in a comment. The end-to-end step sets `MG_E2E_LAUNCH=1`. Remove the old inline smoke step. Dry runs run everything before publishing, skip the publish and feed check, and skip the signing steps and `check-signature.sh` when their secrets are unset, as today.
-- [ ] **Step 2: Run** `make lint`; ask the user to run `make release-dry-run VERSION=0.1.0` and confirm the steps run in order and publish nothing. Record the result.
+- [x] **Step 2: Run** `make lint`; ask the user to run `make release-dry-run VERSION=0.1.0` and confirm the steps run in order and publish nothing. Record the result. Result: run 44818661148 passed every step in order through the signature check; Publish release was skipped.
 
 ### Task 7: One logo in every theme
 
