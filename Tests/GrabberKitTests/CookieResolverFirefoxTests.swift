@@ -20,7 +20,7 @@ final class CookieResolverFirefoxTests: XCTestCase {
             fm.readable = [iniPath]
             fm.contents = [iniPath: ini]
         }
-        return CookieResolver(fileManager: fm, home: home)
+        return CookieResolver(browsers: AppLocations(home: home).browsers, fileManager: fm)
     }
 
     func test_absentFile_returnsEmpty() {

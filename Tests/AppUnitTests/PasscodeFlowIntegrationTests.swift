@@ -59,32 +59,38 @@ final class PasscodeFlowIntegrationTests: XCTestCase {
     ) throws -> AppModel {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: UUID().uuidString))
         defaults.set(true, forKey: "mg.hasCompletedOnboarding")
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         let engine = DownloadEngine(
             dependencies: EngineDependencies(
                 runner: runner,
                 probe: probe,
                 envProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
-                ytDlpURL: URL(fileURLWithPath: "/opt/homebrew/bin/yt-dlp"),
+                ytDlp: .fixed(URL(fileURLWithPath: "/opt/homebrew/bin/yt-dlp")),
                 jobLogDir: logDir,
+                cookieBrowsers: TestLocations.make().browsers,
                 debugFlags: EngineDebugFlags(concurrencyCapOverride: 1)
             ),
             preferences: prefs
         )
         return AppModel(
             engine: engine,
-            installer: OnboardingInstaller(probe: FakeEnvironmentProbe(ready: true), runner: NullRunner()),
+            installer: OnboardingInstaller(
+                locations: TestLocations.make(),
+                probe: FakeEnvironmentProbe(ready: true),
+                runner: NullRunner()
+            ),
             prefs: prefs,
             log: LogWriter(directory: logDir),
+            locations: TestLocations.make(),
+            defaults: defaults,
+            suppression: UserDefaultsSuppressionStore(defaults: defaults),
             envProbe: FakeEnvironmentProbe(ready: true),
             ytDlpUpdater: FakeYtDlpUpdater(),
             debugFlags: DebugFlags(),
-            defaults: defaults,
             notificationRouter: FakeNotificationRouter(),
             revealSink: FakeRevealSink(),
             openURLSink: FakeOpenURLSink(),
             appVersion: "0.0.0",
-            engineJobLogDir: logDir,
             persistence: nil
         )
     }

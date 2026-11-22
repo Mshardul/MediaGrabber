@@ -84,7 +84,7 @@ public extension MetadataProbing {
 }
 
 public actor MetadataProbe: MetadataProbing {
-    private let ytDlpURL: URL
+    private let ytDlp: YtDlpLocator
     private let runner: ProcessRunning
     private let bucket: any MetadataTokenBucketing
 
@@ -92,13 +92,21 @@ public actor MetadataProbe: MetadataProbing {
     private var tail: Task<Void, Never> = Task {}
 
     public init(
+        ytDlp: YtDlpLocator,
+        runner: ProcessRunning = ProcessRunner(),
+        bucket: any MetadataTokenBucketing = UnlimitedMetadataTokenBucket()
+    ) {
+        self.ytDlp = ytDlp
+        self.runner = runner
+        self.bucket = bucket
+    }
+
+    public init(
         ytDlpURL: URL,
         runner: ProcessRunning = ProcessRunner(),
         bucket: any MetadataTokenBucketing = UnlimitedMetadataTokenBucket()
     ) {
-        self.ytDlpURL = ytDlpURL
-        self.runner = runner
-        self.bucket = bucket
+        self.init(ytDlp: .fixed(ytDlpURL), runner: runner, bucket: bucket)
     }
 
     public func probe(
@@ -179,7 +187,7 @@ public actor MetadataProbe: MetadataProbing {
 
     private func runYtDlp(arguments: [String]) async -> ProbeProcessOutput {
         let execution = runner.run(ProcessLaunch(
-            executableURL: ytDlpURL,
+            executableURL: ytDlp.url,
             arguments: arguments,
             environment: BundledYtDlpPlugins.launchEnvironment
         ))

@@ -78,7 +78,10 @@ final class DownloadEngineTests: XCTestCase {
         probe: FakeMetadataProbe,
         clock: FakeClock
     ) -> DownloadEngine {
-        let prefs = Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+        let prefs = Preferences(
+            defaults: UserDefaults(suiteName: UUID().uuidString)!,
+            downloadsFolder: TestLocations.make().downloads
+        )
         prefs.maxAutoRetries = 1
         return DownloadEngine(
             dependencies: EngineDependencies(
@@ -86,8 +89,9 @@ final class DownloadEngineTests: XCTestCase {
                 probe: probe,
                 envProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
                 clock: clock,
-                ytDlpURL: Fix.ytDlp,
+                ytDlp: .fixed(Fix.ytDlp),
                 jobLogDir: Fix.scratchLogDir(),
+                cookieBrowsers: TestLocations.make().browsers,
                 debugFlags: EngineDebugFlags(concurrencyCapOverride: 1)
             ),
             preferences: prefs

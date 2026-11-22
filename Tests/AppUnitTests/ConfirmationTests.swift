@@ -22,14 +22,17 @@ final class ConfirmationTests: XCTestCase {
         return AppModel(
             engine: FakeEngine(),
             installer: OnboardingInstaller(
+                locations: TestLocations.make(),
                 probe: FakeEnvironmentProbe(ready: true),
                 runner: NullRunner()
             ),
-            prefs: Preferences(defaults: defaults),
+            prefs: Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads),
             log: LogWriter(directory: URL(fileURLWithPath: NSTemporaryDirectory())
                 .appendingPathComponent("mg-confirm-\(UUID().uuidString)")),
-            envProbe: FakeEnvironmentProbe(ready: true),
-            suppression: suppression
+            locations: TestLocations.make(),
+            defaults: defaults,
+            suppression: suppression,
+            envProbe: FakeEnvironmentProbe(ready: true)
         )
     }
 

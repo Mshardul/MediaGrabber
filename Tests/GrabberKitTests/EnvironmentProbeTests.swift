@@ -8,8 +8,8 @@ final class EnvironmentProbeTests: XCTestCase {
 
     private func probe(runner: FakeProcessRunner, present: Set<String>) -> EnvironmentProbe {
         EnvironmentProbe(
-            runner: runner,
             tools: ManagedTools(resourceRoot: resources, supportRoot: support, isExecutable: { _ in true }),
+            runner: runner,
             isExecutable: { present.contains($0.path) }
         )
     }

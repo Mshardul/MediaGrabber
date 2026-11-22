@@ -17,14 +17,18 @@ final class EnginePersistenceWiringTests: XCTestCase {
                 runner: runner,
                 probe: probe,
                 envProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
-                ytDlpURL: Fix.ytDlp,
+                ytDlp: .fixed(Fix.ytDlp),
                 jobLogDir: Fix.scratchLogDir(),
+                cookieBrowsers: TestLocations.make().browsers,
                 debugFlags: EngineDebugFlags(concurrencyCapOverride: cap),
                 ffprobeURL: ffprobeURL,
                 ffprobeIsExecutable: { _ in ffprobeURL != nil },
                 persistence: persistence
             ),
-            preferences: Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+            preferences: Preferences(
+                defaults: UserDefaults(suiteName: UUID().uuidString)!,
+                downloadsFolder: TestLocations.make().downloads
+            )
         )
     }
 

@@ -14,11 +14,14 @@ struct MediaGrabberApp: App {
 
     init() {
         let debugFlags = DebugFlags.parse(CommandLine.arguments)
-        let prefs = Preferences()
-        let installer = OnboardingInstaller()
-        let ytDlpURL = ManagedTools.live().ytDlpURL()
-        let log = LogWriter()
+        let locations = AppLocations.live()
+        let settings = locations.makeSettings()
+        let prefs = Preferences(defaults: settings, downloadsFolder: locations.downloads)
+        let installer = OnboardingInstaller(locations: locations)
+        let ytDlpLocator = YtDlpLocator(tools: .live(locations: locations), runner: ProcessRunner())
+        let log = LogWriter(directory: locations.logs)
         let persistence = Persistence(
+            dir: locations.queueStore,
             log: log,
             debug: PersistenceDebug(resetState: debugFlags.resetState)
         )
@@ -26,10 +29,11 @@ struct MediaGrabberApp: App {
             .concurrencyCapOverride)
         let engine = DownloadEngine(
             dependencies: .live(
-                ytDlpURL: ytDlpURL,
+                ytDlp: ytDlpLocator,
                 debugFlags: engineFlags,
                 log: log,
-                persistence: persistence
+                persistence: persistence,
+                locations: locations
             ),
             preferences: prefs
         )
@@ -41,24 +45,28 @@ struct MediaGrabberApp: App {
             installer: installer,
             prefs: prefs,
             log: log,
+            locations: locations,
+            defaults: settings,
+            suppression: UserDefaultsSuppressionStore(defaults: settings),
+            ytDlpLocator: ytDlpLocator,
             debugFlags: debugFlags,
             appUpdating: SparkleAppUpdating(),
             persistence: persistence,
             columnConfig: columnConfig
         )
-        persistence.reportSaveFailure { [weak model] sentence in
-            Task { @MainActor in
-                model?.toastCenter.enqueue(ToastItem(
-                    text: sentence,
-                    actionTitle: nil,
-                    action: nil
-                ))
-            }
-        }
+        Self.showSaveFailures(of: persistence, in: model)
 
         _installer = State(initialValue: installer)
         _appModel = State(initialValue: model)
         _incomingLinks = State(initialValue: IncomingLinkController(home: model))
+    }
+
+    private static func showSaveFailures(of persistence: Persistence, in model: AppModel) {
+        persistence.reportSaveFailure { [weak model] sentence in
+            Task { @MainActor in
+                model?.toastCenter.enqueue(ToastItem(text: sentence, actionTitle: nil, action: nil))
+            }
+        }
     }
 
     var body: some Scene {

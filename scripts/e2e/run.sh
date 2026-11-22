@@ -1,4 +1,3 @@
-    [ -n "$fixture_pid" ] && kill "$fixture_pid" 2>/dev/null || true
 #!/usr/bin/env bash
 # End-to-end check of a built MediaGrabber.app: tools, downloads, licenses, helper, launch.
 # Run: scripts/e2e/run.sh APP
@@ -95,7 +94,10 @@ ok "helper"
 if [ "${MG_E2E_LAUNCH:-}" = "1" ]; then
     executable="$app/Contents/MacOS/MediaGrabber"
 
-    "$executable" >/dev/null 2>&1 &
+    real_logs="$HOME/Library/Logs/MediaGrabber"
+    real_before="$(ls -1 "$real_logs" 2>/dev/null | wc -l)"
+
+    env MG_HOME="$home" "$executable" >/dev/null 2>&1 &
     app_pid=$!
 
     alive_until=$((SECONDS + 10))
@@ -104,6 +106,9 @@ if [ "${MG_E2E_LAUNCH:-}" = "1" ]; then
         sleep 0.5
     done
 
+    grep -q '"event":"app.launched"' "$home/Library/Logs/MediaGrabber/app.log" 2>/dev/null \
+        || fail "app.launched is not in the log under the fake home"
+
     kill -TERM "$app_pid" 2>/dev/null || true
     hard=$((SECONDS + 15))
     while kill -0 "$app_pid" 2>/dev/null; do
@@ -111,6 +116,8 @@ if [ "${MG_E2E_LAUNCH:-}" = "1" ]; then
         sleep 0.5
     done
     wait "$app_pid" 2>/dev/null || true
+    real_after="$(ls -1 "$real_logs" 2>/dev/null | wc -l)"
+    [ "$real_before" = "$real_after" ] || fail "the run wrote to the real home"
     ok "launch"
 else
     echo "skip - launch (set MG_E2E_LAUNCH=1 on a clean machine)"

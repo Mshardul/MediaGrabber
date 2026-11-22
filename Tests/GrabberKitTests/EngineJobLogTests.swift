@@ -16,11 +16,15 @@ final class EngineJobLogTests: XCTestCase {
                 runner: runner,
                 probe: probe,
                 envProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
-                ytDlpURL: Fix.ytDlp,
+                ytDlp: .fixed(Fix.ytDlp),
                 jobLogDir: logDir,
+                cookieBrowsers: TestLocations.make().browsers,
                 debugFlags: EngineDebugFlags(concurrencyCapOverride: cap)
             ),
-            preferences: Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+            preferences: Preferences(
+                defaults: UserDefaults(suiteName: UUID().uuidString)!,
+                downloadsFolder: TestLocations.make().downloads
+            )
         )
     }
 

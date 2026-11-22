@@ -45,8 +45,8 @@ public struct EnvironmentProbe: EnvironmentProbing {
     private let isExecutable: @Sendable (URL) -> Bool
 
     public init(
+        tools: ManagedTools,
         runner: ProcessRunning = ProcessRunner(),
-        tools: ManagedTools = .live(),
         isExecutable: @escaping @Sendable (URL) -> Bool = { url in
             FileManager.default.isExecutableFile(atPath: url.path)
         }

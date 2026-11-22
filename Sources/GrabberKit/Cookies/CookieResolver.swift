@@ -2,24 +2,19 @@ import Foundation
 
 public struct CookieResolver: Sendable {
     private let fileManager: FileManaging
-    private let home: URL
+    private let browsers: BrowserLocations
 
-    public init(
-        fileManager: FileManaging = FoundationFileManager(),
-        home: URL = FileManager.default.homeDirectoryForCurrentUser
-    ) {
+    public init(browsers: BrowserLocations, fileManager: FileManaging = FoundationFileManager()) {
         self.fileManager = fileManager
-        self.home = home
+        self.browsers = browsers
     }
 
     private var firefoxRoot: URL {
-        home.appendingPathComponent("Library/Application Support/Firefox")
+        browsers.applicationSupport.appendingPathComponent("Firefox")
     }
 
     private var safariCookiesURL: URL {
-        home.appendingPathComponent(
-            "Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies"
-        )
+        browsers.safariCookies
     }
 
     // MARK: - Firefox
@@ -143,7 +138,7 @@ public struct CookieResolver: Sendable {
     }
 
     private func browserSupportDirectoryExists(for source: CookieSource) -> Bool {
-        let appSupport = home.appendingPathComponent("Library/Application Support")
+        let appSupport = browsers.applicationSupport
         let relativePath: String
         switch source {
         case .chrome: relativePath = "Google/Chrome"

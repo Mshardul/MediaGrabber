@@ -14,21 +14,21 @@ public enum InstallLocation {
         "A copy is already in Applications. Quit this one and open that copy."
     public static let moveFailedMessage = "MediaGrabber couldn't move itself. Drag it into Applications."
 
-    public static func canReplaceItself(bundleURL: URL, home: URL) -> Bool {
+    public static func canReplaceItself(bundleURL: URL, userApplications: URL) -> Bool {
         let path = resolvedPath(bundleURL)
-        return applicationsRoots(home: home).contains { root in
+        return applicationsRoots(userApplications: userApplications).contains { root in
             path == root || path.hasPrefix(root + "/")
         }
     }
 
     public static func destination(
         bundleURL: URL,
-        home: URL,
+        userApplications: URL,
         systemApplicationsWritable: Bool
     ) -> URL {
         let root = systemApplicationsWritable
             ? URL(fileURLWithPath: "/Applications", isDirectory: true)
-            : home.appendingPathComponent("Applications", isDirectory: true)
+            : userApplications
         return root.appendingPathComponent(bundleURL.lastPathComponent, isDirectory: true)
     }
 
@@ -47,11 +47,8 @@ public enum InstallLocation {
         try fileManager.moveItem(at: bundleURL, to: destination)
     }
 
-    private static func applicationsRoots(home: URL) -> [String] {
-        [
-            "/Applications",
-            resolvedPath(home.appendingPathComponent("Applications", isDirectory: true))
-        ]
+    private static func applicationsRoots(userApplications: URL) -> [String] {
+        ["/Applications", resolvedPath(userApplications)]
     }
 
     private static func resolvedPath(_ url: URL) -> String {

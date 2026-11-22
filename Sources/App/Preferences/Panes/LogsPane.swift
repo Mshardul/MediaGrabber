@@ -6,8 +6,7 @@ struct LogsPane: View {
     @Environment(\.theme) private var theme
 
     private var logFolderURL: URL {
-        FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Logs/MediaGrabber")
+        appModel.locations.logs
     }
 
     var body: some View {

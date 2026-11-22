@@ -54,13 +54,7 @@ final class ShieldSetupController {
     func run() async {
         guard !isWorking else { return }
         state = .working("")
-        let outcome = await installer.install { [weak self] text in
-            Task { @MainActor in
-                if self?.isWorking == true {
-                    self?.state = .working(text)
-                }
-            }
-        }
+        let outcome = await installer.install()
         switch outcome {
         case .installed:
             await finishInstall()

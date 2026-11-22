@@ -27,7 +27,10 @@ final class CookiePaneSignInTests: XCTestCase {
         installed dir: String?,
         result: Result<MediaMetadata, MetadataError>
     ) throws -> CookiePaneModel {
-        let prefs = try Preferences(defaults: XCTUnwrap(UserDefaults(suiteName: UUID().uuidString)))
+        let prefs = try Preferences(
+            defaults: XCTUnwrap(UserDefaults(suiteName: UUID().uuidString)),
+            downloadsFolder: TestLocations.make().downloads
+        )
         prefs.cookiesFromBrowser = source
         var fm = FakeFileManaging()
         if let dir {
@@ -35,7 +38,7 @@ final class CookiePaneSignInTests: XCTestCase {
         }
         return CookiePaneModel(
             prefs: prefs,
-            resolver: CookieResolver(fileManager: fm, home: home),
+            resolver: CookieResolver(browsers: AppLocations(home: home).browsers, fileManager: fm),
             signInProbe: StubProbe(result: result)
         )
     }

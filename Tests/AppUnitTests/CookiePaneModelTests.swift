@@ -8,7 +8,10 @@ final class CookiePaneModelTests: XCTestCase {
     private let home = URL(fileURLWithPath: "/Users/tester")
 
     private func prefs(_ source: CookieSource) -> Preferences {
-        let prefs = Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+        let prefs = Preferences(
+            defaults: UserDefaults(suiteName: UUID().uuidString)!,
+            downloadsFolder: TestLocations.make().downloads
+        )
         prefs.cookiesFromBrowser = source
         return prefs
     }
@@ -41,7 +44,7 @@ final class CookiePaneModelTests: XCTestCase {
         case .noContainer:
             break
         }
-        return CookieResolver(fileManager: fm, home: home)
+        return CookieResolver(browsers: AppLocations(home: home).browsers, fileManager: fm)
     }
 
     func test_refresh_populatesProfilesAndSafariAccess() {

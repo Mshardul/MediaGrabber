@@ -21,19 +21,13 @@ public actor LogWriter {
     ]
 
     public init(
-        directory: URL = LogWriter.defaultDirectory,
+        directory: URL,
         minLevel: LogLevel = .info,
         clock: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.directory = directory
         self.minLevel = minLevel
         self.clock = clock
-    }
-
-    public static var defaultDirectory: URL {
-        let base = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first
-            ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library")
-        return base.appendingPathComponent("Logs/MediaGrabber", isDirectory: true)
     }
 
     public func log(_ event: LogEvent, level: LogLevel = .info) async {

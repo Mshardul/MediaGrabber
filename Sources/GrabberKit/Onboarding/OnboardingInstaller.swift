@@ -27,18 +27,19 @@ public final class OnboardingInstaller {
     private let isShieldInstalled: @Sendable () -> Bool
 
     public init(
-        probe: EnvironmentProbing = EnvironmentProbe(),
+        locations: AppLocations,
+        probe: EnvironmentProbing? = nil,
         runner: ProcessRunning = ProcessRunner(),
         metadataProbe: MetadataProbing? = nil,
         shieldInstaller: ShieldInstaller? = nil,
         isShieldInstalled: (@Sendable () -> Bool)? = nil
     ) {
-        self.probe = probe
+        self.probe = probe ?? EnvironmentProbe(tools: .live(locations: locations))
         self.runner = runner
         self.isShieldInstalled = isShieldInstalled ?? {
-            PotPluginInstaller.live().resolveServerLaunch(port: 0) != nil
+            PotPluginInstaller.live(locations: locations).resolveServerLaunch(port: 0) != nil
         }
-        self.shieldInstaller = shieldInstaller ?? ShieldInstaller(runner: runner)
+        self.shieldInstaller = shieldInstaller ?? ShieldInstaller(tools: .live(locations: locations))
         injectedMetadataProbe = metadataProbe
         steps = Dictionary(
             uniqueKeysWithValues: OnboardingStepID.allCases.map { ($0, .pending) }
@@ -100,9 +101,7 @@ public final class OnboardingInstaller {
 
     private func installShield() async -> OnboardingStepState {
         steps[.botCheckShield] = .running(text: "Starting\u{2026}")
-        let outcome = await shieldInstaller.install { [weak self] text in
-            Task { @MainActor in self?.steps[.botCheckShield] = .running(text: text) }
-        }
+        let outcome = await shieldInstaller.install()
         switch outcome {
         case .installed:
             return .done

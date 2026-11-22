@@ -101,7 +101,10 @@ final class EngineRetryWithCookiesTests: XCTestCase {
         ).path
         fm.files = [cookiePath]
         fm.readable = [cookiePath]
-        let prefs = try Preferences(defaults: XCTUnwrap(UserDefaults(suiteName: UUID().uuidString)))
+        let prefs = try Preferences(
+            defaults: XCTUnwrap(UserDefaults(suiteName: UUID().uuidString)),
+            downloadsFolder: TestLocations.make().downloads
+        )
         let runner = FakeProcessRunner()
         runner.script(
             FakeProcessRunner.Script(lines: [.stderr("ERROR: Sign in to confirm your age")], exitCode: 1),

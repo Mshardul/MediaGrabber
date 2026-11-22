@@ -12,7 +12,10 @@ final class EngineRetryIntentTests: XCTestCase {
         maxAutoRetries: Int = 1,
         ffprobeURL: URL? = nil
     ) -> DownloadEngine {
-        let prefs = Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+        let prefs = Preferences(
+            defaults: UserDefaults(suiteName: UUID().uuidString)!,
+            downloadsFolder: TestLocations.make().downloads
+        )
         prefs.maxAutoRetries = maxAutoRetries
         return DownloadEngine(
             dependencies: EngineDependencies(
@@ -20,8 +23,9 @@ final class EngineRetryIntentTests: XCTestCase {
                 probe: probe,
                 envProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
                 clock: clock,
-                ytDlpURL: Fix.ytDlp,
+                ytDlp: .fixed(Fix.ytDlp),
                 jobLogDir: Fix.scratchLogDir(),
+                cookieBrowsers: TestLocations.make().browsers,
                 debugFlags: EngineDebugFlags(concurrencyCapOverride: 1),
                 ffprobeURL: ffprobeURL,
                 ffprobeIsExecutable: { _ in true }

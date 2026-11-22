@@ -14,7 +14,7 @@ final class CookieResolverBrowserMatrixTests: XCTestCase {
         if let installedDir {
             fm.files = [supportDir(installedDir)]
         }
-        return CookieResolver(fileManager: fm, home: home).resolve(source: source)
+        return CookieResolver(browsers: AppLocations(home: home).browsers, fileManager: fm).resolve(source: source)
     }
 
     private struct Chromium {
@@ -63,7 +63,7 @@ final class CookieResolverBrowserMatrixTests: XCTestCase {
         ).path
         fm.files = [path]
         fm.readable = [path]
-        let got = CookieResolver(fileManager: fm, home: home).resolve(source: .safari)
+        let got = CookieResolver(browsers: AppLocations(home: home).browsers, fileManager: fm).resolve(source: .safari)
         XCTAssertEqual(got.argument, "safari")
         XCTAssertEqual(got.verdict, .ready(browserKey: "safari"))
     }

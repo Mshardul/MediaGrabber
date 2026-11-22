@@ -17,11 +17,15 @@ final class EngineDeferralTests: XCTestCase {
                 probe: probe,
                 envProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
                 clock: clock,
-                ytDlpURL: Fix.ytDlp,
+                ytDlp: .fixed(Fix.ytDlp),
                 jobLogDir: Fix.scratchLogDir(),
+                cookieBrowsers: TestLocations.make().browsers,
                 debugFlags: EngineDebugFlags(concurrencyCapOverride: cap)
             ),
-            preferences: Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+            preferences: Preferences(
+                defaults: UserDefaults(suiteName: UUID().uuidString)!,
+                downloadsFolder: TestLocations.make().downloads
+            )
         )
     }
 

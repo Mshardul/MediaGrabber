@@ -7,8 +7,7 @@ struct AdvancedPane: View {
     @Environment(\.theme) private var theme
 
     private var appDataURL: URL {
-        FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support/MediaGrabber")
+        appModel.locations.applicationSupport
     }
 
     var body: some View {

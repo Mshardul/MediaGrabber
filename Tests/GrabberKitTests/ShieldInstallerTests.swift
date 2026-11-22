@@ -1,47 +1,35 @@
 @testable import GrabberKit
-import TestSupport
 import XCTest
 
 final class ShieldInstallerTests: XCTestCase {
-    func test_bundledHelper_isReadyWithoutRunningAnything() async {
-        let runner = FakeProcessRunner()
-        let server = URL(fileURLWithPath: "/bundle/Shield/server/build/main.js")
-        let plugin = URL(fileURLWithPath: "/bundle/Shield/plugin.zip")
-        let installer = ShieldInstaller(
-            runner: runner,
-            fileExists: { $0 == server.path || $0 == plugin.path },
-            bundledServer: server,
-            bundledPlugin: plugin
-        )
-        let outcome = await installer.install()
-        XCTAssertEqual(outcome, .installed)
-        XCTAssertTrue(runner.launches.isEmpty)
+    private let resources = URL(fileURLWithPath: "/bundle/Resources")
+    private let support = URL(fileURLWithPath: "/tmp/mg-shield-support")
+
+    private var tools: ManagedTools {
+        ManagedTools(resourceRoot: resources, supportRoot: support, isExecutable: { _ in false })
     }
 
-    func test_missingHelper_failsWithoutLookingOutsideTheApp() async {
-        let runner = FakeProcessRunner()
-        let installer = ShieldInstaller(
-            runner: runner,
-            fileExists: { _ in false },
-            bundledServer: URL(fileURLWithPath: "/bundle/Shield/server/build/main.js"),
-            bundledPlugin: URL(fileURLWithPath: "/bundle/Shield/plugin.zip")
-        )
+    func testInstallSucceedsWhenServerAndPluginExist() async {
+        let present: Set<String> = [tools.shieldServer.path, tools.shieldPlugin.path]
+        let installer = ShieldInstaller(tools: tools, fileExists: { present.contains($0) })
+        let outcome = await installer.install()
+        XCTAssertEqual(outcome, .installed)
+    }
+
+    func testInstallFailsWhenPluginMissing() async {
+        let present: Set<String> = [tools.shieldServer.path]
+        let installer = ShieldInstaller(tools: tools, fileExists: { present.contains($0) })
         let outcome = await installer.install()
         XCTAssertEqual(outcome, .failed(detail: "This copy of the app doesn't include the YouTube check."))
-        XCTAssertTrue(runner.launches.isEmpty)
     }
 
     func testLeftoverSupportFilesDoNotCountAsInstalled() async {
-        let runner = FakeProcessRunner()
-        let home = URL(fileURLWithPath: "/tmp/mg-shield-home")
-        let support = home.appendingPathComponent("Library/Application Support/MediaGrabber")
         let leftovers: Set<String> = [
             support.appendingPathComponent("bgutil-server/server/build/main.js").path,
             support.appendingPathComponent("bgutil-plugin.zip").path
         ]
-        let installer = ShieldInstaller(runner: runner, home: home, fileExists: { leftovers.contains($0) })
+        let installer = ShieldInstaller(tools: tools, fileExists: { leftovers.contains($0) })
         let outcome = await installer.install()
         XCTAssertEqual(outcome, .failed(detail: "This copy of the app doesn't include the YouTube check."))
-        XCTAssertTrue(runner.launches.isEmpty)
     }
 }

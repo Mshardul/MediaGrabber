@@ -19,7 +19,7 @@ final class CookieResolverSafariTests: XCTestCase {
         if readable {
             fm.readable = [cookiePath]
         }
-        return CookieResolver(fileManager: fm, home: home)
+        return CookieResolver(browsers: AppLocations(home: home).browsers, fileManager: fm)
     }
 
     func test_noContainer() {

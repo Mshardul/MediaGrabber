@@ -134,7 +134,10 @@ final class AvailableActionsTests: XCTestCase {
 
     func test_snapshot_ageRestricted_unconfiguredSuggests_configuredChecksBrowser() async throws {
         for (source, expected) in [(CookieSource.none, SignInAdvice.suggest), (.chrome, .checkBrowser)] {
-            let prefs = try Preferences(defaults: XCTUnwrap(UserDefaults(suiteName: UUID().uuidString)))
+            let prefs = try Preferences(
+                defaults: XCTUnwrap(UserDefaults(suiteName: UUID().uuidString)),
+                downloadsFolder: TestLocations.make().downloads
+            )
             prefs.cookiesFromBrowser = source
             let runner = FakeProcessRunner()
             runner.script(

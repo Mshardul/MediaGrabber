@@ -9,7 +9,7 @@ struct HomeView: View {
     @State private var videoHeight = 1080
     @State private var audioFormat: AudioFormat = .m4a
     @State private var selectedTrackID = "default"
-    @State private var destFolder = URL(fileURLWithPath: NSHomeDirectory())
+    @State private var destFolder = URL(fileURLWithPath: "/")
     @State private var seeded = false
     @State private var probeTask: Task<Void, Never>?
     @State private var playlistPickerModel: PlaylistPickerModel?

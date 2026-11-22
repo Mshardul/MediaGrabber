@@ -1,4 +1,5 @@
 @testable import GrabberKit
+import TestSupport
 import XCTest
 
 final class PreferencesTests: XCTestCase {
@@ -18,7 +19,7 @@ final class PreferencesTests: XCTestCase {
     }
 
     func test_defaults() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         XCTAssertEqual(prefs.defaultVideoHeight, 1080)
         XCTAssertEqual(prefs.defaultAudioFormat, .m4a)
         XCTAssertEqual(prefs.filenameTemplate, "%(title)s.%(ext)s")
@@ -30,14 +31,14 @@ final class PreferencesTests: XCTestCase {
     }
 
     func test_setPersistsToDefaults() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.defaultVideoHeight = 720
-        let reloaded = Preferences(defaults: defaults)
+        let reloaded = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         XCTAssertEqual(reloaded.defaultVideoHeight, 720)
     }
 
     func test_maxAutoRetriesClampedTo1through5() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.maxAutoRetries = 0
         XCTAssertEqual(prefs.maxAutoRetries, 1)
         prefs.maxAutoRetries = 9
@@ -45,17 +46,20 @@ final class PreferencesTests: XCTestCase {
     }
 
     func test_lastUsedDefaultsToDefaultDownloadFolder() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         XCTAssertEqual(prefs.lastUsedDownloadFolder, prefs.defaultDownloadFolder)
     }
 
     func test_renamedKeys_oldKeysIgnored() {
         defaults.set(480, forKey: "mg.defaultMaxHeight")
-        XCTAssertEqual(Preferences(defaults: defaults).defaultVideoHeight, 1080)
+        XCTAssertEqual(
+            Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads).defaultVideoHeight,
+            1080
+        )
     }
 
     func test_newFieldDefaults() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         XCTAssertTrue(prefs.detectClipboardLinks)
         XCTAssertNil(prefs.proxyURL)
         XCTAssertFalse(prefs.forceIPv4)
@@ -68,15 +72,18 @@ final class PreferencesTests: XCTestCase {
     }
 
     func test_proxyURL_trimAndEmptyToNil() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.proxyURL = "  "
-        XCTAssertNil(Preferences(defaults: defaults).proxyURL)
+        XCTAssertNil(Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads).proxyURL)
         prefs.proxyURL = " http://h:1 "
-        XCTAssertEqual(Preferences(defaults: defaults).proxyURL, "http://h:1")
+        XCTAssertEqual(
+            Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads).proxyURL,
+            "http://h:1"
+        )
     }
 
     func test_speedLimitKBps_clamp() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.speedLimitKBps = -5
         XCTAssertEqual(prefs.speedLimitKBps, 0)
         prefs.speedLimitKBps = 999_999
@@ -84,52 +91,59 @@ final class PreferencesTests: XCTestCase {
     }
 
     func test_lastSelected_roundTripIncludingIntMax() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.lastVideoHeight = .max
         prefs.lastMediaType = .audio
         prefs.lastAudioFormat = .mp3
-        let reloaded = Preferences(defaults: defaults)
+        let reloaded = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         XCTAssertEqual(reloaded.lastVideoHeight, .max)
         XCTAssertEqual(reloaded.lastMediaType, .audio)
         XCTAssertEqual(reloaded.lastAudioFormat, .mp3)
     }
 
     func test_cookiesFromBrowser_defaultsToNone() {
-        XCTAssertEqual(Preferences(defaults: defaults).cookiesFromBrowser, .none)
+        XCTAssertEqual(
+            Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads).cookiesFromBrowser,
+            .none
+        )
     }
 
     func test_cookiesFromBrowser_roundTripsFirefoxProfile() {
-        Preferences(defaults: defaults).cookiesFromBrowser = .firefox(profile: "work")
+        Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
+            .cookiesFromBrowser = .firefox(profile: "work")
         XCTAssertEqual(
-            Preferences(defaults: defaults).cookiesFromBrowser,
+            Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads).cookiesFromBrowser,
             .firefox(profile: "work")
         )
     }
 
     func test_cookiesFromBrowser_malformedData_decodesToNone() {
         defaults.set(Data("not json".utf8), forKey: "mg.cookiesFromBrowser")
-        XCTAssertEqual(Preferences(defaults: defaults).cookiesFromBrowser, .none)
+        XCTAssertEqual(
+            Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads).cookiesFromBrowser,
+            .none
+        )
     }
 
     func test_autoCheckAppUpdates_defaultsTrue() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         XCTAssertTrue(prefs.autoCheckAppUpdates)
     }
 
     func test_autoCheckAppUpdates_persists() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.autoCheckAppUpdates = false
-        let reloaded = Preferences(defaults: defaults)
+        let reloaded = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         XCTAssertFalse(reloaded.autoCheckAppUpdates)
     }
 
     func test_autoCheckYtDlpUpdates_defaultsTrue() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         XCTAssertTrue(prefs.autoCheckYtDlpUpdates)
     }
 
     func test_resetToDefaults_resetsBothUpdateToggles() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.autoCheckAppUpdates = false
         prefs.autoCheckYtDlpUpdates = false
         prefs.resetToDefaults()
@@ -138,14 +152,14 @@ final class PreferencesTests: XCTestCase {
     }
 
     func test_resetToDefaults_clearsCookiesFromBrowser() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.cookiesFromBrowser = .safari
         prefs.resetToDefaults()
         XCTAssertEqual(prefs.cookiesFromBrowser, .none)
     }
 
     func test_resetToDefaults_restoresEveryField() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.defaultVideoHeight = 480
         prefs.theme = .tapeDeck
         prefs.palette = .tapeDeckC
@@ -170,14 +184,17 @@ final class PreferencesTests: XCTestCase {
     }
 
     func test_audioLanguage_roundTripAndReset() {
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.defaultAudioLanguagePolicy = .original
         prefs.lastAudioLanguage = .code("es")
-        let reloaded = Preferences(defaults: defaults)
+        let reloaded = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         XCTAssertEqual(reloaded.defaultAudioLanguagePolicy, .original)
         XCTAssertEqual(reloaded.lastAudioLanguage, .code("es"))
         prefs.lastAudioLanguage = .original
-        XCTAssertEqual(Preferences(defaults: defaults).lastAudioLanguage, .original)
+        XCTAssertEqual(
+            Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads).lastAudioLanguage,
+            .original
+        )
         prefs.resetToDefaults()
         XCTAssertEqual(prefs.defaultAudioLanguagePolicy, .youtubeDefault)
         XCTAssertNil(prefs.lastAudioLanguage)

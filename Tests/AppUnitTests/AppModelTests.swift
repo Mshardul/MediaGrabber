@@ -29,7 +29,6 @@ final class AppModelTests: XCTestCase {
         debugFlags: DebugFlags = DebugFlags(),
         revealSink: FakeRevealSink = FakeRevealSink(),
         openURLSink: FakeOpenURLSink = FakeOpenURLSink(),
-        engineJobLogDir: URL? = nil,
         persistence: FakeQueuePersisting? = nil,
         notificationRouter: (any NotificationRouting)? = nil
     ) -> AppModel {
@@ -41,7 +40,6 @@ final class AppModelTests: XCTestCase {
             debugFlags: debugFlags,
             revealSink: revealSink,
             openURLSink: openURLSink,
-            engineJobLogDir: engineJobLogDir,
             persistence: persistence,
             notificationRouter: notificationRouter
         )
@@ -107,17 +105,21 @@ extension AppModelTests {
         let engine = FakeEngine()
         engine.stubPreview(.success(AppModelTestHelpers.meta(url: "https://src/v")))
         let dest = URL(fileURLWithPath: "/tmp/x")
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.lastUsedDownloadFolder = dest
 
         let model = AppModel(
             engine: engine,
             installer: OnboardingInstaller(
+                locations: TestLocations.make(),
                 probe: FakeEnvironmentProbe(ready: true),
                 runner: NullRunner()
             ),
             prefs: prefs,
             log: LogWriter(directory: logDirectory),
+            locations: TestLocations.make(),
+            defaults: defaults,
+            suppression: UserDefaultsSuppressionStore(defaults: defaults),
             envProbe: FakeEnvironmentProbe(ready: true)
         )
         await model.resolvePasted("https://src/v")

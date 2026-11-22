@@ -14,7 +14,7 @@ public final class JobLog: @unchecked Sendable {
         request: DownloadRequest,
         ytDlpVersion: String,
         playerClient: String? = nil,
-        dir: URL = JobLog.defaultDir
+        dir: URL
     ) {
         self.id = id
         self.request = request
@@ -58,12 +58,7 @@ public final class JobLog: @unchecked Sendable {
 
     // MARK: - Statics
 
-    public static var defaultDir: URL {
-        FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Logs/MediaGrabber/jobs", isDirectory: true)
-    }
-
-    public static func delete(id: UUID, dir: URL = defaultDir) {
+    public static func delete(id: UUID, dir: URL) {
         try? FileManager.default.removeItem(at: dir.appendingPathComponent("\(id.uuidString).log"))
     }
 
@@ -71,7 +66,7 @@ public final class JobLog: @unchecked Sendable {
     public static func evict(
         keepingNewestByFinishedAt jobs: [(id: UUID, finishedAt: Date?)],
         limit: Int = 200,
-        dir: URL = defaultDir
+        dir: URL
     ) {
         let terminal = jobs
             .filter { $0.finishedAt != nil }

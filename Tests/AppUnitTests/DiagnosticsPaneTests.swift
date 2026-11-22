@@ -35,7 +35,8 @@ final class DiagnosticsPaneTests: XCTestCase {
             metadataProbe: FakeMetadataProbe(default: FakeMetadataProbe.success(title: "Big Buck Bunny")),
             environmentProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             ytDlpUpdater: FakeYtDlpUpdater(),
-            sharePresenter: SpySharePresenter()
+            sharePresenter: SpySharePresenter(),
+            logReader: AppLogReader(locations: TestLocations.make())
         )
         XCTAssertFalse(model.hasReport)
         XCTAssertTrue(model.presentedRows.isEmpty)
@@ -50,7 +51,8 @@ final class DiagnosticsPaneTests: XCTestCase {
                 ffmpeg: ToolInfo(path: URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg"), version: "8.0")
             )),
             ytDlpUpdater: FakeYtDlpUpdater(),
-            sharePresenter: SpySharePresenter()
+            sharePresenter: SpySharePresenter(),
+            logReader: AppLogReader(locations: TestLocations.make())
         )
         await model.runCheck()
         XCTAssertTrue(model.hasReport)
@@ -76,7 +78,8 @@ final class DiagnosticsPaneTests: XCTestCase {
             metadataProbe: fakeMetadataProbe,
             environmentProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             ytDlpUpdater: FakeYtDlpUpdater(),
-            sharePresenter: SpySharePresenter()
+            sharePresenter: SpySharePresenter(),
+            logReader: AppLogReader(locations: TestLocations.make())
         )
         await model.runCheck()
         XCTAssertEqual(model.canaryResult, .passed)
@@ -87,7 +90,8 @@ final class DiagnosticsPaneTests: XCTestCase {
             metadataProbe: FakeMetadataProbe(default: .failure(.network)),
             environmentProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             ytDlpUpdater: FakeYtDlpUpdater(),
-            sharePresenter: SpySharePresenter()
+            sharePresenter: SpySharePresenter(),
+            logReader: AppLogReader(locations: TestLocations.make())
         )
         await model.runCheck()
         XCTAssertEqual(model.canaryResult, .failed)
@@ -98,7 +102,8 @@ final class DiagnosticsPaneTests: XCTestCase {
             metadataProbe: FakeMetadataProbe(default: FakeMetadataProbe.success(title: "Big Buck Bunny")),
             environmentProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             ytDlpUpdater: FakeYtDlpUpdater(),
-            sharePresenter: SpySharePresenter()
+            sharePresenter: SpySharePresenter(),
+            logReader: AppLogReader(locations: TestLocations.make())
         )
         XCTAssertNil(model.lastRunAt)
         await model.runCheck()
@@ -111,7 +116,8 @@ final class DiagnosticsPaneTests: XCTestCase {
             metadataProbe: FakeMetadataProbe(default: FakeMetadataProbe.success(title: "Big Buck Bunny")),
             environmentProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             ytDlpUpdater: FakeYtDlpUpdater(),
-            sharePresenter: spy
+            sharePresenter: spy,
+            logReader: AppLogReader(locations: TestLocations.make())
         )
         await model.runCheck()
         model.shareDiagnosticBundle()
@@ -126,6 +132,7 @@ final class DiagnosticsPaneTests: XCTestCase {
             environmentProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             ytDlpUpdater: FakeYtDlpUpdater(),
             sharePresenter: SpySharePresenter(),
+            logReader: AppLogReader(locations: TestLocations.make()),
             pasteboardMarker: { markedStrings.append($0) }
         )
         await model.runCheck()
@@ -146,6 +153,7 @@ final class DiagnosticsPaneTests: XCTestCase {
             environmentProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             ytDlpUpdater: FakeYtDlpUpdater(),
             sharePresenter: SpySharePresenter(),
+            logReader: AppLogReader(locations: TestLocations.make()),
             pasteboardMarker: controller.markAppPasteboardWrite
         )
         await model.runCheck()
@@ -161,7 +169,8 @@ final class DiagnosticsPaneTests: XCTestCase {
             metadataProbe: FakeMetadataProbe(default: FakeMetadataProbe.success(title: "Big Buck Bunny")),
             environmentProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             ytDlpUpdater: updater,
-            sharePresenter: SpySharePresenter()
+            sharePresenter: SpySharePresenter(),
+            logReader: AppLogReader(locations: TestLocations.make())
         )
         await model.updateYtDlp()
         XCTAssertEqual(model.canaryResult, .passed)

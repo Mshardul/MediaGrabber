@@ -107,11 +107,12 @@ final class EnginePasscodeTests: XCTestCase {
                 runner: runner,
                 probe: probe(),
                 envProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
-                ytDlpURL: Fix.ytDlp,
+                ytDlp: .fixed(Fix.ytDlp),
                 jobLogDir: logDir,
+                cookieBrowsers: TestLocations.make().browsers,
                 debugFlags: EngineDebugFlags(concurrencyCapOverride: 1)
             ),
-            preferences: Preferences(defaults: defaults)
+            preferences: Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         )
         let collector = EventCollector(engine.events)
         await engine.setPasscode("hunter two", for: url)

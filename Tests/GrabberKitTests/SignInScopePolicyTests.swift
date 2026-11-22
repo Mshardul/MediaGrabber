@@ -1,4 +1,5 @@
 @testable import GrabberKit
+import TestSupport
 import XCTest
 
 final class SignInScopePolicyTests: XCTestCase {
@@ -15,7 +16,10 @@ final class SignInScopePolicyTests: XCTestCase {
     }
 
     func testFreshPreferencesAreAllSites() throws {
-        let prefs = try Preferences(defaults: XCTUnwrap(UserDefaults(suiteName: UUID().uuidString)))
+        let prefs = try Preferences(
+            defaults: XCTUnwrap(UserDefaults(suiteName: UUID().uuidString)),
+            downloadsFolder: TestLocations.make().downloads
+        )
         XCTAssertEqual(prefs.signInScope, .allSites)
         XCTAssertEqual(prefs.signInSites, [])
         prefs.signInScope = .listedSites

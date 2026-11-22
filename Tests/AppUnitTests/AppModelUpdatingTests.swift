@@ -43,7 +43,7 @@ final class AppModelUpdatingTests: XCTestCase {
             logDirectory: logDirectory,
             appUpdating: updater,
             bundleURL: URL(fileURLWithPath: bundlePath),
-            homeURL: URL(fileURLWithPath: "/Users/ada", isDirectory: true)
+            locations: AppLocations(home: URL(fileURLWithPath: "/Users/ada", isDirectory: true))
         )
     }
 

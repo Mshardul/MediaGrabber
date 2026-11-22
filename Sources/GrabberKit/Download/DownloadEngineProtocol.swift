@@ -53,9 +53,15 @@ public struct EngineDependencies: Sendable {
     public var probe: MetadataProbing
     public var envProbe: EnvironmentProbing
     public var clock: any Clock
-    public var ytDlpURL: URL
+    public var ytDlp: YtDlpLocator
     public var ytDlpVersion: String
+
+    public var ytDlpURL: URL {
+        ytDlp.url
+    }
+
     public var jobLogDir: URL
+    public var cookieBrowsers: BrowserLocations
     public var debugFlags: EngineDebugFlags
     public var tuning: EngineTuning
     public var ffprobeURL: URL?
@@ -65,8 +71,6 @@ public struct EngineDependencies: Sendable {
     public var persistence: any QueuePersisting
     // Called on remove(_:) to delete the job's raw log; defaults to JobLog.delete.
     public var deleteJobLog: (@Sendable (UUID) -> Void)?
-    // Injected so a test can resolve the cookie argument against a scripted home.
-    public var cookieResolverHome: URL?
     public var networkMonitor: any NetworkPathMonitoring
     public var potProvider: any PotProviding
     public var playerClientOrder: any PlayerClientOrdering
@@ -77,9 +81,10 @@ public struct EngineDependencies: Sendable {
         probe: MetadataProbing,
         envProbe: EnvironmentProbing,
         clock: any Clock = SystemClock(),
-        ytDlpURL: URL,
+        ytDlp: YtDlpLocator,
         ytDlpVersion: String = "unknown",
-        jobLogDir: URL = JobLog.defaultDir,
+        jobLogDir: URL,
+        cookieBrowsers: BrowserLocations,
         debugFlags: EngineDebugFlags = .init(),
         tuning: EngineTuning = .default,
         ffprobeURL: URL? = nil,
@@ -89,7 +94,6 @@ public struct EngineDependencies: Sendable {
         log: LogWriter? = nil,
         persistence: any QueuePersisting = NoopPersisting(),
         deleteJobLog: (@Sendable (UUID) -> Void)? = nil,
-        cookieResolverHome: URL? = nil,
         networkMonitor: (any NetworkPathMonitoring)? = nil,
         potProvider: any PotProviding = MissingPotProvider(),
         playerClientOrder: any PlayerClientOrdering = BundledPlayerClientOrder()
@@ -99,9 +103,10 @@ public struct EngineDependencies: Sendable {
         self.probe = probe
         self.envProbe = envProbe
         self.clock = clock
-        self.ytDlpURL = ytDlpURL
+        self.ytDlp = ytDlp
         self.ytDlpVersion = ytDlpVersion
         self.jobLogDir = jobLogDir
+        self.cookieBrowsers = cookieBrowsers
         self.debugFlags = debugFlags
         self.tuning = tuning
         self.ffprobeURL = ffprobeURL
@@ -113,18 +118,18 @@ public struct EngineDependencies: Sendable {
         } else {
             self.deleteJobLog = { id in JobLog.delete(id: id, dir: jobLogDir) }
         }
-        self.cookieResolverHome = cookieResolverHome
         self.networkMonitor = networkMonitor ?? AlwaysOnlineMonitor()
         self.potProvider = potProvider
         self.playerClientOrder = playerClientOrder
     }
 
     public static func live(
-        ytDlpURL: URL,
+        ytDlp: YtDlpLocator,
         ffprobeURL: URL? = nil,
         debugFlags: EngineDebugFlags = .init(),
         log: LogWriter? = nil,
-        persistence: (any QueuePersisting)? = nil
+        persistence: (any QueuePersisting)? = nil,
+        locations: AppLocations
     ) -> EngineDependencies {
         let runner = ProcessRunner()
         let tuning = EngineTuning.resolved()
@@ -134,7 +139,7 @@ public struct EngineDependencies: Sendable {
             clock: SystemClock()
         )
         let potProvider = PotProviderProcess(
-            installer: PotPluginInstaller.live(),
+            installer: PotPluginInstaller.live(locations: locations),
             runner: runner,
             pinger: URLSessionShieldPinger(),
             tuning: tuning,
@@ -142,13 +147,15 @@ public struct EngineDependencies: Sendable {
         )
         return EngineDependencies(
             runner: runner,
-            probe: MetadataProbe(ytDlpURL: ytDlpURL, runner: runner, bucket: bucket),
-            envProbe: EnvironmentProbe(),
+            probe: MetadataProbe(ytDlp: ytDlp, runner: runner, bucket: bucket),
+            envProbe: EnvironmentProbe(tools: .live(locations: locations)),
             clock: SystemClock(),
-            ytDlpURL: ytDlpURL,
+            ytDlp: ytDlp,
+            jobLogDir: locations.jobLogs,
+            cookieBrowsers: locations.browsers,
             debugFlags: debugFlags,
             tuning: tuning,
-            ffprobeURL: ffprobeURL ?? Self.locateFfprobe(),
+            ffprobeURL: ffprobeURL ?? Self.locateFfprobe(locations: locations),
             log: log,
             persistence: persistence ?? NoopPersisting(),
             networkMonitor: NWPathNetworkMonitor(
@@ -156,18 +163,12 @@ public struct EngineDependencies: Sendable {
                 onlineSettle: TimeInterval(tuning.networkOnlineSettleSeconds)
             ),
             potProvider: potProvider,
-            playerClientOrder: LivePlayerClientOrder(directory: Self.playerClientDirectory())
+            playerClientOrder: LivePlayerClientOrder(directory: locations.playerClients)
         )
     }
 
-    private static func playerClientDirectory() -> URL {
-        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? URL(fileURLWithPath: NSTemporaryDirectory())
-        return base.appendingPathComponent("MediaGrabber/player-clients", isDirectory: true)
-    }
-
-    private static func locateFfprobe() -> URL? {
-        let url = ManagedTools.live().ffprobeURL
+    private static func locateFfprobe(locations: AppLocations) -> URL? {
+        let url = ManagedTools.live(locations: locations).ffprobeURL
         return FileManager.default.isExecutableFile(atPath: url.path) ? url : nil
     }
 }

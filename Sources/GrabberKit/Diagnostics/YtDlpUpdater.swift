@@ -41,13 +41,15 @@ public struct YtDlpUpdater: YtDlpUpdating {
     private let binDirectory: URL
     private let minimumVersion: String
     private let canary: @Sendable (URL) async -> Bool
-    private let installedVersion: @Sendable () -> String?
+    private let installedVersion: @Sendable () async -> String?
+    private let onInstalled: @Sendable () async -> Void
 
     public init(
         fetcher: YtDlpReleaseFetching,
         binDirectory: URL,
         minimumVersion: String = EngineTuning.default.minimumYtDlpVersion,
-        installedVersion: @escaping @Sendable () -> String? = { nil },
+        installedVersion: @escaping @Sendable () async -> String? = { nil },
+        onInstalled: @escaping @Sendable () async -> Void = {},
         canary: @escaping @Sendable (URL) async -> Bool = { url in
             if case .success = await CanaryProbe.run(ytDlpPath: url, runner: ProcessRunner()) {
                 return true
@@ -60,14 +62,15 @@ public struct YtDlpUpdater: YtDlpUpdating {
         self.minimumVersion = minimumVersion
         self.canary = canary
         self.installedVersion = installedVersion
+        self.onInstalled = onInstalled
     }
 
-    public init() {
-        let tools = ManagedTools.live()
+    public init(tools: ManagedTools, locator: YtDlpLocator) {
         self.init(
             fetcher: GitHubYtDlpReleaseFetcher(),
             binDirectory: tools.supportRoot.appendingPathComponent("bin"),
-            installedVersion: { tools.versionOf(tools.ytDlpURL()) }
+            installedVersion: { await locator.installedVersion() },
+            onInstalled: { await locator.refresh() }
         )
     }
 
@@ -79,7 +82,7 @@ public struct YtDlpUpdater: YtDlpUpdating {
         case let .failure(error):
             return .failure(reason: error.message)
         }
-        if let installed = installedVersion(), isCurrent(installed: installed, latest: latestVersion) {
+        if let installed = await installedVersion(), isCurrent(installed: installed, latest: latestVersion) {
             return .success(newVersion: installed)
         }
         let fetched: YtDlpBinary
@@ -92,7 +95,11 @@ public struct YtDlpUpdater: YtDlpUpdating {
         if let rejection = rejection(for: fetched) {
             return .failure(reason: rejection)
         }
-        return await install(fetched)
+        let outcome = await install(fetched)
+        if case .success = outcome {
+            await onInstalled()
+        }
+        return outcome
     }
 
     private func rejection(for fetched: YtDlpBinary) -> String? {

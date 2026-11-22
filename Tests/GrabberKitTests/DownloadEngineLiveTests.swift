@@ -18,8 +18,8 @@ final class DownloadEngineLiveTests: XCTestCase {
 
         let defaults = try XCTUnwrap(UserDefaults(suiteName: UUID().uuidString))
         let engine = DownloadEngine(
-            dependencies: .live(ytDlpURL: ytDlp),
-            preferences: Preferences(defaults: defaults)
+            dependencies: .live(ytDlp: .fixed(ytDlp), locations: TestLocations.make()),
+            preferences: Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         )
         let collector = EventCollector(engine.events)
         let request = DownloadRequest(

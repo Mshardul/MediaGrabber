@@ -1,11 +1,12 @@
 @testable import GrabberKit
 @testable import MediaGrabber
+import TestSupport
 import XCTest
 
 final class RunwaySeedTests: XCTestCase {
     private func prefs() -> Preferences {
         let defaults = UserDefaults(suiteName: "mg.seed.\(UUID().uuidString)") ?? .standard
-        return Preferences(defaults: defaults)
+        return Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
     }
 
     func test_fallsBackToDefaults() {

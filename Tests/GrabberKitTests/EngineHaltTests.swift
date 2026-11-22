@@ -15,11 +15,15 @@ final class EngineHaltTests: XCTestCase {
                 runner: runner,
                 probe: probe,
                 envProbe: envProbe,
-                ytDlpURL: Fix.ytDlp,
+                ytDlp: .fixed(Fix.ytDlp),
                 jobLogDir: Fix.scratchLogDir(),
+                cookieBrowsers: TestLocations.make().browsers,
                 debugFlags: EngineDebugFlags(concurrencyCapOverride: 2)
             ),
-            preferences: Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+            preferences: Preferences(
+                defaults: UserDefaults(suiteName: UUID().uuidString)!,
+                downloadsFolder: TestLocations.make().downloads
+            )
         )
     }
 

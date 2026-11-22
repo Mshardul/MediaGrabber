@@ -17,7 +17,10 @@ final class EngineCookieTests: XCTestCase {
     }
 
     private func prefs(_ source: CookieSource) -> Preferences {
-        let prefs = Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+        let prefs = Preferences(
+            defaults: UserDefaults(suiteName: UUID().uuidString)!,
+            downloadsFolder: TestLocations.make().downloads
+        )
         prefs.cookiesFromBrowser = source
         return prefs
     }

@@ -47,7 +47,10 @@ enum EngineFixture {
         playerClientOrder: (any PlayerClientOrdering)? = nil
     ) -> DownloadEngine {
         let prefs = preferences
-            ?? Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+            ?? Preferences(
+                defaults: UserDefaults(suiteName: UUID().uuidString)!,
+                downloadsFolder: TestLocations.make().downloads
+            )
         if let maxAutoRetries {
             prefs.maxAutoRetries = maxAutoRetries
         }
@@ -58,12 +61,12 @@ enum EngineFixture {
                 probe: probe,
                 envProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
                 clock: clock ?? SystemClock(),
-                ytDlpURL: ytDlp,
+                ytDlp: .fixed(ytDlp),
                 jobLogDir: scratchLogDir(),
+                cookieBrowsers: (resolverHome.map { AppLocations(home: $0) } ?? TestLocations.make()).browsers,
                 debugFlags: EngineDebugFlags(concurrencyCapOverride: cap),
                 tuning: tuning,
                 persistence: persistence,
-                cookieResolverHome: resolverHome,
                 networkMonitor: networkMonitor,
                 potProvider: potProvider ?? MissingPotProvider(),
                 playerClientOrder: playerClientOrder ?? BundledPlayerClientOrder()

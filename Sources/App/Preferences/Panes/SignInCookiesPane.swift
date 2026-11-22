@@ -17,7 +17,11 @@ struct SignInCookiesPane: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
             if model == nil {
-                model = CookiePaneModel(prefs: appModel.prefs, signInProbe: appModel.makeSignInTestProbe())
+                model = CookiePaneModel(
+                    prefs: appModel.prefs,
+                    resolver: CookieResolver(browsers: appModel.locations.browsers),
+                    signInProbe: appModel.makeSignInTestProbe()
+                )
             }
             model?.onAppear()
         }

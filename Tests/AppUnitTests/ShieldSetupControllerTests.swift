@@ -5,19 +5,8 @@ import XCTest
 
 @MainActor
 final class ShieldSetupControllerTests: XCTestCase {
-    private func installer(
-        runner: FakeProcessRunner = FakeProcessRunner(),
-        alreadyBuilt: Bool = true,
-        nodeInstalled: Bool = true
-    ) -> ShieldInstaller {
-        ShieldInstaller(
-            runner: runner,
-            home: URL(fileURLWithPath: "/Users/tester"),
-            isExecutable: { $0 == "/opt/homebrew/bin/node" && nodeInstalled },
-            fileExists: { _ in alreadyBuilt },
-            prepareDirectory: { _ in },
-            removeItem: { _ in }
-        )
+    private func installer(alreadyBuilt: Bool = true) -> ShieldInstaller {
+        ShieldInstaller(tools: ManagedTools.live(locations: TestLocations.make()), fileExists: { _ in alreadyBuilt })
     }
 
     private func controller(
@@ -46,16 +35,13 @@ final class ShieldSetupControllerTests: XCTestCase {
     }
 
     func test_installFailure_isReported() async {
-        let runner = FakeProcessRunner()
-        runner.script(.stdout("v24.8.0"), forPathEndingIn: "node")
-        runner.script(.stderr("curl: (6) Could not resolve host\n"), forPathEndingIn: "curl")
-        let sut = controller(installer: installer(runner: runner, alreadyBuilt: false))
+        let sut = controller(installer: installer(alreadyBuilt: false))
         await sut.run()
         XCTAssertEqual(sut.state, .failed(detail: "This copy of the app doesn't include the YouTube check."))
     }
 
     func test_missingHelper_reportsFailure() async {
-        let sut = controller(installer: installer(alreadyBuilt: false, nodeInstalled: false))
+        let sut = controller(installer: installer(alreadyBuilt: false))
         await sut.run()
         XCTAssertEqual(sut.state, .failed(detail: "This copy of the app doesn't include the YouTube check."))
     }

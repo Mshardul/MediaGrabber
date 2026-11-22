@@ -19,15 +19,17 @@ public enum PaletteKind: String, Codable, Sendable, CaseIterable {
 @Observable
 public final class Preferences: @unchecked Sendable {
     private let defaults: UserDefaults
+    private let downloadsFolder: URL
 
-    public init(defaults: UserDefaults = .standard) {
+    public init(defaults: UserDefaults, downloadsFolder: URL) {
         self.defaults = defaults
+        self.downloadsFolder = downloadsFolder
     }
 
     // MARK: - Destination
 
     public var defaultDownloadFolder: URL {
-        get { url(forKey: "defaultDownloadFolder", default: Self.downloadsFolder) }
+        get { url(forKey: "defaultDownloadFolder", default: downloadsFolder) }
         set { setURL(newValue, forKey: "defaultDownloadFolder") }
     }
 
@@ -296,12 +298,6 @@ public final class Preferences: @unchecked Sendable {
     ]
 
     // MARK: - Helpers
-
-    private static var downloadsFolder: URL {
-        FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
-            ?? FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Downloads")
-    }
 
     private func intValue(forKey name: String, default fallback: Int) -> Int {
         defaults.object(forKey: "mg.\(name)") == nil

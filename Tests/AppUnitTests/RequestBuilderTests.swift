@@ -1,5 +1,6 @@
 @testable import GrabberKit
 @testable import MediaGrabber
+import TestSupport
 import XCTest
 
 final class RequestBuilderTests: XCTestCase {
@@ -16,7 +17,10 @@ final class RequestBuilderTests: XCTestCase {
     }
 
     private func prefs() -> Preferences {
-        let prefs = Preferences(defaults: UserDefaults(suiteName: "mg.rb.\(UUID().uuidString)")!)
+        let prefs = Preferences(
+            defaults: UserDefaults(suiteName: "mg.rb.\(UUID().uuidString)")!,
+            downloadsFolder: TestLocations.make().downloads
+        )
         prefs.lastUsedDownloadFolder = dest
         return prefs
     }

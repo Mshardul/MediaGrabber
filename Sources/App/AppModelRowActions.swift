@@ -180,7 +180,7 @@ extension AppModel {
     }
 
     func showLog(jobID: UUID) async {
-        let url = engineJobLogDir.appendingPathComponent("\(jobID.uuidString).log")
+        let url = locations.jobLogs.appendingPathComponent("\(jobID.uuidString).log")
         if FileManager.default.fileExists(atPath: url.path) {
             openURLSink.open(url)
         } else {

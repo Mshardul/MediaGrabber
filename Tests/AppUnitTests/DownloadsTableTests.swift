@@ -175,11 +175,15 @@ final class DownloadsTableTests: XCTestCase {
         let appModel = AppModel(
             engine: FakeEngine(),
             installer: OnboardingInstaller(
+                locations: TestLocations.make(),
                 probe: FakeEnvironmentProbe(ready: true),
                 runner: NullRunner()
             ),
-            prefs: Preferences(),
+            prefs: Preferences(defaults: TestLocations.settings(), downloadsFolder: TestLocations.make().downloads),
             log: log,
+            locations: TestLocations.make(),
+            defaults: TestLocations.settings(),
+            suppression: UserDefaultsSuppressionStore(defaults: TestLocations.settings()),
             persistence: fake
         )
 

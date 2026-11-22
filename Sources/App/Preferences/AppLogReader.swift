@@ -2,7 +2,7 @@ import Foundation
 import GrabberKit
 
 // Tails the app log and the most-recent job log for DiagnosticBundle; kept behind a protocol so
-// tests can inject a fake instead of touching the real files under ~/Library/Logs/MediaGrabber.
+// tests can inject a fake instead of touching the real files under the real logs folder.
 protocol LogReading: Sendable {
     func appLogTail() -> String
     func mostRecentJobLog() -> String?
@@ -14,12 +14,11 @@ struct AppLogReader: LogReading {
     private let tailLineCount: Int
 
     init(
-        appLogDirectory: URL = LogWriter.defaultDirectory,
-        jobLogDirectory: URL = JobLog.defaultDir,
+        locations: AppLocations,
         tailLineCount: Int = 200
     ) {
-        self.appLogDirectory = appLogDirectory
-        self.jobLogDirectory = jobLogDirectory
+        appLogDirectory = locations.logs
+        jobLogDirectory = locations.jobLogs
         self.tailLineCount = tailLineCount
     }
 

@@ -32,7 +32,7 @@ final class CookiePaneModel {
 
     init(
         prefs: Preferences,
-        resolver: CookieResolver = CookieResolver(),
+        resolver: CookieResolver,
         settingsLink: SettingsLinkOpening = WorkspaceSettingsLink(),
         openURL: OpenURLSink = WorkspaceOpenURLSink(),
         signInProbe: (any MetadataProbing)? = nil

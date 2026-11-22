@@ -26,14 +26,14 @@ final class AppModelRowActionTests: XCTestCase {
     private func makeModel(
         engine: FakeEngine = FakeEngine(),
         openURLSink: FakeOpenURLSink = FakeOpenURLSink(),
-        engineJobLogDir: URL? = nil
+        locations: AppLocations = TestLocations.make()
     ) -> AppModel {
         AppModelTestHelpers.makeModel(
             defaults: defaults,
             logDirectory: logDirectory,
             engine: engine,
             openURLSink: openURLSink,
-            engineJobLogDir: engineJobLogDir
+            locations: locations
         )
     }
 
@@ -67,13 +67,12 @@ final class AppModelRowActionTests: XCTestCase {
 
     func test_handleRowAction_showLogExistingFileOpensIt() async throws {
         let sink = FakeOpenURLSink()
-        let dir = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("mg-showlog-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let locations = TestLocations.make()
+        try FileManager.default.createDirectory(at: locations.jobLogs, withIntermediateDirectories: true)
         let id = UUID()
-        let file = dir.appendingPathComponent("\(id.uuidString).log")
+        let file = locations.jobLogs.appendingPathComponent("\(id.uuidString).log")
         FileManager.default.createFile(atPath: file.path, contents: Data("log".utf8))
-        let model = makeModel(openURLSink: sink, engineJobLogDir: dir)
+        let model = makeModel(openURLSink: sink, locations: locations)
 
         await model.handleRowAction(id, action: .showLog)
         XCTAssertEqual(sink.opened, [file])
@@ -81,10 +80,9 @@ final class AppModelRowActionTests: XCTestCase {
     }
 
     func test_handleRowAction_showLogMissingFileShowsNoticeAndLogs() async throws {
-        let dir = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("mg-showlog-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let model = makeModel(engineJobLogDir: dir)
+        let locations = TestLocations.make()
+        try FileManager.default.createDirectory(at: locations.jobLogs, withIntermediateDirectories: true)
+        let model = makeModel(locations: locations)
         let id = UUID()
 
         let action = Task { await model.handleRowAction(id, action: .showLog) }

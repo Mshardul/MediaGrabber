@@ -98,7 +98,7 @@ final class DiagnosticsPaneModel {
         environmentProbe: EnvironmentProbing,
         ytDlpUpdater: YtDlpUpdating,
         sharePresenter: SharePresenting,
-        logReader: LogReading = AppLogReader(),
+        logReader: LogReading,
         pasteboardMarker: @escaping (String) -> Void = { _ in }
     ) {
         self.metadataProbe = metadataProbe
@@ -343,6 +343,7 @@ struct DiagnosticsPane: View {
             environmentProbe: appModel.envProbe,
             ytDlpUpdater: appModel.ytDlpUpdater,
             sharePresenter: SharePresenter(),
+            logReader: AppLogReader(locations: appModel.locations),
             pasteboardMarker: { [weak appModel] text in appModel?.incomingLinkController?.markAppPasteboardWrite(text) }
         )
     }

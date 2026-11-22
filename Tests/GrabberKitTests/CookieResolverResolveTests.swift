@@ -16,7 +16,7 @@ final class CookieResolverResolveTests: XCTestCase {
     }
 
     private func resolver(_ fm: FakeFileManaging) -> CookieResolver {
-        CookieResolver(fileManager: fm, home: home)
+        CookieResolver(browsers: AppLocations(home: home).browsers, fileManager: fm)
     }
 
     private func firefoxFM(ini: String) -> FakeFileManaging {

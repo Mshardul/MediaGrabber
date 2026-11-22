@@ -12,7 +12,7 @@ final class EngineGlobalOptionsTests: XCTestCase {
         probe.result(FakeMetadataProbe.success(title: "Clip"))
 
         let defaults = try XCTUnwrap(UserDefaults(suiteName: UUID().uuidString))
-        let prefs = Preferences(defaults: defaults)
+        let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
         prefs.forceIPv4 = true
 
         let engine = Fix.engine(runner: runner, probe: probe, preferences: prefs)

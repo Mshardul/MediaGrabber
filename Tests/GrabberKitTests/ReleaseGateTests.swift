@@ -4,13 +4,14 @@ import XCTest
 final class ReleaseGateTests: XCTestCase {
     func test_footprintRemovalLeavesDownloadsAlone() throws {
         let home = temporaryHome()
+        let locations = AppLocations(home: home)
         let fileManager = FileManager.default
-        for directory in AppFootprint.directories(in: home) {
+        for directory in locations.footprintDirectories {
             try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
             let marker = directory.appendingPathComponent("marker.txt")
             try Data("x".utf8).write(to: marker)
         }
-        let preferences = AppFootprint.preferenceFile(in: home)
+        let preferences = locations.preferenceFile
         try fileManager.createDirectory(
             at: preferences.deletingLastPathComponent(),
             withIntermediateDirectories: true
@@ -29,12 +30,12 @@ final class ReleaseGateTests: XCTestCase {
         )
         try Data("keep".utf8).write(to: otherApp)
 
-        try AppFootprint.remove(in: home)
+        try AppFootprint.remove(in: locations)
 
-        for directory in AppFootprint.directories(in: home) {
+        for directory in locations.footprintDirectories {
             XCTAssertFalse(fileManager.fileExists(atPath: directory.path))
         }
-        XCTAssertFalse(fileManager.fileExists(atPath: AppFootprint.preferenceFile(in: home).path))
+        XCTAssertFalse(fileManager.fileExists(atPath: locations.preferenceFile.path))
         XCTAssertTrue(fileManager.fileExists(atPath: downloads.path))
         XCTAssertTrue(fileManager.fileExists(atPath: otherApp.path))
     }
@@ -43,19 +44,19 @@ final class ReleaseGateTests: XCTestCase {
         let home = URL(fileURLWithPath: "/Users/ada", isDirectory: true)
         XCTAssertTrue(InstallLocation.canReplaceItself(
             bundleURL: URL(fileURLWithPath: "/Applications/MediaGrabber.app"),
-            home: home
+            userApplications: home.appendingPathComponent("Applications", isDirectory: true)
         ))
         XCTAssertTrue(InstallLocation.canReplaceItself(
             bundleURL: home.appendingPathComponent("Applications/MediaGrabber.app"),
-            home: home
+            userApplications: home.appendingPathComponent("Applications", isDirectory: true)
         ))
         XCTAssertFalse(InstallLocation.canReplaceItself(
             bundleURL: URL(fileURLWithPath: "/private/var/folders/ab/AppTranslocation/cd/d/MediaGrabber.app"),
-            home: home
+            userApplications: home.appendingPathComponent("Applications", isDirectory: true)
         ))
         XCTAssertFalse(InstallLocation.canReplaceItself(
             bundleURL: URL(fileURLWithPath: "/Volumes/MediaGrabber/MediaGrabber.app"),
-            home: home
+            userApplications: home.appendingPathComponent("Applications", isDirectory: true)
         ))
     }
 
@@ -68,7 +69,7 @@ final class ReleaseGateTests: XCTestCase {
 
         let destination = InstallLocation.destination(
             bundleURL: source,
-            home: home,
+            userApplications: home.appendingPathComponent("Applications", isDirectory: true),
             systemApplicationsWritable: false
         )
         try InstallLocation.move(bundleURL: source, to: destination)

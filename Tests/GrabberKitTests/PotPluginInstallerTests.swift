@@ -11,7 +11,7 @@ final class PotPluginInstallerTests: XCTestCase {
         store: FakePluginStore = FakePluginStore()
     ) -> PotPluginInstaller {
         PotPluginInstaller(
-            home: home,
+            pluginDestination: home.appendingPathComponent("Library/Application Support/MediaGrabber/yt-dlp-plugins"),
             tools: ManagedTools(
                 resourceRoot: URL(fileURLWithPath: "/bundle/Resources"),
                 supportRoot: home.appendingPathComponent("Library/Application Support/MediaGrabber"),

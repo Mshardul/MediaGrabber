@@ -13,7 +13,10 @@ final class SignInScopeEngineTests: XCTestCase {
     }
 
     private func prefs(_ source: CookieSource, scope: SignInScope, sites: [String]) -> Preferences {
-        let prefs = Preferences(defaults: UserDefaults(suiteName: UUID().uuidString)!)
+        let prefs = Preferences(
+            defaults: UserDefaults(suiteName: UUID().uuidString)!,
+            downloadsFolder: TestLocations.make().downloads
+        )
         prefs.cookiesFromBrowser = source
         prefs.signInScope = scope
         prefs.signInSites = sites

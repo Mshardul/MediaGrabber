@@ -29,9 +29,9 @@ final class ScreenshotHandoffTests: XCTestCase {
     func test_waitForDone_returnsWhenDoneFileAppears() async throws {
         let handoff = ScreenshotHandoff(dir: dir, timeout: 5, pollInterval: 0.05)
 
+        let doneURL = dir.appendingPathComponent("aurora-about.done")
         Task.detached {
             try await Task.sleep(for: .milliseconds(100))
-            let doneURL = self.dir.appendingPathComponent("aurora-about.done")
             try "".write(to: doneURL, atomically: true, encoding: .utf8)
         }
 
@@ -44,7 +44,7 @@ final class ScreenshotHandoffTests: XCTestCase {
         do {
             try await handoff.waitForDone(key: "aurora-about")
             XCTFail("Expected timeout")
-        } catch ScreenshotHandoffError.timedOut(let key) {
+        } catch let ScreenshotHandoffError.timedOut(key) {
             XCTAssertEqual(key, "aurora-about")
         } catch {
             XCTFail("Wrong error: \(error)")

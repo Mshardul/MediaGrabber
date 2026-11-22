@@ -28,13 +28,17 @@ final class EngineIntentsTests: XCTestCase {
             runner: runner,
             probe: probe,
             envProbe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
-            ytDlpURL: Fix.ytDlp,
+            ytDlp: .fixed(Fix.ytDlp),
             jobLogDir: Fix.scratchLogDir(),
+            cookieBrowsers: TestLocations.make().browsers,
             debugFlags: EngineDebugFlags(concurrencyCapOverride: cap),
             deleteJobLog: onDeleteLog
         )
         let defaults = try XCTUnwrap(UserDefaults(suiteName: UUID().uuidString))
-        return DownloadEngine(dependencies: deps, preferences: Preferences(defaults: defaults))
+        return DownloadEngine(
+            dependencies: deps,
+            preferences: Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
+        )
     }
 
     func test_pauseRunningJob_freesSlotForQueued() async {

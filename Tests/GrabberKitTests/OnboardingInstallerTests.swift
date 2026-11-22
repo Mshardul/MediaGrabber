@@ -7,13 +7,13 @@ final class OnboardingInstallerTests: XCTestCase {
     func test_toolsPresent_runsTheCanaryAndProceeds() async {
         let probe = FakeMetadataProbe(default: FakeMetadataProbe.success(title: "Big Buck Bunny"))
         let installer = OnboardingInstaller(
+            locations: TestLocations.make(),
             probe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             runner: FakeProcessRunner(),
             metadataProbe: probe,
             shieldInstaller: ShieldInstaller(
-                fileExists: { _ in true },
-                bundledServer: URL(fileURLWithPath: "/server"),
-                bundledPlugin: URL(fileURLWithPath: "/plugin")
+                tools: ManagedTools.live(locations: TestLocations.make()),
+                fileExists: { _ in true }
             ),
             isShieldInstalled: { true }
         )
@@ -27,6 +27,7 @@ final class OnboardingInstallerTests: XCTestCase {
     func test_toolsMissing_blocksWithoutInstallingAnything() async {
         let runner = FakeProcessRunner()
         let installer = OnboardingInstaller(
+            locations: TestLocations.make(),
             probe: FakeEnvironmentProbe(.with()),
             runner: runner,
             isShieldInstalled: { false }
@@ -41,6 +42,7 @@ final class OnboardingInstallerTests: XCTestCase {
 
     func test_canaryFailure_marksTheCheckFailed() async {
         let installer = OnboardingInstaller(
+            locations: TestLocations.make(),
             probe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             runner: FakeProcessRunner(),
             metadataProbe: FakeMetadataProbe(default: .failure(.network))
@@ -54,6 +56,7 @@ final class OnboardingInstallerTests: XCTestCase {
     func test_check_readyTools_marksTheCheckDoneWithoutInstalling() async {
         let runner = FakeProcessRunner()
         let installer = OnboardingInstaller(
+            locations: TestLocations.make(),
             probe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             runner: runner,
             metadataProbe: FakeMetadataProbe(default: FakeMetadataProbe.success(title: "ok")),
@@ -69,6 +72,7 @@ final class OnboardingInstallerTests: XCTestCase {
     func test_check_shieldMissing_isOfferedNotInstalled() async {
         let runner = FakeProcessRunner()
         let installer = OnboardingInstaller(
+            locations: TestLocations.make(),
             probe: FakeEnvironmentProbe(.with(ytDlp: true, ffmpeg: true)),
             runner: runner,
             metadataProbe: FakeMetadataProbe(default: FakeMetadataProbe.success(title: "ok")),

@@ -9,7 +9,7 @@ extension AppModel {
     }
 
     var canReplaceItself: Bool {
-        InstallLocation.canReplaceItself(bundleURL: bundleURL, home: homeURL)
+        InstallLocation.canReplaceItself(bundleURL: bundleURL, userApplications: locations.userApplications)
     }
 
     func startUpdaterIfNeeded() {
@@ -53,7 +53,7 @@ extension AppModel {
         guard confirmed else { return }
         let destination = InstallLocation.destination(
             bundleURL: bundleURL,
-            home: homeURL,
+            userApplications: locations.userApplications,
             systemApplicationsWritable: FileManager.default.isWritableFile(atPath: "/Applications")
         )
         do {
@@ -65,11 +65,7 @@ extension AppModel {
             _ = await notice(title: "Couldn't move MediaGrabber", message: InstallLocation.moveFailedMessage)
             return
         }
-        let executableName = Bundle.main.executableURL?.lastPathComponent ?? "MediaGrabber"
-        let executable = destination
-            .appendingPathComponent("Contents/MacOS", isDirectory: true)
-            .appendingPathComponent(executableName)
-        AppRelauncher().relaunch(executablePath: executable.path)
+        AppRelauncher().relaunch(bundlePath: destination.path)
     }
 
     func uninstall() async {
@@ -89,7 +85,7 @@ extension AppModel {
         let effects = LiveUninstallEffects(
             engine: engine,
             persistence: persistence,
-            homeURL: homeURL,
+            locations: locations,
             bundleURL: bundleURL,
             defaults: defaults
         )
@@ -115,23 +111,23 @@ extension AppModel {
     }
 }
 
-private final class LiveUninstallEffects: UninstallEffects, @unchecked Sendable {
+final class LiveUninstallEffects: UninstallEffects, @unchecked Sendable {
     private let engine: any DownloadEngineProtocol
     private let persistence: (any QueuePersisting)?
-    private let homeURL: URL
+    private let locations: AppLocations
     private let bundleURL: URL
     private let defaults: UserDefaults
 
     init(
         engine: any DownloadEngineProtocol,
         persistence: (any QueuePersisting)?,
-        homeURL: URL,
+        locations: AppLocations,
         bundleURL: URL,
         defaults: UserDefaults
     ) {
         self.engine = engine
         self.persistence = persistence
-        self.homeURL = homeURL
+        self.locations = locations
         self.bundleURL = bundleURL
         self.defaults = defaults
     }
@@ -145,12 +141,16 @@ private final class LiveUninstallEffects: UninstallEffects, @unchecked Sendable 
     }
 
     func deleteFootprint() throws {
-        try AppFootprint.remove(in: homeURL)
+        try AppFootprint.remove(in: locations)
     }
 
     func clearPreferences() {
-        defaults.removePersistentDomain(forName: AppFootprint.preferenceDomain)
-        UserDefaults.standard.removePersistentDomain(forName: AppFootprint.preferenceDomain)
+        if let domain = locations.settingsDomain {
+            defaults.removePersistentDomain(forName: domain)
+        } else {
+            defaults.removePersistentDomain(forName: AppLocations.preferenceDomain)
+            UserDefaults.standard.removePersistentDomain(forName: AppLocations.preferenceDomain)
+        }
     }
 
     func trashBundle() throws {

@@ -9,7 +9,7 @@ final class PotProviderProcessTests: XCTestCase {
         let node = URL(fileURLWithPath: "/bundle/Resources/Tools/node")
         let mainJS = URL(fileURLWithPath: "/bundle/Resources/Shield/server/build/main.js")
         return PotPluginInstaller(
-            home: home,
+            pluginDestination: home.appendingPathComponent("Library/Application Support/MediaGrabber/yt-dlp-plugins"),
             tools: ManagedTools(
                 resourceRoot: URL(fileURLWithPath: "/bundle/Resources"),
                 supportRoot: home.appendingPathComponent("Library/Application Support/MediaGrabber"),
@@ -23,7 +23,7 @@ final class PotProviderProcessTests: XCTestCase {
 
     private func emptyInstaller() -> PotPluginInstaller {
         PotPluginInstaller(
-            home: home,
+            pluginDestination: home.appendingPathComponent("Library/Application Support/MediaGrabber/yt-dlp-plugins"),
             tools: ManagedTools(
                 resourceRoot: URL(fileURLWithPath: "/bundle/Resources"),
                 supportRoot: home.appendingPathComponent("Library/Application Support/MediaGrabber"),

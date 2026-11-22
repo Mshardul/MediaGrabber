@@ -13,7 +13,6 @@ enum AppModelTestHelpers {
         debugFlags: DebugFlags = DebugFlags(),
         revealSink: FakeRevealSink = FakeRevealSink(),
         openURLSink: FakeOpenURLSink = FakeOpenURLSink(),
-        engineJobLogDir: URL? = nil,
         persistence: FakeQueuePersisting? = nil,
         notificationRouter: (any NotificationRouting)? = nil,
         ytDlpUpdater: YtDlpUpdating? = nil,
@@ -21,7 +20,7 @@ enum AppModelTestHelpers {
         appVersion: String = "0.0.0",
         onboardingCompleted: Bool = true,
         bundleURL: URL = Bundle.main.bundleURL,
-        homeURL: URL = FileManager.default.homeDirectoryForCurrentUser
+        locations: AppLocations = TestLocations.make()
     ) -> AppModel {
         defaults.set(onboardingCompleted, forKey: "mg.hasCompletedOnboarding")
         if let persistence {
@@ -30,23 +29,24 @@ enum AppModelTestHelpers {
         return AppModel(
             engine: engine,
             installer: OnboardingInstaller(
+                locations: TestLocations.make(),
                 probe: FakeEnvironmentProbe(ready: envReady),
                 runner: NullRunner()
             ),
-            prefs: Preferences(defaults: defaults),
+            prefs: Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads),
             log: LogWriter(directory: logDirectory),
+            locations: locations,
+            defaults: defaults,
+            suppression: UserDefaultsSuppressionStore(defaults: defaults),
             envProbe: FakeEnvironmentProbe(ready: envReady),
             ytDlpUpdater: ytDlpUpdater ?? FakeYtDlpUpdater(),
             debugFlags: debugFlags,
-            defaults: defaults,
             notificationRouter: notificationRouter ?? FakeNotificationRouter(),
             revealSink: revealSink,
             openURLSink: openURLSink,
             appUpdating: appUpdating ?? IdleAppUpdating(),
             appVersion: appVersion,
             bundleURL: bundleURL,
-            homeURL: homeURL,
-            engineJobLogDir: engineJobLogDir ?? logDirectory,
             persistence: persistence
         )
     }

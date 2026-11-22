@@ -87,6 +87,7 @@ final class AppModel {
     let vpnDetector: any VPNDetecting
     let envProbe: EnvironmentProbing
     let ytDlpUpdater: YtDlpUpdating
+    let ytDlpLocator: YtDlpLocator
     let log: LogWriter
     let persistence: (any QueuePersisting)?
     let revealSink: RevealSink
@@ -94,8 +95,7 @@ final class AppModel {
     let appUpdating: any AppUpdating
     let appVersion: String
     let bundleURL: URL
-    let homeURL: URL
-    let engineJobLogDir: URL
+    let locations: AppLocations
     private let suppression: SuppressionStore
     private var confirmationContinuation: CheckedContinuation<Bool, Never>?
     var consumerTask: Task<Void, Never>?
@@ -105,20 +105,20 @@ final class AppModel {
         installer: OnboardingInstaller,
         prefs: Preferences,
         log: LogWriter,
-        envProbe: EnvironmentProbing = EnvironmentProbe(),
-        ytDlpUpdater: YtDlpUpdating = YtDlpUpdater(),
+        locations: AppLocations,
+        defaults: UserDefaults,
+        suppression: SuppressionStore,
+        envProbe: EnvironmentProbing? = nil,
+        ytDlpUpdater: YtDlpUpdating? = nil,
+        ytDlpLocator: YtDlpLocator? = nil,
         debugFlags: DebugFlags = DebugFlags(),
-        defaults: UserDefaults = .standard,
         notificationRouter: any NotificationRouting = NotificationRouter(),
         revealSink: RevealSink = WorkspaceRevealSink(),
         openURLSink: OpenURLSink = WorkspaceOpenURLSink(),
         appUpdating: any AppUpdating = IdleAppUpdating(),
-        shieldInstaller: ShieldInstaller = ShieldInstaller(),
+        shieldInstaller: ShieldInstaller? = nil,
         appVersion: String = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0",
         bundleURL: URL = Bundle.main.bundleURL,
-        homeURL: URL = FileManager.default.homeDirectoryForCurrentUser,
-        engineJobLogDir: URL = JobLog.defaultDir,
-        suppression: SuppressionStore = UserDefaultsSuppressionStore(),
         persistence: (any QueuePersisting)? = nil,
         columnConfig: ColumnConfig = .default,
         vpnDetector: any VPNDetecting = InterfaceVPNDetector()
@@ -128,8 +128,11 @@ final class AppModel {
         self.installer = installer
         self.prefs = prefs
         self.log = log
-        self.envProbe = envProbe
-        self.ytDlpUpdater = ytDlpUpdater
+        self.envProbe = envProbe ?? EnvironmentProbe(tools: .live(locations: locations))
+        let tools = ManagedTools.live(locations: locations)
+        let locator = ytDlpLocator ?? YtDlpLocator(tools: tools, runner: ProcessRunner())
+        self.ytDlpLocator = locator
+        self.ytDlpUpdater = ytDlpUpdater ?? YtDlpUpdater(tools: tools, locator: locator)
         self.debugFlags = debugFlags
         self.defaults = defaults
         self.notificationRouter = notificationRouter
@@ -137,14 +140,13 @@ final class AppModel {
         self.openURLSink = openURLSink
         self.appUpdating = appUpdating
         shieldSetup = ShieldSetupController(
-            installer: shieldInstaller,
+            installer: shieldInstaller ?? ShieldInstaller(tools: .live(locations: locations)),
             restart: { await engine.restartShield() },
             openURL: openURLSink
         )
         self.appVersion = appVersion
         self.bundleURL = bundleURL
-        self.homeURL = homeURL
-        self.engineJobLogDir = engineJobLogDir
+        self.locations = locations
         self.suppression = suppression
         self.persistence = persistence
         self.columnConfig = columnConfig
@@ -290,6 +292,8 @@ extension AppModel {
         guard !didRunLaunchSetup else { return }
         didRunLaunchSetup = true
         await log.log(.appLaunched)
+        let locator = ytDlpLocator
+        Task { await locator.refresh() }
         await performLaunchSetup()
         await refreshOnboardingState()
         if !needsOnboarding {

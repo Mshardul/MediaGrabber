@@ -1,32 +1,30 @@
 import Foundation
 
 public struct PotPluginInstaller: Sendable {
-    private let home: URL
+    private let pluginDestination: URL
     private let tools: ManagedTools
     private let isExecutable: @Sendable (URL) -> Bool
     private let fileExists: @Sendable (URL) -> Bool
     private let pluginStore: any PluginStoring
 
     public init(
-        home: URL,
+        pluginDestination: URL,
         tools: ManagedTools,
         isExecutable: @escaping @Sendable (URL) -> Bool,
         fileExists: @escaping @Sendable (URL) -> Bool,
         pluginStore: any PluginStoring
     ) {
-        self.home = home
+        self.pluginDestination = pluginDestination
         self.tools = tools
         self.isExecutable = isExecutable
         self.fileExists = fileExists
         self.pluginStore = pluginStore
     }
 
-    public static func live(
-        home: URL = FileManager.default.homeDirectoryForCurrentUser
-    ) -> PotPluginInstaller {
+    public static func live(locations: AppLocations) -> PotPluginInstaller {
         PotPluginInstaller(
-            home: home,
-            tools: .live(home: home),
+            pluginDestination: locations.pluginStore,
+            tools: .live(locations: locations),
             isExecutable: { FileManager.default.isExecutableFile(atPath: $0.path) },
             fileExists: { FileManager.default.fileExists(atPath: $0.path) },
             pluginStore: FoundationPluginStore()
@@ -37,7 +35,7 @@ public struct PotPluginInstaller: Sendable {
         guard let source = pluginSource() else {
             return []
         }
-        let dest = pluginDest
+        let dest = pluginDestination
         try? pluginStore.createDirectory(at: dest)
         let target = dest.appendingPathComponent(source.lastPathComponent)
         if !pluginStore.fileExists(atPath: target.path) {
@@ -56,10 +54,6 @@ public struct PotPluginInstaller: Sendable {
             executableURL: node,
             arguments: [mainJS.path, "--host", host, "--port", "\(port)"]
         )
-    }
-
-    private var pluginDest: URL {
-        home.appendingPathComponent("Library/Application Support/MediaGrabber/yt-dlp-plugins")
     }
 
     private func nodeEntry() -> URL? {

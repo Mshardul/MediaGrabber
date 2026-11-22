@@ -68,8 +68,6 @@ extension DownloadEngine {
         } else {
             client = nil
         }
-        let home = dependencies.cookieResolverHome
-            ?? FileManager.default.homeDirectoryForCurrentUser
         let sendsCookies = SignInScopePolicy.sendsCookies(
             scope: preferences.signInScope,
             sites: preferences.signInSites,
@@ -78,7 +76,7 @@ extension DownloadEngine {
         let cookie: String? = if preferences.cookiesFromBrowser.isNone || !sendsCookies {
             nil
         } else {
-            CookieResolver(fileManager: dependencies.fileManager, home: home)
+            CookieResolver(browsers: dependencies.cookieBrowsers, fileManager: dependencies.fileManager)
                 .resolve(source: preferences.cookiesFromBrowser)
                 .argument
         }

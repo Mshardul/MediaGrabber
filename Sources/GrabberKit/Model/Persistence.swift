@@ -102,7 +102,7 @@ public final class Persistence: QueuePersisting {
     }
 
     public init(
-        dir: URL = Persistence.defaultDir,
+        dir: URL,
         clock: any Clock = SystemClock(),
         log: LogWriter,
         debug: PersistenceDebug = .init()
@@ -112,11 +112,6 @@ public final class Persistence: QueuePersisting {
         self.debug = debug
         self.clock = clock
         writer = Writer(dir: dir, log: log, saveFailed: saveFailed)
-    }
-
-    public static var defaultDir: URL {
-        FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support/MediaGrabber", isDirectory: true)
     }
 
     var didFirstWriteFail: Bool {
