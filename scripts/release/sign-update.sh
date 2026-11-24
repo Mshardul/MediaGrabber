@@ -36,7 +36,7 @@ if gh release view --json tagName >/dev/null 2>&1; then
         || { echo "the latest release has no appcast.xml, so the update feed is broken" >&2; exit 1; }
 fi
 
-length="$(stat -f%z "$dmg")"
+length="$(wc -c < "$dmg" | tr -d " ")"
 python3 "$root/scripts/appcast.py" \
     --existing "$current" \
     --version "$version" \

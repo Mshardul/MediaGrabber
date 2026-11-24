@@ -149,25 +149,7 @@ struct OnboardingView: View {
     }
 
     private func primaryButton(_ title: String, enabled: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(theme.bodyFont(13, .semibold))
-                .foregroundStyle(theme.palette.onAccent)
-                .padding(.horizontal, Spacing.s5)
-                .padding(.vertical, Spacing.s2)
-                .background(
-                    LinearGradient(
-                        colors: [theme.palette.goFillStart, theme.palette.goFillEnd],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: theme.controlRadius)
-                )
-        }
-        .buttonStyle(.plain)
-        .disabled(!enabled)
-        .opacity(enabled ? 1 : 0.3)
-        .grayscale(enabled ? 0 : 1)
+        SkinnedPrimaryButton(title, enabled: enabled, action: action)
     }
 
     private func spokenState(_ state: OnboardingStepState) -> String {

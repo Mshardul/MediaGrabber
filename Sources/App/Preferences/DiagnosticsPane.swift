@@ -222,25 +222,7 @@ struct DiagnosticsPane: View {
                 .font(theme.displayFont(20, .heavy))
                 .foregroundStyle(theme.palette.headline)
             Spacer()
-            Button {
-                Task { await model?.runCheck() }
-            } label: {
-                Text("Run check")
-                    .font(theme.displayFont(13, .bold))
-                    .foregroundStyle(theme.palette.onAccent)
-                    .padding(.horizontal, Spacing.s4)
-                    .padding(.vertical, Spacing.s2)
-                    .background(
-                        LinearGradient(
-                            colors: DiagnosticsPrimaryButton.colors(theme.palette),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
-                        in: RoundedRectangle(cornerRadius: theme.controlRadius)
-                    )
-            }
-            .buttonStyle(.plain)
-            .disabled(model?.isRunningCheck ?? true)
+            SkinnedPrimaryButton("Run check", enabled: !(model?.isRunningCheck ?? true)) { Task { await model?.runCheck() } }
         }
         .padding(.bottom, Spacing.s1)
     }

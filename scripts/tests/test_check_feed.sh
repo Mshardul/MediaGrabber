@@ -56,7 +56,7 @@ XML
 }
 
 printf 'disk image\n' > "$site/clip.dmg"
-length="$(stat -f%z "$site/clip.dmg")"
+length="$(wc -c < "$site/clip.dmg" | tr -d " ")"
 base="$(start_server "$site")"
 feed_url="$base/feed.xml"
 write_feed 0.1.0 "$base/clip.dmg" "$length" "$site/feed.xml"

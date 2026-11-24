@@ -44,26 +44,8 @@ struct RunwayView: View {
     }
 
     private var grabButton: some View {
-        Button(action: onGrab) {
-            Text("Grab")
-                .font(theme.bodyFont(13, .semibold))
-                .foregroundStyle(theme.palette.onAccent)
-                .padding(.horizontal, Spacing.s5)
-                .padding(.vertical, Spacing.s2)
-                .background(
-                    LinearGradient(
-                        colors: [theme.palette.goFillStart, theme.palette.goFillEnd],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: theme.controlRadius)
-                )
-        }
-        .buttonStyle(.plain)
-        .disabled(!canGrab)
-        .opacity(canGrab ? 1 : 0.3)
-        .grayscale(canGrab ? 0 : 1)
-        .accessibilityLabel("Grab")
+        SkinnedPrimaryButton("Grab", enabled: canGrab, action: onGrab)
+            .accessibilityLabel("Grab")
     }
 
     private var typeControl: some View {

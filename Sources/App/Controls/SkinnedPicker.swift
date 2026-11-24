@@ -56,7 +56,7 @@ struct SkinnedPicker<Option: Hashable>: View {
             }
             .padding(.horizontal, Spacing.s2)
             .frame(maxWidth: fillsWidth ? .infinity : nil, alignment: .leading)
-            .frame(height: 28, alignment: .center)
+            .frame(height: 34, alignment: .center)
             .background(theme.palette.panel, in: triggerShape)
             .overlay(triggerShape.stroke(theme.palette.stroke, lineWidth: theme.hairlineWidth))
         }

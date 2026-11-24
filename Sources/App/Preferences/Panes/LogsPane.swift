@@ -24,7 +24,7 @@ struct LogsPane: View {
                 "Verbose logging",
                 helper: "More detail for troubleshooting."
             ) {
-                Toggle("", isOn: $prefs.verboseLogging)
+                SkinnedToggle(isOn: $prefs.verboseLogging)
                     .labelsHidden()
             }
         }

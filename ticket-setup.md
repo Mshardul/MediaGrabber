@@ -19,6 +19,7 @@ One row per ticket, in this order:
 | Type        | One value from the Types list.      |
 | Component   | One value from the Components list. |
 | Epic        | One value from the Epics list.      |
+| Release     | `X.Y.Z`, or empty.                  |
 | Priority    | `p0` to `p4`.                       |
 | Points      | `1`, `2`, `3`, `5`, or `8`.         |
 | Status      | One value from Status.              |
@@ -29,6 +30,12 @@ One row per ticket, in this order:
 | Updated     | `dd-mm-yyyy`.                       |
 
 Remarks stay empty unless the row cannot be understood without them, or a status move needs a reason.
+
+## Releases
+
+Release is the version a row must ship in. An empty Release means the row is not tied to a release yet. A release is ready when every row with its version is `completed` or `dropped`. The release scripts and `release-notes/X.Y.Z.md` still decide when it is published.
+
+Moving a row to a later release is an edit of its Release cell. There are no other plan files: every item raised is a row, and a decision lives in a row or in the spec an epic links to, never only in prose elsewhere. `roadmap.md` is a short overview of the releases and epics, written from this table, and it never holds a decision the table does not.
 
 ## Predefined lists
 
@@ -68,6 +75,9 @@ A ticket has the one component that holds most of its change.
 | `code-health` | Code, logs and docs say and do what they claim. | active |
 | `grab-details` | What a grab will save, and opening the saved file. | active |
 | `profile` | Who makes the app, and the other work shown there. | active |
+| `sign-in-policy` | When a download uses a browser sign-in, and what the app says when it cannot. | active |
+| `product-page` | The product page in `site/`. | active |
+| `test-suite` | What the unit, plugin and shell tests protect for the app as a whole. Spec: `docs/superpowers/specs/2026-11-17-media-grabber-phase-25-test-suite-review-design.md`. | active |
 
 ## Priority
 
@@ -110,7 +120,7 @@ A row is offered for implementation when its status is `todo`, it has points, an
 
 ### What may change
 
-- Title, Type, Component, Epic, Priority, Points, Depends on, and Description change only while the row is `backlog` or `todo`.
+- Title, Type, Component, Epic, Release, Priority, Points, Depends on, and Description change only while the row is `backlog` or `todo`.
 - Remarks change in any status except `completed` and `dropped`.
 - Created is the day the row is added.
 - Updated is that same day, and it changes on every later edit these rules allow, Remarks-only edits and status moves included. On a `completed` or `dropped` row it is the day the row reached that status.

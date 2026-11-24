@@ -56,7 +56,7 @@ final class ShieldSetupControllerTests: XCTestCase {
 
     func test_copyNeverContainsCommandsOrJargon() {
         let states: [ShieldSetupController.State] = [
-            .idle, .working(""), .done, .failed(detail: "x")
+            .idle, .working(""), .done, .failed(detail: "x"), .needsHomebrew
         ]
         for state in states {
             let text = ShieldSetupSheet.explanation(for: state).lowercased()

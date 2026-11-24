@@ -10,6 +10,7 @@ final class ShieldSetupController {
         case working(String)
         case done
         case failed(detail: String)
+        case needsHomebrew
     }
 
     enum ProbePrompt: Equatable {
@@ -49,6 +50,10 @@ final class ShieldSetupController {
 
     func dismiss() {
         isPresented = false
+    }
+
+    func openHomebrew() {
+        openURL.open(URL(string: "https://brew.sh")!)
     }
 
     func run() async {

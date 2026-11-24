@@ -46,7 +46,7 @@ struct NetworkPane: View {
                 "Force IPv4",
                 helper: "Can help when connections stall."
             ) {
-                Toggle("", isOn: $prefs.forceIPv4)
+                SkinnedToggle(isOn: $prefs.forceIPv4)
                     .labelsHidden()
             }
 

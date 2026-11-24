@@ -15,7 +15,7 @@ struct UpdatesPane: View {
                     ? "Looks for a newer MediaGrabber release once a day."
                     : InstallLocation.updateBlockedMessage
             ) {
-                Toggle("", isOn: $prefs.autoCheckAppUpdates)
+                SkinnedToggle(isOn: $prefs.autoCheckAppUpdates)
                     .labelsHidden()
                     .disabled(!appModel.canReplaceItself)
                     .onChange(of: prefs.autoCheckAppUpdates) { _, enabled in
@@ -27,7 +27,7 @@ struct UpdatesPane: View {
                 "Notify when the downloader is outdated",
                 helper: "Warn if the downloader falls behind the version this app expects."
             ) {
-                Toggle("", isOn: $prefs.autoCheckYtDlpUpdates)
+                SkinnedToggle(isOn: $prefs.autoCheckYtDlpUpdates)
                     .labelsHidden()
             }
         }

@@ -5,56 +5,61 @@ struct ShieldSetupSheet: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.s4) {
-            Text("Set up the YouTube check")
-                .font(theme.displayFont(20, .semibold))
-                .foregroundStyle(theme.palette.headline)
-            Text(Self.explanation(for: controller.state))
-                .font(theme.bodyFont(13, .regular))
-                .foregroundStyle(theme.palette.text)
-                .fixedSize(horizontal: false, vertical: true)
-            if case let .failed(detail) = controller.state {
-                DisclosureGroup("Details") {
-                    Text(detail)
-                        .font(theme.monoFont(11, .regular))
-                        .foregroundStyle(theme.palette.dim)
-                        .textSelection(.enabled)
+        SkinnedSheet {
+            VStack(alignment: .leading, spacing: Spacing.s4) {
+                Text("Set up the YouTube check")
+                    .font(theme.displayFont(20, .semibold))
+                    .foregroundStyle(theme.palette.headline)
+                Text(Self.explanation(for: controller.state))
+                    .font(theme.bodyFont(13, .regular))
+                    .foregroundStyle(theme.palette.text)
+                    .fixedSize(horizontal: false, vertical: true)
+                if case let .failed(detail) = controller.state {
+                    DisclosureGroup("Details") {
+                        Text(detail)
+                            .font(theme.monoFont(11, .regular))
+                            .foregroundStyle(theme.palette.dim)
+                            .textSelection(.enabled)
+                    }
+                    .font(theme.bodyFont(12, .regular))
                 }
-                .font(theme.bodyFont(12, .regular))
+                if controller.isWorking {
+                    ProgressView().controlSize(.small).tint(theme.palette.accent)
+                }
+                HStack(spacing: Spacing.s3) {
+                    Spacer()
+                    secondaryButton
+                    primaryButton
+                }
             }
-            if controller.isWorking {
-                ProgressView().controlSize(.small).tint(theme.palette.accent)
-            }
-            HStack(spacing: Spacing.s3) {
-                Spacer()
-                secondaryButton
-                primaryButton
-            }
+            .frame(width: 460)
         }
-        .padding(Spacing.s6)
-        .frame(width: 460)
-        .background(theme.palette.ground)
     }
 
     @ViewBuilder
     private var primaryButton: some View {
         switch controller.state {
         case .idle:
-            Button("Set up now") { Task { await controller.run() } }
+            SkinnedPrimaryButton("Set up now") { Task { await controller.run() } }
                 .keyboardShortcut(.defaultAction)
         case .working:
-            Button("Setting up…") {}.disabled(true)
+            SkinnedPrimaryButton("Setting up…", enabled: false) {}
         case .done:
-            Button("Done") { controller.dismiss() }.keyboardShortcut(.defaultAction)
+            SkinnedPrimaryButton("Done") { controller.dismiss() }
+                .keyboardShortcut(.defaultAction)
         case .failed:
-            Button("Try again") { Task { await controller.run() } }.keyboardShortcut(.defaultAction)
+            SkinnedPrimaryButton("Try again") { Task { await controller.run() } }
+                .keyboardShortcut(.defaultAction)
+        case .needsHomebrew:
+            SkinnedPrimaryButton("Install Homebrew") { controller.openHomebrew() }
+                .keyboardShortcut(.defaultAction)
         }
     }
 
     @ViewBuilder
     private var secondaryButton: some View {
         if controller.state != .done {
-            Button(controller.isWorking ? "Close" : "Not now") { controller.dismiss() }
+            SkinnedTextButton(controller.isWorking ? "Close" : "Not now") { controller.dismiss() }
         }
     }
 
@@ -69,6 +74,8 @@ struct ShieldSetupSheet: View {
             "All set. Try your download again."
         case .failed:
             "Setup didn't finish. Check your internet connection and try again."
+        case .needsHomebrew:
+            "The YouTube check needs Homebrew to be installed before it can be set up."
         }
     }
 }

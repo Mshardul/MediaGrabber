@@ -3,7 +3,7 @@ set -euo pipefail
 version="${INPUT_VERSION:-}"
 if [[ -z "$version" ]]; then
     case "${EVENT_NAME:-}" in
-        release) version="${REF_NAME#v}" ;;
+        release|push) version="${REF_NAME#v}" ;;
         *) version="" ;;
     esac
 fi

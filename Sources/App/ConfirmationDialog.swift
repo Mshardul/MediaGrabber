@@ -70,7 +70,7 @@ struct ConfirmationDialog: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             if request.suppressionKey != nil {
-                Toggle("Don't ask again", isOn: $suppressFutures)
+                SkinnedToggle("Don't ask again", isOn: $suppressFutures)
                     .font(theme.bodyFont(12, .regular))
                     .foregroundStyle(theme.palette.dim)
             }

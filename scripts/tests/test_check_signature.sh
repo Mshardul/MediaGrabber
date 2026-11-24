@@ -32,7 +32,7 @@ plutil -insert SUPublicEDKey -string "$public" "$app/Contents/Info.plist"
 
 dmg="$work/MediaGrabber-0.1.0.dmg"
 printf 'disk image\n' > "$dmg"
-length="$(stat -f%z "$dmg")"
+length="$(wc -c < "$dmg" | tr -d " ")"
 
 make_appcast() {
     local version="$1" signature="$2" file="$3"

@@ -28,6 +28,8 @@ check "the version is written to GITHUB_OUTPUT" \
     bash -c "cd '$work' && INPUT_VERSION=0.1.0 GITHUB_OUTPUT='$out' bash '$script' >/dev/null && grep -qx 'version=0.1.0' '$out'"
 check "a release tag name gives the bare version" \
     bash -c "cd '$work' && [ \"\$(EVENT_NAME=release REF_NAME=v0.1.0 bash '$script')\" = 0.1.0 ]"
+check "a tag push derives the version" \
+    bash -c "cd '$work' && [ \"\$(EVENT_NAME=push REF_NAME=v0.1.0 bash '$script')\" = 0.1.0 ]"
 check "a version that is not X.Y.Z fails" \
     bash -c "! (cd '$work' && INPUT_VERSION=0.1 bash '$script')"
 check "a version without release notes fails" \

@@ -33,12 +33,8 @@ struct DownloadsPane: View {
                 helper: "Automatically reduced if a site rate-limits you."
             ) {
                 VStack(alignment: .trailing, spacing: Spacing.s1) {
-                    Stepper(
-                        "\(prefs.maxConcurrentDownloads)",
-                        value: $prefs.maxConcurrentDownloads,
-                        in: 1 ... 6
-                    )
-                    .labelsHidden()
+                    SkinnedStepper(value: $prefs.maxConcurrentDownloads, in: 1 ... 6)
+                        .labelsHidden()
                     Text("\(prefs.maxConcurrentDownloads)")
                         .font(theme.monoFont(12, .regular))
                         .foregroundStyle(theme.palette.dim)
@@ -55,7 +51,7 @@ struct DownloadsPane: View {
                 "Automatic retries",
                 helper: "Attempts before the app asks you what to do."
             ) {
-                Stepper("\(prefs.maxAutoRetries)", value: $prefs.maxAutoRetries, in: 1 ... 5)
+                SkinnedStepper(value: $prefs.maxAutoRetries, in: 1 ... 5)
                     .labelsHidden()
                     .overlay(alignment: .trailing) {
                         Text("\(prefs.maxAutoRetries)")
@@ -111,7 +107,7 @@ struct DownloadsPane: View {
                 "Clipboard detection",
                 helper: "Offer to grab links you copy."
             ) {
-                Toggle("", isOn: $prefs.detectClipboardLinks)
+                SkinnedToggle(isOn: $prefs.detectClipboardLinks)
                     .labelsHidden()
                     .onChange(of: prefs.detectClipboardLinks) { _, enabled in
                         Task { await appModel.setClipboardDetection(enabled) }

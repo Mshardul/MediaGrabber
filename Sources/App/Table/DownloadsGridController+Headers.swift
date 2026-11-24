@@ -1,9 +1,24 @@
 import AppKit
 import Foundation
 import GrabberKit
+import SwiftUI
 
 @MainActor
 extension DownloadsGridController {
+    private var filterPopoverController: ColumnFilterPopoverController {
+        get {
+            if let existing = objc_getAssociatedObject(self, &AssociatedKeys.filterPopoverController) as? ColumnFilterPopoverController {
+                return existing
+            }
+            let new = ColumnFilterPopoverController()
+            objc_setAssociatedObject(self, &AssociatedKeys.filterPopoverController, new, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            return new
+        }
+    }
+
+    private struct AssociatedKeys {
+        @MainActor static var filterPopoverController = "filterPopoverController"
+    }
     func makeSelectionColumn() -> NSTableColumn {
         let column = NSTableColumn(identifier: DownloadsGridColumns.selectionIdentifier)
         let header = GridHeaderCell()
@@ -156,36 +171,29 @@ extension DownloadsGridController {
 
     func presentFilterMenu(for column: ColumnID, event: NSEvent?) {
         let values = filterValueProvider?(column) ?? []
-        let menu = NSMenu()
-        if values.isEmpty {
-            let item = NSMenuItem(title: "(none)", action: nil, keyEquivalent: "")
-            item.isEnabled = false
-            menu.addItem(item)
-        } else {
-            for value in values {
-                let selected = columnConfig.columnFilters[column]?.contains(value) == true
-                let item = NSMenuItem(
-                    title: value,
-                    action: #selector(filterMenuItemChosen(_:)),
-                    keyEquivalent: ""
-                )
-                item.target = self
-                item.state = selected ? .on : .off
-                item.representedObject = FilterChoice(column: column, value: value)
-                menu.addItem(item)
-            }
-        }
-        if let event {
-            NSMenu.popUpContextMenu(menu, with: event, for: tableView.headerView ?? tableView)
-            return
-        }
+        let selectedValues = Set(columnConfig.columnFilters[column] ?? [])
+
         guard let headerView = tableView.headerView,
               let index = tableView.tableColumns.firstIndex(where: {
                   DownloadsGridColumns.columnID(from: $0.identifier) == column
               })
         else { return }
+
         let rect = headerView.headerRect(ofColumn: index)
-        menu.popUp(positioning: nil, at: NSPoint(x: rect.minX, y: rect.minY), in: headerView)
+
+        filterPopoverController.present(
+            column: column,
+            values: values,
+            selectedValues: selectedValues,
+            anchorView: headerView,
+            anchorRect: rect,
+            onToggle: { [weak self] value in
+                self?.onToggleFilter?(column, value)
+            },
+            onDismiss: { [weak self] in
+                self?.refreshHeaderCells()
+            }
+        )
     }
 
     @objc
