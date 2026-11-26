@@ -282,9 +282,9 @@ def test_unusable_summary_base_is_stated_and_status_unchanged(self):
 
 **Files:** Modify `.github/workflows/ci.yml`, `Makefile`, `CLAUDE.md`, `docs/development.md`.
 
-- [ ] **Step 1:** In the Linux check job: check out with full history, set up Python from `.python-version`, run `make venv` and `scripts/tests/test_checks.sh`, then `make check-all` with `--summary-base` set to the pull request base or the previous push commit, and `--summary-file` set to the job summary. Remove the two Swift lint steps.
-- [ ] **Step 2:** Remove the `scripts-test` job. In the macOS test job, set up Python from `.python-version`, run `make venv`, `make plugin-test` and `make scripts-test`. A scheduled run uses the same steps.
-- [ ] **Step 3:** Remove `make lint` and update its mentions in `CLAUDE.md`, `AGENTS.md` and the documents under `docs/`, leaving archived ones as they are.
+- [x] **Step 1:** In the Linux check job: check out with full history, set up Python from `.python-version`, run `make venv` and `scripts/tests/test_checks.sh`, then `make check-all` with `--summary-base` set to the pull request base or the previous push commit, and `--summary-file` set to the job summary. Remove the two Swift lint steps.
+- [x] **Step 2:** Remove the `scripts-test` job. In the macOS test job, set up Python from `.python-version`, run `make venv`, `make plugin-test` and `make scripts-test`. A scheduled run uses the same steps.
+- [x] **Step 3:** Remove `make lint` and update its mentions in `CLAUDE.md`, `AGENTS.md` and the documents under `docs/`, leaving archived ones as they are.
 - [ ] **Step 4:** Ask the user to push, then to run a release dry run so the release job's tool install is proved. Both must pass.
 
 ---

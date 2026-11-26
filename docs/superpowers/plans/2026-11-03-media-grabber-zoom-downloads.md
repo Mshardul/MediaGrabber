@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Build, test and lint only through make: `make test ONLY=GrabberKitTests/<Suite>` or `ONLY=AppUnitTests/<Suite>`, then `make lint`. Never raw `xcodebuild`. At most one MediaGrabber.app may exist on the machine.
+- Build, test and lint only through make: `make test ONLY=GrabberKitTests/<Suite>` or `ONLY=AppUnitTests/<Suite>`, then `make check-all`. Never raw `xcodebuild`. At most one MediaGrabber.app may exist on the machine.
 - No git commands anywhere. Create new files in place; never delete, move or overwrite a file that is not named in this plan.
 - Comments are single-line only (`//`), lines at most 120 columns. No phase, ticket or spec-section references in source or UI copy.
 - User-facing copy must be true for the real cause, plain language (no commands, no tool names, no flags), and state the action when one exists.
@@ -288,7 +288,7 @@ Run: `make test ONLY=GrabberKitTests/ErrorSignaturesTests` Expected: compile FAI
 
 - [ ] **Step 4: Run to verify pass**
 
-Run: `make test ONLY=GrabberKitTests/ErrorSignaturesTests`, `.../FailurePresentationTests`, `.../ErrorClassKeyTests`, `.../MetadataProbeTests`, `.../YouTubeErrorClassificationTests` Expected: PASS. Then `make lint`, expected clean.
+Run: `make test ONLY=GrabberKitTests/ErrorSignaturesTests`, `.../FailurePresentationTests`, `.../ErrorClassKeyTests`, `.../MetadataProbeTests`, `.../YouTubeErrorClassificationTests` Expected: PASS. Then `make check-all`, expected clean.
 
 ### Task 2: Passcode plumbing and engine behaviour
 
@@ -342,7 +342,7 @@ Run: `make test ONLY=GrabberKitTests/YtDlpArgumentsPasscodeTests` Expected: comp
 
 - [ ] **Step 4: Run to verify pass**
 
-Run: `make test ONLY=GrabberKitTests/YtDlpArgumentsPasscodeTests`, `.../EnginePasscodeTests`, `.../YtDlpArgumentsContextTests`, `.../ExtractorContextTests`, `.../EngineRetryWithCookiesTests`, `.../EngineRetryTests` Expected: PASS (the shared reset helper must not change existing retry behaviour). Then `make lint`, expected clean.
+Run: `make test ONLY=GrabberKitTests/YtDlpArgumentsPasscodeTests`, `.../EnginePasscodeTests`, `.../YtDlpArgumentsContextTests`, `.../ExtractorContextTests`, `.../EngineRetryWithCookiesTests`, `.../EngineRetryTests` Expected: PASS (the shared reset helper must not change existing retry behaviour). Then `make check-all`, expected clean.
 
 ### Task 3: Row action, prompt, Add-flow wiring and site name
 
@@ -391,7 +391,7 @@ Run: `make test ONLY=AppUnitTests/PasscodePromptTests` Expected: compile FAIL.
 
 - [ ] **Step 4: Run to verify pass**
 
-Run: `make test ONLY=AppUnitTests/PasscodePromptTests`, `.../SiteDisplayNameTests`, `.../BannerResolverTests`, `.../RowStatusTextTests`, then `make test ONLY=GrabberKitTests/FailurePresentationTests` and `.../AvailableActionsTests` Expected: PASS. Then `make lint`, expected clean.
+Run: `make test ONLY=AppUnitTests/PasscodePromptTests`, `.../SiteDisplayNameTests`, `.../BannerResolverTests`, `.../RowStatusTextTests`, then `make test ONLY=GrabberKitTests/FailurePresentationTests` and `.../AvailableActionsTests` Expected: PASS. Then `make check-all`, expected clean.
 
 ### Task 4: Real-link verification
 
@@ -403,7 +403,7 @@ This task uses the user's protected link. A public recording and a Clips link ar
 
 - [ ] **Step 1: Full suite and lint**
 
-Run: `make test` then `make lint`. Expected: all green.
+Run: `make test` then `make check-all`. Expected: all green.
 
 - [ ] **Step 2: Run the app and paste each link** (`make run`)
   - Protected recording: the sheet opens; the right passcode downloads the full file (about 653 MB) and the result plays. Restarting the finished row asks for the passcode again. Do not enter a second wrong passcode against the user's recording; the reopen-after-wrong behaviour is covered by the Task 3 tests.
@@ -420,7 +420,7 @@ For each expired or restricted recording that surfaced raw tool text, add a `(er
 
 - [ ] **Step 5: Final**
 
-Run: `make test` then `make lint`. Expected: green.
+Run: `make test` then `make check-all`. Expected: green.
 
 ## Untested against real Zoom
 

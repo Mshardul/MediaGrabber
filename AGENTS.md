@@ -36,7 +36,6 @@ Read [docs/coding-standards.md](docs/coding-standards.md) before writing code an
 | `make test` | Plugin tests, script tests, then unit tests; `ONLY=Target/Suite` narrows the unit tests |
 | `make fix` / `make check` | Checks the changed files; `fix` edits them, `check` does not |
 | `make fix-all` / `make check-all` | The same over the whole repository |
-| `make lint` | SwiftFormat lint and strict SwiftLint over the repository |
 
 Setup, other targets and toolchain traps are in [docs/development.md](docs/development.md).
 

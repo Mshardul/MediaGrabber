@@ -7,7 +7,7 @@ INSTALLED := /Applications/$(APP_NAME).app
 LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
 .DEFAULT_GOAL := run
-.PHONY: fix check fix-all check-all generate build install reinstall remove-copies replace-installed drop-build-app run plugin-test scripts-test test lint venv tools e2e release release-patch release-minor release-major release-dry-run release-overwrite site-deploy
+.PHONY: fix check fix-all check-all generate build install reinstall remove-copies replace-installed drop-build-app run plugin-test scripts-test test venv tools e2e release release-patch release-minor release-major release-dry-run release-overwrite site-deploy
 
 tools:
 	scripts/fetch-tools.sh
@@ -86,13 +86,9 @@ test: plugin-test scripts-test generate
 		$(MAKE) --no-print-directory drop-build-app ; \
 		exit $$status
 
-lint:
-	mise exec -- swiftformat --lint .
-	mise exec -- swiftlint lint --strict
-
 # fix and check cover the changed files; the -all forms cover the whole repository.
 fix check fix-all check-all:
-	.venv/bin/python scripts/checks $@
+	.venv/bin/python scripts/checks $@ $(CHECK_ARGS)
 
 # --- Release ---
 

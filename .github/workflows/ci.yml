@@ -12,30 +12,23 @@ concurrency:
 
 jobs:
   lint:
-    # Lint needs no Xcode, so it stays off macOS; ubuntu-24.04 because the pinned SwiftLint cannot load the libxml2 of ubuntu-latest.
+    # Checks need no Xcode, so they stay off macOS; ubuntu-24.04 because the pinned SwiftLint cannot load the libxml2 of ubuntu-latest.
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
       - uses: jdx/mise-action@v2
         with:
           working_directory: .
-      - run: mise exec -- swiftformat --lint .
-      - run: mise exec -- swiftlint lint --strict
-
-  scripts-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: scripts/tests/test_bump_version.sh
-      - run: scripts/tests/test_current_version.sh
-      - run: scripts/tests/test_fetch_tools.sh
-      - run: scripts/tests/test_release_assets.sh
-      - run: scripts/tests/test_publish_release.sh
-      - run: scripts/tests/test_check_feed.sh
-      - run: scripts/tests/test_check_signature.sh
-      - run: scripts/tests/test_verify_app.sh
-      - run: scripts/tests/test_derive_version.sh
-      - run: scripts/tests/test_sign_update.sh
+      - run: make venv
+      - run: scripts/tests/test_checks.sh
+      - run: make check-all CHECK_ARGS="--summary-base=$SUMMARY_BASE --summary-file=$GITHUB_STEP_SUMMARY"
+        env:
+          SUMMARY_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
 
   test:
     strategy:
@@ -67,6 +60,12 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: ${{ github.event_name == 'schedule' && 'latest' || steps.xcodever.outputs.v }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+      - run: make venv
+      - run: make plugin-test
+      - run: make scripts-test
       - run: mise exec -- tuist generate --no-open
       - run: mise exec -- tuist test MediaGrabber-Workspace -- -enableCodeCoverage YES
       - name: Collect xcresult
