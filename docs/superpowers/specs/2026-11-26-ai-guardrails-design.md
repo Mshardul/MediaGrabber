@@ -184,11 +184,17 @@ It covers Swift, shell, Python, YAML, TOML and the Makefile.
 
 ### CI
 
-- The check job runs `make check-all`. It fails on errors and fixes nothing.
-- All script tests run through `make scripts-test` in the existing macOS test job, which replaces the Linux script-test job. The plugin tests run in CI too.
-- The check script's own bad-example tests also run in the Linux check job.
+CI does each piece of work once. A second run or an unused install costs time and adds no coverage.
+
+- CI runs for pushes to `main`, for pull requests and on a weekly schedule. A branch with a pull request is checked once, through the pull request. A branch without one is not checked, and a tag push starts only the release workflow. The Markdown workflow takes pushes from `main` only, for the same reason.
+- The check job runs `make check-all`. It fails on errors and fixes nothing. The report is compared with the pull request base, or with the previous tip of `main`. A scheduled run has neither, so its summary says there is no usable base.
+- The check script's own tests, with their bad examples, run in the check job, because that is where CI runs `make check-all`.
+- Every other script test runs through `make scripts-test` in the macOS test job, which excludes the check script's tests by name. The runner still finds tests by name, so there is one list. Its summary names what it excluded, and an excluded name that matches no test fails the run. Only CI excludes a test: `make scripts-test` and `make test` run all of them locally. The plugin tests run in the macOS test job.
 - No test may skip itself and report success.
 - Each job sets up the Python environment it needs.
+- Each job names the `mise` tools it installs, and `.mise.toml` alone holds their versions. The check job installs SwiftFormat, SwiftLint, ShellCheck and shfmt. The test and release jobs install Tuist. Automatic installation is off in both workflows, because `mise exec` would otherwise install every pinned tool. A step or test that needs a tool its job did not install fails.
+- The `mise` action's cache is the only cache of these tools. Its key covers the platform, the pin file and the tool list. The release workflow has its own key prefix, so nothing saved by a CI run reaches the shipped build.
+- `tuist test` generates the project itself, so the test job has no separate generate step.
 - Adding tools to `.mise.toml` must not break any job's tool install, including the release workflow's. A release dry run confirms this.
 
 ## Output

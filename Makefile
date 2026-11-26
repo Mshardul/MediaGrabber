@@ -13,7 +13,7 @@ tools:
 	scripts/fetch-tools.sh
 
 scripts-test:
-	scripts/run-script-tests.sh
+	scripts/run-script-tests.sh $(SCRIPT_TEST_ARGS)
 
 e2e:
 	$(MAKE) build CONFIG=Release

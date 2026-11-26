@@ -41,6 +41,31 @@ check() {
     fi
 }
 
+matches() {
+    printf '%s  %s\n' "$1" "$2" | shasum -a 256 -c - >/dev/null 2>&1
+}
+
+# The copy is what gets checked, so the verified bytes are the ones that ship.
+reuse_cached() {
+    local name="$1" sha="$2" dest="$3" cached
+    # Callers test this function, which turns off set -e inside it, so hard failures exit here.
+    cached="$("$root/scripts/tool-cache.sh" file "$name")" || exit 1
+    if [ -z "$cached" ]; then
+        printf 'the build keeps no cached copy of %s\n' "$name"
+    elif [ ! -e "$cached" ]; then
+        printf 'not in the cache: %s\n' "$cached"
+    elif [ ! -f "$cached" ] || ! cp "$cached" "$dest.partial"; then
+        printf 'rejected %s: it could not be copied as a file\n' "$cached"
+    elif ! matches "$sha" "$dest.partial"; then
+        printf 'rejected %s: checksum mismatch\n' "$cached"
+    else
+        mv "$dest.partial" "$dest" || exit 1
+        return 0
+    fi
+    rm -f "$dest.partial"
+    return 1
+}
+
 sources() {
     local outdir="$1" name version url sha asset dest
     mkdir -p "$outdir"
@@ -48,19 +73,27 @@ sources() {
         [ -n "$name" ] || continue
         asset="$(asset_name "$name" "$version" "$url")"
         dest="$outdir/$asset"
-        if printf '%s  %s\n' "$sha" "$dest" | shasum -a 256 -c - >/dev/null 2>&1; then
+        if matches "$sha" "$dest"; then
+            printf 'already in place: %s\n' "$asset"
+            continue
+        fi
+        rm -f "$dest" "$dest.partial"
+        if reuse_cached "$name" "$sha" "$dest"; then
+            printf 'reused from the cache: %s\n' "$asset"
             continue
         fi
         if ! curl -fsSL --retry 3 -o "$dest.partial" "$url"; then
             rm -f "$dest.partial"
+            printf 'download failed: %s\n' "$asset" >&2
             return 1
         fi
-        if ! printf '%s  %s\n' "$sha" "$dest.partial" | shasum -a 256 -c - >/dev/null 2>&1; then
+        if ! matches "$sha" "$dest.partial"; then
             printf 'checksum mismatch: %s\n' "$asset" >&2
             rm -f "$dest.partial"
             return 1
         fi
         mv "$dest.partial" "$dest"
+        printf 'downloaded: %s\n' "$asset"
     done < <(mirror_rows)
 }
 

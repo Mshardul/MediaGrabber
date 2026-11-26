@@ -4,7 +4,10 @@ cd "$(dirname "$0")/.."
 root="$(pwd)"
 out="${MG_TOOLS_OUT:-$root}"
 lock="${MG_TOOLS_LOCK:-$root/scripts/tools.lock}"
-cache="$out/build/tool-src"
+cache="$("$root/scripts/tool-cache.sh" dir)"
+ffmpeg_archive="$("$root/scripts/tool-cache.sh" file ffmpeg)"
+lame_archive="$("$root/scripts/tool-cache.sh" file lame)"
+shield_archive="$("$root/scripts/tool-cache.sh" file shield-source)"
 tools="$out/Resources/Tools"
 shield="$out/Resources/Shield"
 licenses="$out/Resources/Licenses"
@@ -68,12 +71,12 @@ if has ffmpeg && has lame; then
     stamp="$tools/.ffmpeg-source"
     ffmpeg_sha="$(sha_of ffmpeg)"
     if [ ! -x "$tools/ffmpeg" ] || [ ! -x "$tools/ffprobe" ] || [ "$(cat "$stamp" 2>/dev/null || true)" != "$ffmpeg_sha" ]; then
-        fetch lame "$cache/lame.tar.gz"
-        fetch ffmpeg "$cache/ffmpeg.tar.xz"
+        fetch lame "$lame_archive"
+        fetch ffmpeg "$ffmpeg_archive"
         rm -rf "$cache/lame-src" "$cache/ffmpeg-src" "$cache/lame-prefix"
         mkdir -p "$cache/lame-src" "$cache/ffmpeg-src" "$cache/lame-prefix"
-        tar -xzf "$cache/lame.tar.gz" -C "$cache/lame-src" --strip-components=1
-        tar -xJf "$cache/ffmpeg.tar.xz" -C "$cache/ffmpeg-src" --strip-components=1
+        tar -xzf "$lame_archive" -C "$cache/lame-src" --strip-components=1
+        tar -xJf "$ffmpeg_archive" -C "$cache/ffmpeg-src" --strip-components=1
         (
             cd "$cache/lame-src"
             ./configure --disable-shared --enable-static --prefix="$cache/lame-prefix"
@@ -103,11 +106,11 @@ if has ffmpeg && has lame; then
 fi
 
 if has shield-source; then
-    fetch shield-source "$cache/shield.tar.gz"
+    fetch shield-source "$shield_archive"
     if [ ! -f "$shield/server/build/main.js" ] || [ ! -d "$shield/server/node_modules/express" ]; then
         rm -rf "$cache/shield-src"
         mkdir -p "$cache/shield-src"
-        tar -xzf "$cache/shield.tar.gz" -C "$cache/shield-src" --strip-components=1
+        tar -xzf "$shield_archive" -C "$cache/shield-src" --strip-components=1
         export PATH="$cache/node/bin:$PATH"
         (
             cd "$cache/shield-src/server"
@@ -134,13 +137,13 @@ if has node; then
     license_from_archive "$cache/node.tar.gz" '/LICENSE$' "$licenses/node.txt"
 fi
 if has ffmpeg; then
-    license_from_archive "$cache/ffmpeg.tar.xz" '/COPYING.LGPLv2.1$' "$licenses/ffmpeg.txt"
+    license_from_archive "$ffmpeg_archive" '/COPYING.LGPLv2.1$' "$licenses/ffmpeg.txt"
 fi
 if has lame; then
-    license_from_archive "$cache/lame.tar.gz" '/COPYING$' "$licenses/lame.txt"
+    license_from_archive "$lame_archive" '/COPYING$' "$licenses/lame.txt"
 fi
 if has shield-source; then
-    license_from_archive "$cache/shield.tar.gz" '/LICENSE$' "$licenses/shield.txt"
+    license_from_archive "$shield_archive" '/LICENSE$' "$licenses/shield.txt"
 fi
 if has sparkle-license; then
     fetch sparkle-license "$cache/sparkle-license"

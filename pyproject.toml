@@ -7,6 +7,3 @@ extend-exclude = [".venv", "build", "Derived"]
 select = ["E", "F", "W", "I"]
 
 [tool.ruff.format]
-
-[tool.pytest.ini_options]
-addopts = "-q"

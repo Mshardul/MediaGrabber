@@ -247,7 +247,7 @@ def test_unusable_summary_base_is_stated_and_status_unchanged(self):
 
 **Files:** Create `scripts/run-script-tests.sh`, `scripts/tests/test_run_script_tests.sh`. Modify `Makefile`, `scripts/tests/test_appcast.sh`.
 
-**Interfaces — Produces:** `make scripts-test`; `scripts/run-script-tests.sh [DIR]` runs every `test_*.sh` and prints `script tests: N run, M failed`.
+**Interfaces — Produces:** `make scripts-test`; `scripts/run-script-tests.sh [--exclude NAME]... [DIR]` runs every `test_*.sh` not excluded by name and prints `script tests: N run, M failed`, followed by the count and names of any excluded.
 
 - [x] **Step 1:** Write the failing test against a temporary directory: two passing scripts and one failing give a non-zero exit and `3 run, 1 failed`; an empty directory fails.
 - [x] **Step 2:** Implement. Replace `tools-test`, `appcast-test`, `release-assets-test` and `release-scripts-test` with `scripts-test`. Make `test_appcast.sh` default to `.venv/bin/python`. Move the plugin requirements install from `plugin-test` into `venv`.
@@ -283,7 +283,7 @@ def test_unusable_summary_base_is_stated_and_status_unchanged(self):
 **Files:** Modify `.github/workflows/ci.yml`, `Makefile`, `CLAUDE.md`, `docs/development.md`.
 
 - [x] **Step 1:** In the Linux check job: check out with full history, set up Python from `.python-version`, run `make venv` and `scripts/tests/test_checks.sh`, then `make check-all` with `--summary-base` set to the pull request base or the previous push commit, and `--summary-file` set to the job summary. Remove the two Swift lint steps.
-- [x] **Step 2:** Remove the `scripts-test` job. In the macOS test job, set up Python from `.python-version`, run `make venv`, `make plugin-test` and `make scripts-test`. A scheduled run uses the same steps.
+- [x] **Step 2:** Remove the `scripts-test` job. In the macOS test job, set up Python from `.python-version`, run `make venv`, `make plugin-test` and `make scripts-test`, excluding the check script's tests, which the check job runs. A scheduled run uses the same steps.
 - [x] **Step 3:** Remove `make lint` and update its mentions in `CLAUDE.md`, `AGENTS.md` and the documents under `docs/`, leaving archived ones as they are.
 - [ ] **Step 4:** Ask the user to push, then to run a release dry run so the release job's tool install is proved. Both must pass.
 
