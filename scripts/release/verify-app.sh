@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Proves the built app's signature, update feed address and update key.
-# Run: scripts/release/verify-app.sh APP  (EXPECTED_KEY and DRY from the environment)
 set -euo pipefail
 
 app="$(cd "${1:?app bundle}" && pwd)"

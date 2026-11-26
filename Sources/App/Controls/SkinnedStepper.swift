@@ -12,12 +12,20 @@ struct SkinnedStepper: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            stepperButton("−", canDecrement, action: { if canDecrement { value -= 1 } })
+            stepperButton("−", canDecrement, action: {
+                if canDecrement {
+                    value -= 1
+                }
+            })
             Text("\(value)")
                 .font(theme.monoFont(12, .medium))
                 .foregroundStyle(theme.palette.text)
                 .frame(minWidth: 28)
-            stepperButton("+", canIncrement, action: { if canIncrement { value += 1 } })
+            stepperButton("+", canIncrement, action: {
+                if canIncrement {
+                    value += 1
+                }
+            })
         }
         .padding(2)
         .background(theme.palette.panel, in: RoundedRectangle(cornerRadius: theme.controlRadius))
@@ -27,8 +35,13 @@ struct SkinnedStepper: View {
         )
     }
 
-    private var canDecrement: Bool { value > range.lowerBound }
-    private var canIncrement: Bool { value < range.upperBound }
+    private var canDecrement: Bool {
+        value > range.lowerBound
+    }
+
+    private var canIncrement: Bool {
+        value < range.upperBound
+    }
 
     private func stepperButton(
         _ title: String,
@@ -42,7 +55,9 @@ struct SkinnedStepper: View {
                 .frame(width: 24, height: 24)
                 .background(
                     RoundedRectangle(cornerRadius: theme.controlRadius)
-                        .fill(enabled ? (pressing ? theme.palette.accent.opacity(0.15) : (hovering ? theme.palette.panelHi : .clear)) : .clear)
+                        .fill(enabled ?
+                            (pressing ? theme.palette.accent
+                                .opacity(0.15) : (hovering ? theme.palette.panelHi : .clear)) : .clear)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: theme.controlRadius)

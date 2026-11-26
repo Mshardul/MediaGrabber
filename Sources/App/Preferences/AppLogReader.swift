@@ -1,8 +1,7 @@
 import Foundation
 import GrabberKit
 
-// Tails the app log and the most-recent job log for DiagnosticBundle; kept behind a protocol so
-// tests can inject a fake instead of touching the real files under the real logs folder.
+// Behind a protocol so tests can inject a fake instead of reading the real logs folder.
 protocol LogReading: Sendable {
     func appLogTail() -> String
     func mostRecentJobLog() -> String?

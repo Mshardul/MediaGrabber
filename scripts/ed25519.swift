@@ -33,9 +33,13 @@ case "keygen":
     print("public=\(key.publicKey.rawRepresentation.base64EncodedString())")
 case "sign":
     guard arguments.count == 3 else { fail("usage: sign <privateB64> <file>") }
-    let key = try! Curve25519.Signing.PrivateKey(rawRepresentation: decode(arguments[1], "private key"))
-    let signature = try! key.signature(for: read(arguments[2]))
-    print(signature.base64EncodedString())
+    do {
+        let key = try Curve25519.Signing.PrivateKey(rawRepresentation: decode(arguments[1], "private key"))
+        let signature = try key.signature(for: read(arguments[2]))
+        print(signature.base64EncodedString())
+    } catch {
+        fail("cannot sign: \(error)")
+    }
 case "verify":
     guard arguments.count == 4 else { fail("usage: verify <publicB64> <signatureB64> <file>") }
     let key = (try? Curve25519.Signing.PublicKey(rawRepresentation: decode(arguments[1], "public key")))

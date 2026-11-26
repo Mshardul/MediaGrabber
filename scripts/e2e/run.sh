@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # End-to-end check of a built MediaGrabber.app: tools, downloads, licenses, helper, launch.
-# Run: scripts/e2e/run.sh APP
 set -euo pipefail
 
 app="$(cd "${1:?app bundle}" && pwd)"
@@ -27,14 +26,23 @@ tools="$app/Contents/Resources/Tools"
 shield="$app/Contents/Resources/Shield"
 licenses="$app/Contents/Resources/Licenses"
 
-fail() { echo "FAIL - $*" >&2; exit 1; }
+fail() {
+    echo "FAIL - $*" >&2
+    exit 1
+}
 ok() { echo "ok - $*"; }
+count_entries() {
+    if [ -d "$1" ]; then
+        find "$1" -mindepth 1 -maxdepth 1 ! -name '.*' | wc -l
+    else
+        echo 0
+    fi
+}
 
 # --- Bundled tools ---
 for spec in "yt-dlp --version" "ffmpeg -version" "ffprobe -version" "node --version"; do
-    set -- $spec
-    bin="$1"; shift
-    out="$(env_i "$tools/$bin" "$@" 2>&1)" || fail "$bin did not run"
+    bin="${spec% *}"
+    out="$(env_i "$tools/$bin" "${spec#* }" 2>&1)" || fail "$bin did not run"
     [ -n "$out" ] || fail "$bin printed no output"
     ok "$bin"
 done
@@ -47,13 +55,19 @@ env_i "$tools/ffmpeg" -y -f lavfi -i testsrc=duration=2:size=320x240:rate=15 -f 
 
 download="$home/download"
 mkdir -p "$download"
-/usr/bin/python3 "$root/scripts/e2e/fixture-server.py" --root "$fixture" > "$home/fixture.log" 2>&1 &
+/usr/bin/python3 "$root/scripts/e2e/fixture-server.py" --root "$fixture" >"$home/fixture.log" 2>&1 &
 fixture_pid=$!
-for _ in $(seq 1 100); do grep -q "^listening " "$home/fixture.log" && break; sleep 0.1; done
+for _ in $(seq 1 100); do
+    grep -q "^listening " "$home/fixture.log" && break
+    sleep 0.1
+done
 fixture_url="$(sed -n "s/^listening //p" "$home/fixture.log")"
 [ -n "$fixture_url" ] || fail "fixture server did not start"
 
-env_i "$tools/yt-dlp" --no-config -o "$download/%(title)s.%(ext)s" "$fixture_url/source.mov" >"$home/yt-dlp.log" 2>&1 || { tail -5 "$home/yt-dlp.log" >&2; fail "yt-dlp could not download the clip"; }
+env_i "$tools/yt-dlp" --no-config -o "$download/%(title)s.%(ext)s" "$fixture_url/source.mov" >"$home/yt-dlp.log" 2>&1 || {
+    tail -5 "$home/yt-dlp.log" >&2
+    fail "yt-dlp could not download the clip"
+}
 [ -n "$(find "$download" -type f -size +0c)" ] || fail "downloaded file is empty"
 ok "download"
 
@@ -80,7 +94,7 @@ ok "audio extraction"
 # --- Shield helper ---
 port="$(/usr/bin/python3 -c 'import socket; s=socket.socket(); s.bind(("",0)); print(s.getsockname()[1]); s.close()')"
 
-env_i "$tools/node" "$shield/server/build/main.js" --port "$port" > "$home/shield.log" 2>&1 &
+env_i "$tools/node" "$shield/server/build/main.js" --port "$port" >"$home/shield.log" 2>&1 &
 server_pid=$!
 
 for _ in $(seq 1 100); do
@@ -95,7 +109,7 @@ if [ "${MG_E2E_LAUNCH:-}" = "1" ]; then
     executable="$app/Contents/MacOS/MediaGrabber"
 
     real_logs="$HOME/Library/Logs/MediaGrabber"
-    real_before="$(ls -1 "$real_logs" 2>/dev/null | wc -l)"
+    real_before="$(count_entries "$real_logs")"
 
     env MG_HOME="$home" "$executable" >/dev/null 2>&1 &
     app_pid=$!
@@ -106,17 +120,20 @@ if [ "${MG_E2E_LAUNCH:-}" = "1" ]; then
         sleep 0.5
     done
 
-    grep -q '"event":"app.launched"' "$home/Library/Logs/MediaGrabber/app.log" 2>/dev/null \
-        || fail "app.launched is not in the log under the fake home"
+    grep -q '"event":"app.launched"' "$home/Library/Logs/MediaGrabber/app.log" 2>/dev/null ||
+        fail "app.launched is not in the log under the fake home"
 
     kill -TERM "$app_pid" 2>/dev/null || true
     hard=$((SECONDS + 15))
     while kill -0 "$app_pid" 2>/dev/null; do
-        [ $SECONDS -lt $hard ] || { kill -9 "$app_pid" 2>/dev/null || true; fail "app did not quit when asked"; }
+        [ $SECONDS -lt $hard ] || {
+            kill -9 "$app_pid" 2>/dev/null || true
+            fail "app did not quit when asked"
+        }
         sleep 0.5
     done
     wait "$app_pid" 2>/dev/null || true
-    real_after="$(ls -1 "$real_logs" 2>/dev/null | wc -l)"
+    real_after="$(count_entries "$real_logs")"
     [ "$real_before" = "$real_after" ] || fail "the run wrote to the real home"
     ok "launch"
 else

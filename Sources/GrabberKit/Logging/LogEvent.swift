@@ -52,6 +52,7 @@ public enum LogEvent: Sendable {
     case shieldRestarted(reason: String)
     case shieldMissing
     case shieldNoFreePort
+    case playerClientFetchFailed(error: String)
 
     var key: String {
         switch self {
@@ -91,6 +92,7 @@ public enum LogEvent: Sendable {
         case .shieldRestarted: "shield.restarted"
         case .shieldMissing: "shield.missing"
         case .shieldNoFreePort: "shield.no_free_port"
+        case .playerClientFetchFailed: "player_clients.fetch_failed"
         }
     }
 
@@ -112,6 +114,7 @@ public enum LogEvent: Sendable {
         case .hostRateStateChanged, .circuitOpened, .circuitReset,
              .adaptiveConcurrencyChanged, .networkPathChanged, .hostBlockOverridden: .scheduler
         case .shieldStarted, .shieldExited, .shieldRestarted, .shieldMissing, .shieldNoFreePort: .deps
+        case .playerClientFetchFailed: .deps
         }
     }
 
@@ -204,6 +207,8 @@ public enum LogEvent: Sendable {
             [:]
         case .shieldNoFreePort:
             [:]
+        case let .playerClientFetchFailed(error):
+            ["error": error]
         }
     }
 

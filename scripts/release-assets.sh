@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Lists, checks and downloads the source files a release must carry beside the app.
-# Run: scripts/release-assets.sh allowed X.Y.Z | check X.Y.Z | sources OUTDIR
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -31,13 +30,13 @@ check() {
     actual="$(mktemp)"
     allowed_list="$(mktemp)"
     trap 'rm -f "$actual" "$allowed_list"' RETURN
-    LC_ALL=C sort > "$actual"
-    allowed "$version" | LC_ALL=C sort > "$allowed_list"
+    LC_ALL=C sort >"$actual"
+    allowed "$version" | LC_ALL=C sort >"$allowed_list"
     missing="$(comm -23 "$allowed_list" "$actual")"
     extra="$(comm -13 "$allowed_list" "$actual")"
     if [ -n "$missing" ] || [ -n "$extra" ]; then
-        while read -r name; do [ -z "$name" ] || printf 'missing asset: %s\n' "$name" >&2; done <<< "$missing"
-        while read -r name; do [ -z "$name" ] || printf 'unexpected asset: %s\n' "$name" >&2; done <<< "$extra"
+        while read -r name; do [ -z "$name" ] || printf 'missing asset: %s\n' "$name" >&2; done <<<"$missing"
+        while read -r name; do [ -z "$name" ] || printf 'unexpected asset: %s\n' "$name" >&2; done <<<"$extra"
         return 1
     fi
 }
@@ -66,20 +65,29 @@ sources() {
 }
 
 case "${1:-}" in
-    allowed)
-        [ -n "${2:-}" ] || { echo "version required" >&2; exit 1; }
-        allowed "$2"
-        ;;
-    check)
-        [ -n "${2:-}" ] || { echo "version required" >&2; exit 1; }
-        check "$2"
-        ;;
-    sources)
-        [ -n "${2:-}" ] || { echo "output directory required" >&2; exit 1; }
-        sources "$2"
-        ;;
-    *)
-        echo "usage: release-assets.sh allowed|check <version> | sources <outdir>" >&2
+allowed)
+    [ -n "${2:-}" ] || {
+        echo "version required" >&2
         exit 1
-        ;;
+    }
+    allowed "$2"
+    ;;
+check)
+    [ -n "${2:-}" ] || {
+        echo "version required" >&2
+        exit 1
+    }
+    check "$2"
+    ;;
+sources)
+    [ -n "${2:-}" ] || {
+        echo "output directory required" >&2
+        exit 1
+    }
+    sources "$2"
+    ;;
+*)
+    echo "usage: release-assets.sh allowed|check <version> | sources <outdir>" >&2
+    exit 1
+    ;;
 esac

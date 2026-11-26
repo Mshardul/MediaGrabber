@@ -6,19 +6,26 @@ import SwiftUI
 @MainActor
 extension DownloadsGridController {
     private var filterPopoverController: ColumnFilterPopoverController {
-        get {
-            if let existing = objc_getAssociatedObject(self, &AssociatedKeys.filterPopoverController) as? ColumnFilterPopoverController {
-                return existing
-            }
-            let new = ColumnFilterPopoverController()
-            objc_setAssociatedObject(self, &AssociatedKeys.filterPopoverController, new, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-            return new
+        if let existing = objc_getAssociatedObject(
+            self,
+            &AssociatedKeys.filterPopoverController
+        ) as? ColumnFilterPopoverController {
+            return existing
         }
+        let new = ColumnFilterPopoverController()
+        objc_setAssociatedObject(
+            self,
+            &AssociatedKeys.filterPopoverController,
+            new,
+            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+        )
+        return new
     }
 
-    private struct AssociatedKeys {
+    private enum AssociatedKeys {
         @MainActor static var filterPopoverController = "filterPopoverController"
     }
+
     func makeSelectionColumn() -> NSTableColumn {
         let column = NSTableColumn(identifier: DownloadsGridColumns.selectionIdentifier)
         let header = GridHeaderCell()
@@ -169,7 +176,7 @@ extension DownloadsGridController {
         }
     }
 
-    func presentFilterMenu(for column: ColumnID, event: NSEvent?) {
+    func presentFilterMenu(for column: ColumnID, event _: NSEvent?) {
         let values = filterValueProvider?(column) ?? []
         let selectedValues = Set(columnConfig.columnFilters[column] ?? [])
 
@@ -182,9 +189,7 @@ extension DownloadsGridController {
         let rect = headerView.headerRect(ofColumn: index)
 
         filterPopoverController.present(
-            column: column,
-            values: values,
-            selectedValues: selectedValues,
+            ColumnFilterPopoverController.Choices(column: column, values: values, selectedValues: selectedValues),
             anchorView: headerView,
             anchorRect: rect,
             onToggle: { [weak self] value in

@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Quits MediaGrabber and removes every copy of the app on this Mac. Saved data and downloads stay.
-# Run: scripts/remove-app-copies.sh [--keep APP]
 set -euo pipefail
 
 keep=""
@@ -30,10 +29,13 @@ failed=0
 trashed=0
 while IFS= read -r app; do
     case "$app" in
-        */.Trash/*) trashed=1; continue ;;
-        /Volumes/*) continue ;;
-        */MediaGrabber.app) ;;
-        *) continue ;;
+    */.Trash/*)
+        trashed=1
+        continue
+        ;;
+    /Volumes/*) continue ;;
+    */MediaGrabber.app) ;;
+    *) continue ;;
     esac
     [ "$app" = "$keep" ] && continue
     "$lsregister" -u "$app" >/dev/null 2>&1 || true

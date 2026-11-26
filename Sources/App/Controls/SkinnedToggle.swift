@@ -26,8 +26,8 @@ struct SkinnedToggle: View {
                     .overlay(
                         Capsule().stroke(
                             focused ? theme.palette.accent :
-                            (hovering || pressing) ? theme.palette.accent :
-                            theme.palette.stroke,
+                                (hovering || pressing) ? theme.palette.accent :
+                                theme.palette.stroke,
                             lineWidth: theme.hairlineWidth
                         )
                     )

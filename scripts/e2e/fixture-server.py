@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""A tiny fixture server for the release tests and the end-to-end run.
-
-Serves one directory, answers HEAD and single-range requests, and can redirect
-paths, so the release scripts can be exercised without the internet.
-
-Usage: fixture-server.py --root DIR [--port N] [--redirect FROM=TO]...
-Prints: listening http://127.0.0.1:<port>
-"""
+"""Serves one directory so the release and end-to-end scripts can run without the internet."""
 
 import argparse
 import http.server

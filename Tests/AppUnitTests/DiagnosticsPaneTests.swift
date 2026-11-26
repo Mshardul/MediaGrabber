@@ -141,10 +141,7 @@ final class DiagnosticsPaneTests: XCTestCase {
     }
 
     func test_copyReport_wiredToRealIncomingLinkController_ignoresSelfWrite() async {
-        // Proves the production call site (pasteboardMarker: controller.markAppPasteboardWrite)
-        // type-checks and drives the real controller: copyReport's mark of reportText means a
-        // later external write of that same text is treated as our own and not re-ingested, per
-        // IncomingLinkControllerTests.test_clipboard_selfWrite_ignored's contract.
+        // Proves the real call site marks the copy as ours, so the same text is not taken in again as a link.
         let home = FakeIncomingLinkHomeForDiagnostics()
         let pasteboard = FakePasteboard()
         let controller = IncomingLinkController(home: home, pasteboard: pasteboard)

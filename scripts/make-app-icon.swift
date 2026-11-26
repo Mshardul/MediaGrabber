@@ -65,6 +65,17 @@ func writePNG(side: Int, to url: URL) throws {
     }
 }
 
+struct RGB {
+    let red: CGFloat
+    let green: CGFloat
+    let blue: CGFloat
+}
+
+struct ColorStop {
+    let position: CGFloat
+    let color: RGB
+}
+
 func draw(side: CGFloat, in ctx: CGContext) {
     let rect = CGRect(x: 0, y: 0, width: side, height: side)
     ctx.clear(rect)
@@ -78,18 +89,19 @@ func draw(side: CGFloat, in ctx: CGContext) {
     let orb = tile.insetBy(dx: tile.width * 0.18, dy: tile.width * 0.18)
     let center = CGPoint(x: orb.midX, y: orb.midY)
     let orbRadius = orb.width / 2
-    let stops: [(CGFloat, (CGFloat, CGFloat, CGFloat))] = [
-        (0, (0x5E, 0xF2, 0xC8)),
-        (0.33, (0x8B, 0x7B, 0xFF)),
-        (0.66, (0xFF, 0x7A, 0x6B)),
-        (1, (0x5E, 0xF2, 0xC8))
+    let teal = RGB(red: 0x5E, green: 0xF2, blue: 0xC8)
+    let stops = [
+        ColorStop(position: 0, color: teal),
+        ColorStop(position: 0.33, color: RGB(red: 0x8B, green: 0x7B, blue: 0xFF)),
+        ColorStop(position: 0.66, color: RGB(red: 0xFF, green: 0x7A, blue: 0x6B)),
+        ColorStop(position: 1, color: teal)
     ]
     guard let pixels = ctx.data?.assumingMemoryBound(to: UInt8.self) else { return }
     let width = Int(side)
-    for y in 0 ..< width {
-        for x in 0 ..< width {
-            let dx = CGFloat(x) + 0.5 - center.x
-            let dy = CGFloat(y) + 0.5 - center.y
+    for row in 0 ..< width {
+        for column in 0 ..< width {
+            let dx = CGFloat(column) + 0.5 - center.x
+            let dy = CGFloat(row) + 0.5 - center.y
             if hypot(dx, dy) > orbRadius {
                 continue
             }
@@ -98,10 +110,10 @@ func draw(side: CGFloat, in ctx: CGContext) {
                 angle += 2 * .pi
             }
             let color = mix(stops, at: angle / (2 * .pi))
-            let offset = (y * width + x) * 4
-            pixels[offset] = UInt8(color.0.rounded())
-            pixels[offset + 1] = UInt8(color.1.rounded())
-            pixels[offset + 2] = UInt8(color.2.rounded())
+            let offset = (row * width + column) * 4
+            pixels[offset] = UInt8(color.red.rounded())
+            pixels[offset + 1] = UInt8(color.green.rounded())
+            pixels[offset + 2] = UInt8(color.blue.rounded())
             pixels[offset + 3] = 255
         }
     }
@@ -111,24 +123,21 @@ func draw(side: CGFloat, in ctx: CGContext) {
     ctx.strokeEllipse(in: orb.insetBy(dx: side * 0.006, dy: side * 0.006))
 }
 
-func mix(
-    _ stops: [(CGFloat, (CGFloat, CGFloat, CGFloat))],
-    at position: CGFloat
-) -> (CGFloat, CGFloat, CGFloat) {
+func mix(_ stops: [ColorStop], at position: CGFloat) -> RGB {
     var lower = stops[0]
     var upper = stops[stops.count - 1]
-    for index in 0 ..< (stops.count - 1) where position >= stops[index].0 && position <= stops[index + 1].0 {
-        lower = stops[index]
-        upper = stops[index + 1]
+    for (start, end) in zip(stops, stops.dropFirst()) where position >= start.position && position <= end.position {
+        lower = start
+        upper = end
     }
-    let span = max(upper.0 - lower.0, 0.0001)
-    let amount = min(max((position - lower.0) / span, 0), 1)
+    let span = max(upper.position - lower.position, 0.0001)
+    let amount = min(max((position - lower.position) / span, 0), 1)
     func channel(_ start: CGFloat, _ end: CGFloat) -> CGFloat {
         start + (end - start) * amount
     }
-    return (
-        channel(lower.1.0, upper.1.0),
-        channel(lower.1.1, upper.1.1),
-        channel(lower.1.2, upper.1.2)
+    return RGB(
+        red: channel(lower.color.red, upper.color.red),
+        green: channel(lower.color.green, upper.color.green),
+        blue: channel(lower.color.blue, upper.color.blue)
     )
 }

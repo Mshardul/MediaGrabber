@@ -16,20 +16,21 @@ state="$work/state"
 assets="$work/assets"
 mkdir -p "$state" "$assets"
 touch "$assets/MediaGrabber-$version.dmg" "$assets/SHA256SUMS" "$assets/appcast.xml"
-printf 'source\n' > "$work/source.tar.xz"
+printf 'source\n' >"$work/source.tar.xz"
 sha="$(shasum -a 256 "$work/source.tar.xz" | cut -d' ' -f1)"
-printf 'ffmpeg 7.1.1 file://%s %s mirror\n' "$work/source.tar.xz" "$sha" > "$work/tools.lock"
+printf 'ffmpeg 7.1.1 file://%s %s mirror\n' "$work/source.tar.xz" "$sha" >"$work/tools.lock"
 cp "$work/source.tar.xz" "$assets/ffmpeg-7.1.1.tar.xz"
-printf 'MediaGrabber-%s.dmg\nSHA256SUMS\nappcast.xml\nffmpeg-7.1.1.tar.xz\n' "$version" > "$state/assets"
-: > "$work/notes.md"
+printf 'MediaGrabber-%s.dmg\nSHA256SUMS\nappcast.xml\nffmpeg-7.1.1.tar.xz\n' "$version" >"$state/assets"
+: >"$work/notes.md"
 
-printf '#!/usr/bin/env bash\nexit 0\n' > "$work/feed-ok"
-printf '#!/usr/bin/env bash\nexit 1\n' > "$work/feed-fail"
+printf '#!/usr/bin/env bash\nexit 0\n' >"$work/feed-ok"
+printf '#!/usr/bin/env bash\nexit 1\n' >"$work/feed-fail"
 chmod +x "$work/feed-ok" "$work/feed-fail"
 chmod +x "$stub"
 
 run_publish() {
-    local feed="$1"; shift
+    local feed="$1"
+    shift
     env PATH="$root/tests/stubs:$PATH" \
         MG_GH_LOG="$log" MG_GH_STATE="$state" \
         GH_TOKEN=x GITHUB_REPOSITORY=owner/repo GITHUB_SHA=abc \
@@ -38,14 +39,15 @@ run_publish() {
 }
 
 reset() {
-    : > "$log"
+    : >"$log"
     rm -f "$state/existing" "$state/drafts"
-    : > "$state/drafts"
-    printf 'MediaGrabber-%s.dmg\nSHA256SUMS\nappcast.xml\nffmpeg-7.1.1.tar.xz\n' "$version" > "$state/assets"
+    : >"$state/drafts"
+    printf 'MediaGrabber-%s.dmg\nSHA256SUMS\nappcast.xml\nffmpeg-7.1.1.tar.xz\n' "$version" >"$state/assets"
 }
 
 check() {
-    local name="$1"; shift
+    local name="$1"
+    shift
     if "$@" >/dev/null 2>&1; then
         printf 'ok   - %s\n' "$name"
     else
@@ -76,7 +78,7 @@ check_order "draft is created before it is published" "release create $tag" "-F 
 check "the asset list is checked before publishing" grep -q "release view $tag --json assets" "$log"
 
 reset
-printf 'MediaGrabber-%s.dmg\nSHA256SUMS\nappcast.xml\n' "$version" > "$state/assets"
+printf 'MediaGrabber-%s.dmg\nSHA256SUMS\nappcast.xml\n' "$version" >"$state/assets"
 if run_publish "$work/feed-ok" >/dev/null 2>&1; then
     printf 'FAIL - a wrong asset list must fail\n'
     fails=$((fails + 1))
@@ -105,7 +107,7 @@ check "--overwrite deletes the release and its tag before creating" run_publish 
 check_order "the overwrite delete comes before the create" "release delete $tag --yes --cleanup-tag" "release create $tag"
 
 reset
-printf '11 v0.1.0\n12 v0.2.0\n' > "$state/drafts"
+printf '11 v0.1.0\n12 v0.2.0\n' >"$state/drafts"
 run_publish "$work/feed-ok" >/dev/null 2>&1 || true
 check "stale drafts for this tag are deleted" grep -q "releases/11" "$log"
 if grep -q "releases/12" "$log"; then

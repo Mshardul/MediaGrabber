@@ -9,7 +9,8 @@ trap 'rm -rf "$work"' EXIT
 fails=0
 
 check() {
-    local name="$1"; shift
+    local name="$1"
+    shift
     if "$@" >/dev/null 2>&1; then
         printf 'ok   - %s\n' "$name"
     else
@@ -19,7 +20,8 @@ check() {
 }
 
 check_fails() {
-    local name="$1"; shift
+    local name="$1"
+    shift
     if "$@" >/dev/null 2>&1; then
         printf 'FAIL - %s\n' "$name"
         fails=$((fails + 1))
@@ -28,13 +30,13 @@ check_fails() {
     fi
 }
 
-printf 'ffmpeg source\n' > "$work/ffmpeg.tar.xz"
-printf 'helper source\n' > "$work/helper.tar.gz"
+printf 'ffmpeg source\n' >"$work/ffmpeg.tar.xz"
+printf 'helper source\n' >"$work/helper.tar.gz"
 ffmpeg_sha="$(shasum -a 256 "$work/ffmpeg.tar.xz" | cut -d' ' -f1)"
 helper_sha="$(shasum -a 256 "$work/helper.tar.gz" | cut -d' ' -f1)"
 
 write_lock() {
-    cat > "$work/tools.lock" <<LOCK
+    cat >"$work/tools.lock" <<LOCK
 ffmpeg 7.1.1 file://$work/ffmpeg.tar.xz $ffmpeg_sha mirror
 shield-source 2.0.2 file://$work/helper.tar.gz $helper_sha mirror
 LOCK
@@ -66,7 +68,7 @@ fi
 check_fails "check rejects a missing source" bash -c "printf '%s\n' '$expected' | grep -v 'ffmpeg-7.1.1' | bash '$script' check 0.1.0"
 check_fails "check rejects an unexpected file" bash -c "printf '%s\n' '$expected' 'notes.txt' | bash '$script' check 0.1.0"
 
-cat >> "$work/tools.lock" <<LOCK
+cat >>"$work/tools.lock" <<LOCK
 lame 3.100 file://$work/ffmpeg.tar.xz $ffmpeg_sha mirror
 LOCK
 check_fails "check rejects a new mirror entry with an unchanged list" bash -c "printf '%s\n' '$expected' | bash '$script' check 0.1.0"
@@ -81,8 +83,8 @@ else
     fails=$((fails + 1))
 fi
 
-printf 'bad\n' > "$work/bad.tar.xz"
-cat > "$work/bad.lock" <<LOCK
+printf 'bad\n' >"$work/bad.tar.xz"
+cat >"$work/bad.lock" <<LOCK
 ffmpeg 7.1.1 file://$work/bad.tar.xz $ffmpeg_sha mirror
 LOCK
 mkdir -p "$work/bad-assets"

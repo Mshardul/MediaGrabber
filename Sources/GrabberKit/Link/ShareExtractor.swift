@@ -1,8 +1,7 @@
 import Foundation
 import UniformTypeIdentifiers
 
-// Only ever touched on MainActor (share extension UI, and MainActor tests);
-// this unblocks Swift 6 region isolation from flagging the array as sent across actors.
+// Safe because only the main actor touches these items; Swift 6 would otherwise reject sending the array.
 extension NSExtensionItem: @retroactive @unchecked Sendable {}
 
 @MainActor

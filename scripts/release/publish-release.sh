@@ -1,18 +1,31 @@
 #!/usr/bin/env bash
 # Publishes the assets folder as a draft, checks its asset list, publishes it and proves the feed.
-# Run: scripts/release/publish-release.sh --version X.Y.Z --notes FILE --assets-dir DIR [--overwrite]
-#   GH_TOKEN, GITHUB_REPOSITORY and GITHUB_SHA in the environment; MG_CHECK_FEED names the feed check.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 version="" notes="" assets="" overwrite=false
 while [ $# -gt 0 ]; do
     case "$1" in
-        --version) version="${2:?}"; shift 2 ;;
-        --notes) notes="${2:?}"; shift 2 ;;
-        --assets-dir) assets="${2:?}"; shift 2 ;;
-        --overwrite) overwrite=true; shift ;;
-        *) echo "unknown argument: $1" >&2; exit 1 ;;
+    --version)
+        version="${2:?}"
+        shift 2
+        ;;
+    --notes)
+        notes="${2:?}"
+        shift 2
+        ;;
+    --assets-dir)
+        assets="${2:?}"
+        shift 2
+        ;;
+    --overwrite)
+        overwrite=true
+        shift
+        ;;
+    *)
+        echo "unknown argument: $1" >&2
+        exit 1
+        ;;
     esac
 done
 [ -n "$version" ] && [ -n "$notes" ] && [ -n "$assets" ] || {
@@ -30,7 +43,7 @@ while read -r id draft_tag; do
     if [ "$draft_tag" = "$tag" ]; then
         gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id" >/dev/null
     fi
-done <<< "$drafts"
+done <<<"$drafts"
 
 if gh release view "$tag" >/dev/null 2>&1; then
     if [ "$overwrite" != "true" ]; then

@@ -222,7 +222,9 @@ struct DiagnosticsPane: View {
                 .font(theme.displayFont(20, .heavy))
                 .foregroundStyle(theme.palette.headline)
             Spacer()
-            SkinnedPrimaryButton("Run check", enabled: !(model?.isRunningCheck ?? true)) { Task { await model?.runCheck() } }
+            SkinnedPrimaryButton("Run check", enabled: !(model?.isRunningCheck ?? true)) {
+                Task { await model?.runCheck() }
+            }
         }
         .padding(.bottom, Spacing.s1)
     }
@@ -348,8 +350,7 @@ private extension DiagnosticsPaneModel.RowTone {
     }
 }
 
-// yt-dlp's path isn't known yet (environment not probed this session) — Run check's own
-// environment probe resolves the real path and this stand-in is discarded before it would matter.
+// Stands in while yt-dlp's path is unknown; Run check resolves the real path before this would matter.
 private struct UnavailableMetadataProbe: MetadataProbing {
     func probe(
         _: String,

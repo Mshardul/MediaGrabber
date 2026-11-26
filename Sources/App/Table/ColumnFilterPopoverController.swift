@@ -10,10 +10,14 @@ final class ColumnFilterPopoverController {
     private var onDismiss: (() -> Void)?
     private var delegate: PopoverDelegate?
 
+    struct Choices {
+        let column: ColumnID
+        let values: [String]
+        let selectedValues: Set<String>
+    }
+
     func present(
-        column: ColumnID,
-        values: [String],
-        selectedValues: Set<String>,
+        _ choices: Choices,
         anchorView: NSView,
         anchorRect: NSRect,
         onToggle: @escaping (String) -> Void,
@@ -26,9 +30,9 @@ final class ColumnFilterPopoverController {
 
         let hostingView = NSHostingView(
             rootView: ColumnFilterPopover(
-                column: column,
-                values: values,
-                selectedValues: selectedValues,
+                column: choices.column,
+                values: choices.values,
+                selectedValues: choices.selectedValues,
                 onToggle: { value in
                     onToggle(value)
                 },
@@ -67,7 +71,8 @@ final class ColumnFilterPopoverController {
         init(onDismiss: @escaping () -> Void) {
             self.onDismiss = onDismiss
         }
-        func popoverDidClose(_ notification: Notification) {
+
+        func popoverDidClose(_: Notification) {
             onDismiss()
         }
     }

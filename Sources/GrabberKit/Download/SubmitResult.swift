@@ -10,7 +10,7 @@ public enum PersistedState: Sendable, Equatable, Codable {
     case failed(reason: String)
 }
 
-// The log discriminator for a deferred start — backoff (Phase 4) and per-host cooldown.
+// Lets the log tell why a start was deferred.
 public enum DeferReason: Sendable, Equatable {
     case backoff(attempt: Int)
     case hostCooldown(host: String, strikes: Int)

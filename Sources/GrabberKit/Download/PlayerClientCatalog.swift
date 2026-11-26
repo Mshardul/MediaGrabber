@@ -15,8 +15,8 @@ public struct BundledPlayerClientOrder: PlayerClientOrdering {
 public struct LivePlayerClientOrder: PlayerClientOrdering {
     private let store: PlayerClientCatalogStore
 
-    public init(directory: URL, now: @escaping @Sendable () -> Date = { Date() }) {
-        store = PlayerClientCatalogStore(directory: directory, now: now)
+    public init(directory: URL, now: @escaping @Sendable () -> Date = { Date() }, log: LogWriter? = nil) {
+        store = PlayerClientCatalogStore(directory: directory, now: now, log: log)
     }
 
     public func order() async -> [String] {
@@ -59,17 +59,20 @@ public struct PlayerClientCatalogStore: Sendable {
     private let now: @Sendable () -> Date
     private let maxAge: TimeInterval
     private let failureBackoff: TimeInterval
+    private let log: LogWriter?
 
     public init(
         directory: URL,
         now: @escaping @Sendable () -> Date,
         maxAge: TimeInterval = 86400,
-        failureBackoff: TimeInterval = 3600
+        failureBackoff: TimeInterval = 3600,
+        log: LogWriter? = nil
     ) {
         self.directory = directory
         self.now = now
         self.maxAge = maxAge
         self.failureBackoff = failureBackoff
+        self.log = log
     }
 
     public func order(fetch: @Sendable () async throws -> Data) async -> [String] {
@@ -87,7 +90,7 @@ public struct PlayerClientCatalogStore: Sendable {
                 return clients
             }
         } catch {
-            // A failed fetch keeps the last accepted list.
+            await log?.log(.playerClientFetchFailed(error: error.localizedDescription), level: .warn)
         }
         write(
             clients: saved?.clients ?? [],

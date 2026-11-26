@@ -8,7 +8,8 @@ trap 'rm -rf "$work"' EXIT
 fails=0
 
 check() {
-    local name="$1"; shift
+    local name="$1"
+    shift
     if "$@" >/dev/null 2>&1; then
         printf 'ok   - %s\n' "$name"
     else
@@ -21,13 +22,24 @@ check() {
 home="$work/home"
 tool_dir="$home/Library/Developer/Xcode/DerivedData/App/SourcePackages/artifacts/sparkle/Sparkle/bin"
 mkdir -p "$tool_dir" "$work/bin" "$work/run" "$work/assets"
-printf '#!/bin/sh\necho '"'"'sparkle:edSignature="SIG123" length="12"'"'"'\n' > "$tool_dir/sign_update"
+printf '#!/bin/sh\necho '"'"'sparkle:edSignature="SIG123" length="12"'"'"'\n' >"$tool_dir/sign_update"
 chmod +x "$tool_dir/sign_update"
-printf 'disk image\n' > "$work/run/MediaGrabber-0.1.0.dmg"
-: > "$work/github-output"
+printf 'disk image\n' >"$work/run/MediaGrabber-0.1.0.dmg"
+: >"$work/github-output"
 
 # Stub gh that simulates "release not found"
-printf '#!/usr/bin/env bash\ncase "$1 $2" in\n  "release view")\n    echo "release not found" >&2\n    exit 1\n    ;;\n  *)\n    exit 0\n    ;;\nesac\n' > "$work/bin/gh"
+cat >"$work/bin/gh" <<'STUB'
+#!/usr/bin/env bash
+case "$1 $2" in
+  "release view")
+    echo "release not found" >&2
+    exit 1
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+STUB
 chmod +x "$work/bin/gh"
 
 run_sign() {
@@ -41,7 +53,7 @@ check "the appcast carries the signature" grep -q 'SIG123' "$work/assets/appcast
 check "the signed output is written for the workflow" grep -qx 'signed=true' "$work/github-output"
 
 # Test: an earlier release exists (its feed must be downloaded and kept)
-cat > "$work/bin/gh" <<'STUB'
+cat >"$work/bin/gh" <<'STUB'
 #!/usr/bin/env bash
 case "$1 $2" in
   "release view") echo '{"tagName":"v0.0.9"}' ;;
@@ -61,7 +73,18 @@ check "the earlier item stays in the appcast" grep -q 'OLD' "$work/assets/appcas
 check "the new item joins the appcast" grep -q 'SIG123' "$work/assets/appcast.xml"
 
 # Test: gh returns an authentication error (should fail)
-printf '#!/usr/bin/env bash\ncase "$1 $2" in\n  "release view")\n    echo "authentication failed" >&2\n    exit 1\n    ;;\n  *)\n    exit 0\n    ;;\nesac\n' > "$work/bin/gh"
+cat >"$work/bin/gh" <<'STUB'
+#!/usr/bin/env bash
+case "$1 $2" in
+  "release view")
+    echo "authentication failed" >&2
+    exit 1
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+STUB
 chmod +x "$work/bin/gh"
 
 msg="$(cd "$work/run" && HOME="$home" PATH="$work/bin:$PATH" GITHUB_OUTPUT="$work/github-output" \

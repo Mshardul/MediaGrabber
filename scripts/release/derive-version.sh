@@ -3,8 +3,8 @@ set -euo pipefail
 version="${INPUT_VERSION:-}"
 if [[ -z "$version" ]]; then
     case "${EVENT_NAME:-}" in
-        release|push) version="${REF_NAME#v}" ;;
-        *) version="" ;;
+    release | push) version="${REF_NAME#v}" ;;
+    *) version="" ;;
     esac
 fi
 if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -18,5 +18,5 @@ if [[ ! -s "$notes" ]]; then
 fi
 printf '%s\n' "$version"
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
-    printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+    printf 'version=%s\n' "$version" >>"$GITHUB_OUTPUT"
 fi

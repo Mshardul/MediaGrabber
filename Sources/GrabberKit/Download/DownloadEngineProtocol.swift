@@ -164,7 +164,7 @@ public struct EngineDependencies: Sendable {
                 onlineSettle: TimeInterval(tuning.networkOnlineSettleSeconds)
             ),
             potProvider: potProvider,
-            playerClientOrder: LivePlayerClientOrder(directory: locations.playerClients)
+            playerClientOrder: LivePlayerClientOrder(directory: locations.playerClients, log: log)
         )
     }
 

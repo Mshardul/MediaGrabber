@@ -4,8 +4,7 @@ import XCTest
 
 @MainActor
 final class GridHeaderCellTests: XCTestCase {
-    // AppKit copies cells without retaining a Swift subclass's reference fields; freeing the copies
-    // and the original must not over-release anything.
+    // AppKit copies cells without retaining Swift reference fields, so freeing the copies must not over-release.
     func test_copiedHeaderCells_canBeFreedRepeatedlyWithoutCrashing() {
         for _ in 0 ..< 50 {
             let original = GridHeaderCell(textCell: "Title")

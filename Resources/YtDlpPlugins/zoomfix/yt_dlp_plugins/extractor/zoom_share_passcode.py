@@ -65,15 +65,16 @@ def _zoom_error(message):
 
 
 def _player_field(html, key):
-    match = re.search(rf'window\.__zm_unified_player__\s*=\s*\{{.*?\b{key}:\s*"([^"]+)"', html, re.S)
+    match = re.search(
+        rf'window\.__zm_unified_player__\s*=\s*\{{.*?\b{key}:\s*"([^"]+)"', html, re.S
+    )
     return match.group(1).replace("\\/", "/") if match else None
 
 
 _ZOOM_FILE_NAME = re.compile(r"^(GMT(\d{8})-(\d{6})_[^/?#]+)\.mp4$")
 
 
-# Every session of a course shares one meeting topic, so Zoom's own file name
-# (unique per recording) names the file.
+# Sessions of a course share one meeting topic, so only Zoom's own file name tells recordings apart.
 def _named_after_zoom_file(info):
     best = None
     for fmt in info.get("formats") or []:
@@ -103,9 +104,9 @@ class ZoomClipsIE(_PacedMixin, BaseZoomClipsIE):
     pass
 
 
-# Stock yt-dlp's zoom extractor still follows the retired share page, so share links are handled here.
+# Stock yt-dlp still follows Zoom's retired share page, so share links are handled here.
 class ZoomIE(_PacedMixin, BaseZoomIE):
-    # The video download follows at once and does not pass through the extractor, so wait before handing it over.
+    # The download follows at once and bypasses the extractor, so wait before handing it over.
     def _ready_to_download(self, info):
         if not (self.get_param("simulate") or self.get_param("skip_download")):
             _pace()
@@ -179,7 +180,10 @@ class ZoomIE(_PacedMixin, BaseZoomIE):
         passcode = self._required_passcode()
         component_url = self._redirect_target(base_url, result, origin_url=share_url)
         component = self._download_webpage(
-            component_url, video_id, note="Downloading passcode page", headers={"Referer": share_url}
+            component_url,
+            video_id,
+            note="Downloading passcode page",
+            headers={"Referer": share_url},
         )
         data = self._get_page_data(component, video_id)
         if data.get("needRecaptcha") in (True, "true"):

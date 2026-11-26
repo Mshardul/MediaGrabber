@@ -121,7 +121,9 @@ UNIFIED_PAGE = (
     'featureConfigApi: "\\/nws\\/recording\\/2.0\\/share\\/UUID-1\\/feature-config?pageType=web"\n'
     "};</script></html>"
 )
-PLAY_URL = "https://ssrweb.zoom.us/replay02/2026/11/14/UUID-1/GMT20261114-121249_Recording_1920x1080.mp4"
+PLAY_URL = (
+    "https://ssrweb.zoom.us/replay02/2026/11/14/UUID-1/GMT20261114-121249_Recording_1920x1080.mp4"
+)
 LOCKED = {"status": True, "result": {"middlePageInfo": {"pageType": "verifyPasscode"}}}
 UNLOCKED = {
     "status": True,
@@ -138,7 +140,9 @@ UNLOCKED = {
 
 
 class FakeZoom:
-    def __init__(self, plugin, passcode="secret", responses=None, verify=None, share_page=UNIFIED_PAGE):
+    def __init__(
+        self, plugin, passcode="secret", responses=None, verify=None, share_page=UNIFIED_PAGE
+    ):
         self.calls = []
         self.verify_body = None
         self.verify_headers = None
@@ -219,7 +223,15 @@ class ShareFlowTests(unittest.TestCase):
         self.assertEqual(fake.count("verify-passcode"), 0)
 
     def test_rejected_passcode_raises_once_and_sends_one_attempt(self):
-        fake = FakeZoom(self.plugin, verify={"status": False, "errorCode": 3302, "errorMessage": "Wrong passcode", "result": None})
+        fake = FakeZoom(
+            self.plugin,
+            verify={
+                "status": False,
+                "errorCode": 3302,
+                "errorMessage": "Wrong passcode",
+                "result": None,
+            },
+        )
         with self.assertRaisesRegex(ExtractorError, "Zoom rejected the passcode"):
             fake.ie._real_extract(SHARE_URL)
         self.assertEqual(fake.count("verify-passcode"), 1)
@@ -243,7 +255,10 @@ class ShareFlowTests(unittest.TestCase):
             fake.ie._real_extract(SHARE_URL)
 
     def test_a_topic_title_is_kept_when_the_file_name_has_no_zoom_pattern(self):
-        media = {"mediaTopic": "Business Valuation", "playUrl": "https://ssrweb.zoom.us/x/video.mp4?s=1"}
+        media = {
+            "mediaTopic": "Business Valuation",
+            "playUrl": "https://ssrweb.zoom.us/x/video.mp4?s=1",
+        }
         fake = FakeZoom(
             self.plugin, passcode=None, responses=[{"status": True, "result": {"mediaInfo": media}}]
         )
@@ -251,9 +266,15 @@ class ShareFlowTests(unittest.TestCase):
 
     def test_title_and_timestamp_come_from_the_zoom_file_name_of_a_play_link(self):
         fake = FakeZoom(self.plugin)
-        formats = [{"url": f"https://ssrweb.zoom.us/cmr/{name}.mp4?s=2", "preference": rank} for rank, name in enumerate(
-            ["GMT20261031-105457_Recording_1760x900", "GMT20261031-105457_Recording_gallery_1920x1080"]
-        )]
+        formats = [
+            {"url": f"https://ssrweb.zoom.us/cmr/{name}.mp4?s=2", "preference": rank}
+            for rank, name in enumerate(
+                [
+                    "GMT20261031-105457_Recording_1760x900",
+                    "GMT20261031-105457_Recording_gallery_1920x1080",
+                ]
+            )
+        ]
         stock_info = {"id": "file-id", "title": "Product & Brand Management", "formats": formats}
         with mock.patch.object(BaseZoomIE, "_real_extract", return_value=stock_info):
             info = fake.ie._real_extract("https://example.zoom.us/rec/play/ABC")
@@ -276,13 +297,21 @@ class ShareFlowTests(unittest.TestCase):
             fake.ie._real_extract(SHARE_URL)
 
 
-DATA_PAGE = "<html><script>window.__data__ = { meetingId: 'MEET-1', fileId: '', isLogin: false };</script></html>"
+DATA_PAGE = (
+    "<html><script>window.__data__ = "
+    "{ meetingId: 'MEET-1', fileId: '', isLogin: false };</script></html>"
+)
 COMPONENT_PAGE = (
-    "<html><script>window.__data__ = { meeting_id: 'MEET-2', fileId: 'FILE-2', action: 'viewdetailpage',\n"
+    "<html><script>window.__data__ = { meeting_id: 'MEET-2', fileId: 'FILE-2',"
+    " action: 'viewdetailpage',\n"
     " useWhichPasswd: 'recording', sharelevel: 'meeting', needRecaptcha: %s };</script></html>"
 )
 SHARE_LOCKED = {
-    "result": {"componentName": "need-password", "redirectUrl": "/rec/component-page", "meetingId": "MEET-1"}
+    "result": {
+        "componentName": "need-password",
+        "redirectUrl": "/rec/component-page",
+        "meetingId": "MEET-1",
+    }
 }
 SHARE_OPEN = {"result": {"redirectUrl": "/rec/play/PLAY-TOKEN"}}
 
@@ -291,7 +320,9 @@ class FakeDataPageZoom:
     def __init__(self, plugin, passcode="secret", share_infos=None, verify=None, captcha=False):
         self.events = []
         self.verify_form = None
-        self.share_infos = list(share_infos if share_infos is not None else [SHARE_LOCKED, SHARE_OPEN])
+        self.share_infos = list(
+            share_infos if share_infos is not None else [SHARE_LOCKED, SHARE_OPEN]
+        )
         self.verify = {"status": True} if verify is None else verify
         self.component = COMPONENT_PAGE % ("true" if captcha else "false")
         params = {"quiet": True, "no_warnings": True}
@@ -350,7 +381,10 @@ class DataPageShareFlowTests(unittest.TestCase):
         self.assertEqual(self.stock_urls, [f"{BASE}rec/play/PLAY-TOKEN"])
         self.assertEqual(info["id"], "TOKEN.ABC")
         self.assertEqual(info["title"], "GMT20261114-121249_Recording_1920x1080")
-        info_url = f"{BASE}nws/recording/1.0/play/share-info/%s?originDomain=example.zoom.us&accessLevel=meeting"
+        info_url = (
+            f"{BASE}nws/recording/1.0/play/share-info/%s"
+            "?originDomain=example.zoom.us&accessLevel=meeting"
+        )
         self.assertEqual(fake.events[:2], [SHARE_URL, info_url % "MEET-1"])
         self.assertEqual(fake.count("validate-meeting-passwd"), 1)
         self.assertIn(info_url % "MEET-2", fake.events)
@@ -382,7 +416,9 @@ class DataPageShareFlowTests(unittest.TestCase):
         self.assertEqual(fake.count("validate"), 0)
 
     def test_share_info_without_a_play_page_says_zoom_changed(self):
-        fake = FakeDataPageZoom(self.plugin, share_infos=[{"result": {"componentName": "something-new"}}])
+        fake = FakeDataPageZoom(
+            self.plugin, share_infos=[{"result": {"componentName": "something-new"}}]
+        )
         with self.assertRaisesRegex(ExtractorError, "Zoom changed how its recordings work"):
             self.extract(fake)
 

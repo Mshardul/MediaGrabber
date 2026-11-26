@@ -10,7 +10,8 @@ trap 'rm -rf "$work"' EXIT
 fails=0
 
 check() {
-    local name="$1"; shift
+    local name="$1"
+    shift
     if "$@" >/dev/null 2>&1; then
         printf 'ok   - %s\n' "$name"
     else
@@ -31,12 +32,12 @@ plutil -create xml1 "$app/Contents/Info.plist"
 plutil -insert SUPublicEDKey -string "$public" "$app/Contents/Info.plist"
 
 dmg="$work/MediaGrabber-0.1.0.dmg"
-printf 'disk image\n' > "$dmg"
-length="$(wc -c < "$dmg" | tr -d " ")"
+printf 'disk image\n' >"$dmg"
+length="$(wc -c <"$dmg" | tr -d " ")"
 
 make_appcast() {
     local version="$1" signature="$2" file="$3"
-    cat > "$file" <<XML
+    cat >"$file" <<XML
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
@@ -63,11 +64,11 @@ check "a signature from a different key fails" \
 check "a relative app path passes" \
     bash -c "cd '$work' && bash '$script' --appcast appcast.xml --app MediaGrabber.app --dmg '$dmg' --version 0.1.0"
 
-printf 'tampered\n' >> "$dmg"
+printf 'tampered\n' >>"$dmg"
 check "a tampered disk image fails" \
     bash -c "! bash '$script' --appcast '$work/appcast.xml' --app '$app' --dmg '$dmg' --version 0.1.0"
 
-printf 'disk image\n' > "$dmg"
+printf 'disk image\n' >"$dmg"
 make_appcast 0.2.0 "$good_signature" "$work/newer.xml"
 check "a newest item with another version fails" \
     bash -c "! bash '$script' --appcast '$work/newer.xml' --app '$app' --dmg '$dmg' --version 0.1.0"

@@ -237,9 +237,9 @@ def test_unusable_summary_base_is_stated_and_status_unchanged(self):
 
 - [x] **Step 2:** Run (FAIL), implement, run again (PASS) with `scripts/tests/test_checks.sh`.
 - [x] **Step 3:** Add the four targets. In `.pre-commit-config.yaml`, remove the two Ruff hooks and add one local hook with `require_serial: true`, `verbose: true`, `pass_filenames: false`, calling `staged` mode. A thin wrapper gives a plain error when `mise` or `.venv` is missing. Document `pre-commit install` in `docs/development.md`.
-- [ ] **Step 4:** Ask the user to test the hook, since it needs a commit: one fully staged badly formatted file, one partly staged file whose fix does not overlap the unstaged change, and one whose fix does. Expected in turn: fixed and unstaged with the commit stopped; the same; rolled back with the `make fix` message shown. Pre-commit hides a passing hook unless `verbose` works, so also confirm a passing commit shows the report.
+- [x] **Step 4:** Ask the user to test the hook, since it needs a commit: one fully staged badly formatted file, one partly staged file whose fix does not overlap the unstaged change, and one whose fix does. Expected in turn: fixed and unstaged with the commit stopped; the same; rolled back with the `make fix` message shown. Pre-commit hides a passing hook unless `verbose` works, so also confirm a passing commit shows the report.
 - [x] **Step 5:** Write `3.15` to `.python-version`. `make venv` creates the venv with that version and fails with a plain error when it is not installed or an existing `.venv` has another version. Ask the user before replacing an existing `.venv`, then run `make venv` and `scripts/tests/test_checks.sh`. Expected: PASS.
-- [ ] **Step 6:** Run `make check`. Expected: every file changed so far passes.
+- [x] **Step 6:** Run `make check`. Expected: every file changed so far passes.
 
 ---
 
@@ -270,11 +270,11 @@ def test_unusable_summary_base_is_stated_and_status_unchanged(self):
 
 **Files:** Every file `make check-all` reports.
 
-- [ ] **Step 1:** Ask the user to confirm that other work in progress is settled. Wait.
-- [ ] **Step 2:** Run `make check-all` and give the user the count per check. List each finding that needs a suppression or setting change, and get approval before making one.
-- [ ] **Step 3:** Run `make fix-all`, then `make test`. Expected: PASS. Review the diffs of rewritten Swift and shell files.
-- [ ] **Step 4:** Fix the rest by hand: comments (including script headers and multi-line `///`), phase references, ShellCheck notes, SwiftLint findings under `scripts/`.
-- [ ] **Step 5:** Run `make check-all` and `make test`. Expected: both PASS.
+- [x] **Step 1:** Ask the user to confirm that other work in progress is settled. Wait.
+- [x] **Step 2:** Run `make check-all` and give the user the count per check. List each finding that needs a suppression or setting change, and get approval before making one.
+- [x] **Step 3:** Run `make fix-all`, then `make test`. Expected: PASS. Review the diffs of rewritten Swift and shell files.
+- [x] **Step 4:** Fix the rest by hand: comments (including script headers and multi-line `///`), phase references, ShellCheck notes, SwiftLint findings under `scripts/`.
+- [x] **Step 5:** Run `make check-all` and `make test`. Expected: both PASS.
 
 ---
 
@@ -362,10 +362,10 @@ def test_interrupt_kills_children_and_runs_cleanup(self):
 
 ## Tickets this plan overlaps
 
-| Row | Covered by |
-| --- | --- |
-| mg-032, mg-065, mg-141 | Task 10 |
-| mg-142 | Tasks 8 and 11 |
-| mg-178 | Task 10 |
+| Row                    | Covered by     |
+| ---------------------- | -------------- |
+| mg-032, mg-065, mg-141 | Task 10        |
+| mg-142                 | Tasks 8 and 11 |
+| mg-178                 | Task 10        |
 
 mg-177, an intermittent test, can fail the `make test` gates in this plan until it is fixed.

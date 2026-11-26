@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # The Privacy pane must show the same plain-text copy that PRIVACY.md converts to.
-# Run: scripts/tests/test_privacy.sh
 
 set -euo pipefail
 
@@ -12,7 +11,8 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
 check() {
-    local name="$1"; shift
+    local name="$1"
+    shift
     if "$@" >/dev/null 2>&1; then
         printf 'ok   - %s\n' "$name"
     else

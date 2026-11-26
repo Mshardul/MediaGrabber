@@ -10,7 +10,8 @@ fails=0
 feed="https://github.com/Mshardul/MediaGrabber/releases/latest/download/appcast.xml"
 
 check() {
-    local name="$1"; shift
+    local name="$1"
+    shift
     if "$@" >/dev/null 2>&1; then
         printf 'ok   - %s\n' "$name"
     else

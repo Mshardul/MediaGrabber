@@ -1,7 +1,6 @@
 @testable import GrabberKit
 import XCTest
 
-// Phase 4 persistence guard-rails: attempt round-trips, a restored failure offers Retry.
 final class PersistenceRetryTests: XCTestCase {
     private func request() -> DownloadRequest {
         DownloadRequest(

@@ -17,8 +17,6 @@ public struct LicenseEntry: Sendable, Equatable {
     }
 }
 
-/// The components bundled inside the app, their licenses and a plain-language line each.
-///
 /// Every name in `scripts/tools.lock` maps through `componentID(forLockName:)`, or a unit test fails.
 public enum LicenseCatalog {
     public static let appLicense = "MIT"

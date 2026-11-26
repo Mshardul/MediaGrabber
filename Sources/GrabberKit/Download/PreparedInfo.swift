@@ -1,7 +1,6 @@
 import Foundation
 
-// The data a link check already fetched, so the download need not run a slow, rate-sensitive site's steps again.
-// It holds session cookies: it is written owner-only, used once, and deleted when the download ends.
+// Spares rate-sensitive sites a repeat check; it holds session cookies, so it is owner-only and used once.
 public struct PreparedInfo: Sendable, Equatable {
     static let reusableExtractors: Set<String> = ["zoom"]
     // How long a signed video link stays valid is unknown, so reuse stays well short of a long pause.

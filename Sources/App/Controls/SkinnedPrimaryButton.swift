@@ -37,9 +37,9 @@ struct SkinnedPrimaryButton: View {
 
     private var gradientColors: [Color] {
         if enabled {
-            return [theme.palette.goFillStart, theme.palette.goFillEnd]
+            [theme.palette.goFillStart, theme.palette.goFillEnd]
         } else {
-            return [
+            [
                 theme.palette.goFillStart.opacity(0.5),
                 theme.palette.goFillEnd.opacity(0.5)
             ]

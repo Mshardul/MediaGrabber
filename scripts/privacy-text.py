@@ -38,7 +38,9 @@ def main(argv):
         if not line.strip():
             out_lines.append("")
             continue
-        out_lines.extend(textwrap.wrap(line, width=78, break_long_words=False, break_on_hyphens=False) or [""])
+        out_lines.extend(
+            textwrap.wrap(line, width=78, break_long_words=False, break_on_hyphens=False) or [""]
+        )
     with open(out, "w", encoding="utf-8") as handle:
         handle.write("\n".join(out_lines) + "\n")
 

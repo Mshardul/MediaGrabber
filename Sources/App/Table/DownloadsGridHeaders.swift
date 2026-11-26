@@ -7,8 +7,7 @@ enum GridHeaderHit {
     case title
 }
 
-// AppKit copies cells without retaining a Swift subclass's reference fields, so every stored property here
-// must be a trivial value; the (reference-holding) tokens live in one shared place instead.
+// AppKit copies cells without retaining Swift reference fields, so stored properties here must stay trivial.
 final class GridHeaderCell: NSTableHeaderCell {
     nonisolated(unsafe) static var sharedTokens = DownloadsGridTokens.aurora
 

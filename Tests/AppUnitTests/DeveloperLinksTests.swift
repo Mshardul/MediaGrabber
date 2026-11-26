@@ -1,5 +1,5 @@
-import XCTest
 @testable import MediaGrabber
+import XCTest
 
 final class DeveloperLinksTests: XCTestCase {
     func test_linksPointAtMediaGrabberRepository() {

@@ -19,15 +19,15 @@ struct SkinnedTextButton: View {
                 .font(theme.bodyFont(12, .medium))
                 .foregroundStyle(
                     pressing ? theme.palette.accent.opacity(0.8) :
-                    (hovering || focused) ? theme.palette.accent :
-                    theme.palette.accent
+                        (hovering || focused) ? theme.palette.accent :
+                        theme.palette.accent
                 )
                 .padding(.horizontal, Spacing.s2)
                 .padding(.vertical, Spacing.s1)
                 .background(
                     RoundedRectangle(cornerRadius: theme.controlRadius)
                         .fill(pressing ? theme.palette.accent.opacity(0.1) :
-                              (hovering || focused) ? theme.palette.accent.opacity(0.08) : .clear)
+                            (hovering || focused) ? theme.palette.accent.opacity(0.08) : .clear)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: theme.controlRadius)

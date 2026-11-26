@@ -69,8 +69,7 @@ final class EngineRetryIntentTests: XCTestCase {
         return id
     }
 
-    // "Restart" (UI) is always fresh (attempt = 0), even for a transient class like networkDown
-    // with a resumable .part on disk — no resume-vs-fresh split, per the locked contract.
+    // UI "Restart" is always fresh (attempt = 0), even for a transient failure with a resumable .part file.
     func test_retryPath_networkDownWithPart_resetsAttemptDeletesPart() async {
         let clock = FakeClock(now: Date(timeIntervalSince1970: 0))
         let (dir, part) = destWithPart(stem: "Clip")
