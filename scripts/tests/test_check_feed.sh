@@ -7,17 +7,36 @@ script="$root/release/check-feed.sh"
 work="$(mktemp -d)"
 site="$work/site"
 mkdir -p "$site"
-servers=()
+# A file, because start_server runs in a subshell that cannot change a variable out here.
+server_pids="$work/server.pids"
+: >"$server_pids"
 fails=0
 
+stop_servers() {
+    local pid
+    while read -r pid; do
+        kill "$pid" 2>/dev/null || true
+    done <"$server_pids"
+}
+
+# A stopped server takes a moment to exit, so this waits a limited time for it.
+no_server_left() {
+    for _ in $(seq 1 100); do
+        pgrep -f "fixture-server.py --root $site" >/dev/null || return 0
+        sleep 0.05
+    done
+    return 1
+}
+
 cleanup() {
-    for pid in "${servers[@]:-}"; do kill "$pid" 2>/dev/null || true; done
+    stop_servers
     rm -rf "$work"
 }
 trap cleanup EXIT
 
 check() {
-    local name="$1"; shift
+    local name="$1"
+    shift
     if "$@" >/dev/null 2>&1; then
         printf 'ok   - %s\n' "$name"
     else
@@ -28,10 +47,10 @@ check() {
 
 start_server() {
     local log="$work/server.log"
-    : > "$log"
-    python3 "$root/e2e/fixture-server.py" --root "$@" > "$log" 2>&1 &
+    : >"$log"
+    python3 "$root/e2e/fixture-server.py" --root "$@" >"$log" 2>&1 &
     local pid=$!
-    servers+=("$pid")
+    echo "$pid" >>"$server_pids"
     for _ in $(seq 1 100); do
         grep -q '^listening ' "$log" && break
         sleep 0.05
@@ -41,7 +60,7 @@ start_server() {
 
 write_feed() {
     local version="$1" enclosure="$2" length="$3" file="$4"
-    cat > "$file" <<XML
+    cat >"$file" <<XML
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
@@ -55,8 +74,8 @@ write_feed() {
 XML
 }
 
-printf 'disk image\n' > "$site/clip.dmg"
-length="$(wc -c < "$site/clip.dmg" | tr -d " ")"
+printf 'disk image\n' >"$site/clip.dmg"
+length="$(wc -c <"$site/clip.dmg" | tr -d " ")"
 base="$(start_server "$site")"
 feed_url="$base/feed.xml"
 write_feed 0.1.0 "$base/clip.dmg" "$length" "$site/feed.xml"
@@ -68,7 +87,10 @@ run_check() {
 check "a matching feed and disk image pass" run_check 5
 
 write_feed 0.0.9 "$base/clip.dmg" "$length" "$site/feed.xml"
-(sleep 1; write_feed 0.1.0 "$base/clip.dmg" "$length" "$site/feed.xml") &
+(
+    sleep 1
+    write_feed 0.1.0 "$base/clip.dmg" "$length" "$site/feed.xml"
+) &
 check "a stale feed that catches up within the window passes" run_check 12
 
 write_feed 0.0.9 "$base/clip.dmg" "$length" "$site/feed.xml"
@@ -84,6 +106,9 @@ write_feed 0.1.0 "$base/clip.dmg" "$length" "$site/feed.xml"
 redirect_base="$(start_server "$site" --redirect "/redirect.xml=$feed_url")"
 feed_url="$redirect_base/redirect.xml"
 check "a redirected feed is followed" run_check 5
+
+stop_servers
+check "no test server is left running" no_server_left
 
 if [ "$fails" -ne 0 ]; then
     printf '\n%d test(s) failed\n' "$fails"

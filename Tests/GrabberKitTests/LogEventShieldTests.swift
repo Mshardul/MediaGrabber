@@ -30,4 +30,11 @@ final class LogEventShieldTests: XCTestCase {
         XCTAssertEqual(event.category, .deps)
         XCTAssertTrue(event.fields.isEmpty)
     }
+
+    func testShieldNoFreePort() {
+        let event = LogEvent.shieldNoFreePort
+        XCTAssertEqual(event.key, "shield.no_free_port")
+        XCTAssertEqual(event.category, .deps)
+        XCTAssertTrue(event.fields.isEmpty)
+    }
 }

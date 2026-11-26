@@ -43,6 +43,7 @@ final class YtDlpUpdaterTests: XCTestCase {
     func test_installsWhenChecksumAndCanaryPass() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let bytes = Data("downloader".utf8)
+        let checksum = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
         let updater = YtDlpUpdater(
             fetcher: FakeFetcher(result: .success(binary(version: "2026.08.01", bytes: bytes))),
             binDirectory: root,
@@ -54,6 +55,49 @@ final class YtDlpUpdaterTests: XCTestCase {
         let installed = try Data(contentsOf: root.appendingPathComponent("yt-dlp"))
         XCTAssertEqual(installed, bytes)
         XCTAssertFalse(FileManager.default.fileExists(atPath: root.appendingPathComponent("yt-dlp.incoming").path))
+        let receipt = try String(contentsOf: root.appendingPathComponent("yt-dlp.sha256"), encoding: .utf8)
+        XCTAssertEqual(receipt, checksum)
+    }
+
+    func test_failedInstall_keepsThePreviousCopyAndItsReceipt() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let previous = root.appendingPathComponent("yt-dlp")
+        let receipt = root.appendingPathComponent("yt-dlp.sha256")
+        try Data("old".utf8).write(to: previous)
+        try Data("old-receipt".utf8).write(to: receipt)
+        try FileManager.default.setAttributes([.immutable: true], ofItemAtPath: previous.path)
+        defer {
+            try? FileManager.default.setAttributes([.immutable: false], ofItemAtPath: previous.path)
+            try? FileManager.default.removeItem(at: root)
+        }
+        let updater = YtDlpUpdater(
+            fetcher: FakeFetcher(result: .success(binary(version: "2026.08.01", bytes: Data("new".utf8)))),
+            binDirectory: root,
+            minimumVersion: "2026.01.01",
+            canary: { _ in true }
+        )
+        let result = await updater.updateToLatest()
+        guard case let .failure(reason) = result else { return XCTFail("expected failure, got \(result)") }
+        XCTAssertNotEqual(reason, YtDlpUpdateCopy.offline, "a disk failure is not a connection failure")
+        XCTAssertEqual(try Data(contentsOf: previous), Data("old".utf8))
+        XCTAssertEqual(try Data(contentsOf: receipt), Data("old-receipt".utf8))
+    }
+
+    func test_saveFailureCopyNamesTheRealCause() {
+        let full = NSError(domain: NSPOSIXErrorDomain, code: Int(ENOSPC))
+        let denied = NSError(domain: NSCocoaErrorDomain, code: NSFileWriteNoPermissionError)
+        let other = NSError(domain: NSCocoaErrorDomain, code: NSFileWriteUnknownError)
+        XCTAssertEqual(
+            YtDlpUpdateCopy.saveFailed(full),
+            "The update couldn't be saved because the disk is full. Free some space, then try again."
+        )
+        XCTAssertEqual(
+            YtDlpUpdateCopy.saveFailed(denied),
+            "The update couldn't be saved because the app data folder isn't writable. "
+                + "Make the folder writable, then try again."
+        )
+        XCTAssertEqual(YtDlpUpdateCopy.saveFailed(other), "The update couldn't be saved on this Mac. Try again.")
     }
 
     func test_checksumMismatch_leavesThePreviousCopy() async throws {

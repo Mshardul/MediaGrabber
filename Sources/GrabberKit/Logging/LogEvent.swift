@@ -17,7 +17,7 @@ public enum LogCategory: String, Sendable {
 
 public enum LogEvent: Sendable {
     case appLaunched
-    case probeCompleted(url: String, title: String?, ok: Bool)
+    case probeCompleted(url: String, title: String?, ok: Bool, reason: String? = nil)
     case jobStateChanged(jobID: UUID, from: String, to: String)
     case processLaunched(executable: String, argvRedacted: [String])
     case processExited(executable: String, code: Int32)
@@ -51,6 +51,7 @@ public enum LogEvent: Sendable {
     case shieldExited(code: Int32)
     case shieldRestarted(reason: String)
     case shieldMissing
+    case shieldNoFreePort
 
     var key: String {
         switch self {
@@ -89,6 +90,7 @@ public enum LogEvent: Sendable {
         case .shieldExited: "shield.exited"
         case .shieldRestarted: "shield.restarted"
         case .shieldMissing: "shield.missing"
+        case .shieldNoFreePort: "shield.no_free_port"
         }
     }
 
@@ -109,7 +111,7 @@ public enum LogEvent: Sendable {
              .jobDuplicateSubmitCancelled: .ui
         case .hostRateStateChanged, .circuitOpened, .circuitReset,
              .adaptiveConcurrencyChanged, .networkPathChanged, .hostBlockOverridden: .scheduler
-        case .shieldStarted, .shieldExited, .shieldRestarted, .shieldMissing: .deps
+        case .shieldStarted, .shieldExited, .shieldRestarted, .shieldMissing, .shieldNoFreePort: .deps
         }
     }
 
@@ -136,8 +138,8 @@ public enum LogEvent: Sendable {
         switch self {
         case .appLaunched:
             [:]
-        case let .probeCompleted(url, title, ok):
-            ["url": url, "title": title ?? "", "ok": ok ? "true" : "false"]
+        case let .probeCompleted(url, title, ok, reason):
+            probeFields(url: url, title: title, ok: ok, reason: reason)
         case let .jobStateChanged(_, from, to):
             ["from": from, "to": to]
         case let .processLaunched(executable, argvRedacted):
@@ -200,7 +202,15 @@ public enum LogEvent: Sendable {
             ["reason": reason]
         case .shieldMissing:
             [:]
+        case .shieldNoFreePort:
+            [:]
         }
+    }
+
+    private func probeFields(url: String, title: String?, ok: Bool, reason: String?) -> [String: String] {
+        var fields = ["url": url, "title": title ?? "", "ok": ok ? "true" : "false"]
+        fields["reason"] = reason
+        return fields
     }
 
     private func deferredFields(until: Date, reason: DeferReason) -> [String: String] {

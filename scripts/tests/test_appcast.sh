@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-PY="${1:-python3}"
+PY="${1:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/.venv/bin/python}"
 SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/appcast.py"
 PROJECT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/Project.swift"
 EXPECTED_FEED="https://github.com/Mshardul/MediaGrabber/releases/latest/download/appcast.xml"
@@ -12,7 +12,8 @@ trap 'rm -rf "$work"' EXIT
 fails=0
 
 check() {
-    local name="$1"; shift
+    local name="$1"
+    shift
     if "$@" >/dev/null 2>&1; then
         printf 'ok   - %s\n' "$name"
     else
@@ -55,7 +56,7 @@ check "reinsert keeps one version entry" test "$(grep -c '<sparkle:version>0.1.0
 check "reinsert carries the second signature" grep -q 'sparkle:edSignature="sigB"' "$work/re2.xml"
 check "reinsert drops the first signature" test "$(grep -c 'sigA' "$work/re2.xml")" = 0
 
-: > "$work/empty.xml"
+: >"$work/empty.xml"
 "$PY" "$SCRIPT" --existing "$work/empty.xml" --version 0.1.0 \
     --url https://example.com/a.dmg --signature sigA --length 1 \
     --notes https://example.com/notes/a --out "$work/from-empty.xml"

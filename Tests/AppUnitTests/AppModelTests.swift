@@ -127,7 +127,7 @@ extension AppModelTests {
 
         let request = try? XCTUnwrap(engine.submittedRequests.first)
         XCTAssertEqual(request?.url, "https://src/v")
-        XCTAssertEqual(request?.kind, .video(maxHeight: 1080))
+        XCTAssertEqual(request?.kind, .video(maxHeight: .max))
         XCTAssertEqual(request?.destFolder, dest)
         XCTAssertEqual(request?.container, "mp4")
     }
@@ -367,7 +367,7 @@ extension AppModelTests {
         model.prefs.defaultVideoHeight = 480
         model.prefs.theme = .tapeDeck
         model.resetAllSettings()
-        XCTAssertEqual(model.prefs.defaultVideoHeight, 1080)
+        XCTAssertEqual(model.prefs.defaultVideoHeight, .max)
         XCTAssertEqual(model.prefs.theme, .aurora)
     }
 

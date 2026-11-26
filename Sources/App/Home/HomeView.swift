@@ -89,7 +89,7 @@ struct HomeView: View {
     @ViewBuilder
     private var probeStatus: some View {
         if appModel.isProbing {
-            ProbeStatusView()
+            ProbeStatusView(link: appModel.homeFieldText)
         }
     }
 

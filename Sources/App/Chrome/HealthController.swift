@@ -49,6 +49,13 @@ final class HealthController {
             )
         case .missing:
             HealthChip(id: "shield", label: "YouTube check · not set up", dot: .attention, interaction: .setUp)
+        case .restarting:
+            HealthChip(
+                id: "shield",
+                label: "YouTube check · restarting",
+                dot: .attention,
+                interaction: .refresh(isBusy: true)
+            )
         }
     }
 

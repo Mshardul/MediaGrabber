@@ -38,6 +38,8 @@ extension AppModel {
             break
         case .missing:
             break
+        case .restarting:
+            break
         case .down:
             reasons.insert(.potProviderDown)
         }

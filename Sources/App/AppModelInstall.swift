@@ -92,7 +92,7 @@ extension AppModel {
         switch await UninstallSequence.run(effects) {
         case .removed:
             quitCoordinator.abandonWithoutSaving()
-            NSApplication.shared.terminate(nil)
+            AppTermination.request()
         case .needsManualRemoval:
             revealSink.reveal([bundleURL])
             _ = await notice(title: UninstallCopy.manualTitle, message: UninstallCopy.manualMessage)

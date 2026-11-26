@@ -1,0 +1,10 @@
+root = true
+
+[*.sh]
+indent_style = space
+indent_size = 4
+
+# A section only shfmt reads: it also matches shell scripts that have no extension.
+[[shell]]
+indent_style = space
+indent_size = 4

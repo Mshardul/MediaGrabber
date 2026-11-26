@@ -82,6 +82,20 @@ final class LogWriterTests: XCTestCase {
         XCTAssertEqual(fields["url"], "http://proxy.example.com")
     }
 
+    func test_failedProbeLogsItsReason() async throws {
+        let raw = "ERROR: [zoom] abc: Zoom changed how its recordings work\n" + String(repeating: "x", count: 900)
+        await writer().log(.probeCompleted(
+            url: "https://x/y",
+            title: nil,
+            ok: false,
+            reason: MetadataError.unknown(raw: raw).logReason
+        ))
+
+        let fields = try firstFields()
+        XCTAssertEqual(fields["reason"], "ERROR: [zoom] abc: Zoom changed how its recordings work")
+        XCTAssertEqual(MetadataError.unavailable.logReason, "unavailable")
+    }
+
     func test_rotation() async throws {
         let sut = writer()
         let bigTitle = String(repeating: "x", count: 4096)

@@ -52,6 +52,17 @@ final class YtDlpArgumentsTests: XCTestCase {
         ] + resilienceFlags + ["--concurrent-fragments", "4"] + [url])
     }
 
+    // Some sites report no height, so a height rule would reject every format they offer.
+    func test_bestAvailable_hasNoHeightRule_andSortsByResolutionFirst() throws {
+        let argv = YtDlpArguments.build(
+            for: request(kind: .video(maxHeight: .max), container: "mp4"),
+            concurrentFragments: 4
+        )
+        let selector = try argv[XCTUnwrap(argv.firstIndex(of: "-f")) + 1]
+        XCTAssertEqual(selector, "bv*+ba/b")
+        XCTAssertEqual(try argv[XCTUnwrap(argv.firstIndex(of: "-S")) + 1], "res,ext:mp4:m4a")
+    }
+
     func test_concurrentFragmentsAppendedBeforeURL() throws {
         let argv = YtDlpArguments.build(
             for: request(kind: .video(maxHeight: 720)),

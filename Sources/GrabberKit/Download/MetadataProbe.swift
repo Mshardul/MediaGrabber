@@ -9,6 +9,7 @@ public struct MediaMetadata: Sendable, Equatable {
     public let formatAvailability: FormatAvailability
     public let videoHeights: [Int]
     public let audioTracks: [AudioTrack]
+    public let prepared: PreparedInfo?
 
     public init(
         title: String,
@@ -18,7 +19,8 @@ public struct MediaMetadata: Sendable, Equatable {
         extractor: String? = nil,
         formatAvailability: FormatAvailability = .unknown,
         videoHeights: [Int] = [],
-        audioTracks: [AudioTrack] = []
+        audioTracks: [AudioTrack] = [],
+        prepared: PreparedInfo? = nil
     ) {
         self.title = title
         self.durationSeconds = durationSeconds
@@ -28,6 +30,7 @@ public struct MediaMetadata: Sendable, Equatable {
         self.formatAvailability = formatAvailability
         self.videoHeights = videoHeights
         self.audioTracks = audioTracks
+        self.prepared = prepared
     }
 }
 
@@ -47,6 +50,12 @@ public enum MetadataError: Error, Sendable, Equatable {
     case passcodeRequired
     case passcodeRejected
     case unknown(raw: String)
+
+    // One capped line: enough to diagnose from the log without asking the site again.
+    public var logReason: String {
+        guard case let .unknown(raw) = self else { return "\(self)" }
+        return String(raw.prefix { !$0.isNewline }.prefix(300))
+    }
 }
 
 extension MetadataError {
@@ -237,15 +246,18 @@ public actor MetadataProbe: MetadataProbing {
             return .failure(.malformedOutput)
         }
         let parsed = FormatCatalog.parseJSONObject(object)
+        let extractor = object["extractor"] as? String
+        let reusable = extractor.map(PreparedInfo.reusableExtractors.contains) ?? false
         return .success(MediaMetadata(
             title: title,
             durationSeconds: durationSeconds(object),
             isPlaylist: (object["_type"] as? String) == "playlist",
             sourceURL: sourceURL,
-            extractor: object["extractor"] as? String,
+            extractor: extractor,
             formatAvailability: parsed.availability,
             videoHeights: parsed.videoHeights,
-            audioTracks: parsed.audioTracks
+            audioTracks: parsed.audioTracks,
+            prepared: reusable ? PreparedInfo(json: stdout, capturedAt: .now) : nil
         ))
     }
 

@@ -198,6 +198,15 @@ final class HealthControllerTests: XCTestCase {
 }
 
 extension HealthControllerTests {
+    func testShieldRestartingShowsABusyChip() {
+        let controller = HealthController()
+        controller.update(
+            snapshot: snapshot(online: true, summary: [:], shield: .restarting), now: .now, environmentReport: nil
+        )
+        XCTAssertEqual(controller.chips[0].label, "YouTube check · restarting")
+        XCTAssertEqual(controller.chips[0].interaction, .refresh(isBusy: true))
+    }
+
     func testShieldDownOffersRestartNotSetUp() {
         let controller = HealthController()
         controller.update(

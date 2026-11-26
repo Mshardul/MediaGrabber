@@ -17,6 +17,8 @@ enum BotCheckCopy {
                 return "YouTube didn't accept this request. The YouTube check isn't set up on this Mac."
             case .running:
                 break
+            case .restarting:
+                break
             }
         }
         let site = isYouTube ? "YouTube" : "This site"

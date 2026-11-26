@@ -7,27 +7,13 @@ INSTALLED := /Applications/$(APP_NAME).app
 LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
 .DEFAULT_GOAL := run
-.PHONY: generate build install drop-build-app run plugin-test test lint venv tools tools-test appcast-test release-assets-test release-scripts-test e2e release release-patch release-minor release-major release-dry-run release-overwrite site-deploy
+.PHONY: fix check fix-all check-all generate build install reinstall remove-copies replace-installed drop-build-app run plugin-test scripts-test test lint venv tools e2e release release-patch release-minor release-major release-dry-run release-overwrite site-deploy
 
 tools:
 	scripts/fetch-tools.sh
 
-tools-test:
-	scripts/tests/test_fetch_tools.sh
-
-appcast-test:
-	scripts/tests/test_appcast.sh $(PY)
-
-release-assets-test:
-	scripts/tests/test_release_assets.sh
-
-release-scripts-test:
-	scripts/tests/test_publish_release.sh
-	scripts/tests/test_check_feed.sh
-	scripts/tests/test_check_signature.sh
-	scripts/tests/test_verify_app.sh
-	scripts/tests/test_derive_version.sh
-	scripts/tests/test_sign_update.sh
+scripts-test:
+	scripts/run-script-tests.sh
 
 e2e:
 	$(MAKE) build CONFIG=Release
@@ -49,6 +35,18 @@ build: tools generate
 
 # make install [CONFIG=Release]; replaces the app in /Applications and removes the build copy so only one exists.
 install: build
+	@$(MAKE) --no-print-directory replace-installed
+
+# make reinstall [CONFIG=Release]; builds, removes every other copy on this Mac, then installs. A failed build removes nothing.
+reinstall: build
+	scripts/remove-app-copies.sh --keep "$(APP)"
+	@$(MAKE) --no-print-directory replace-installed
+
+# make remove-copies; quits the app and removes every copy of it. Saved data and downloads stay.
+remove-copies:
+	scripts/remove-app-copies.sh
+
+replace-installed:
 	@pids=`osascript -e 'tell application "System Events" to get unix id of (every process whose bundle identifier is "$(BUNDLE_ID)")' 2>/dev/null | tr ',' ' '` ; \
 		if [ -n "$$pids" ]; then kill -9 $$pids; fi
 	@killall -9 $(APP_NAME) >/dev/null 2>&1 || true
@@ -71,16 +69,14 @@ run: install
 PY ?= .venv/bin/python
 
 venv:
-	python3 -m venv .venv
-	.venv/bin/pip install -r requirements.txt
+	scripts/make/venv.sh
 
 # Runs the bundled yt-dlp plugin's tests against the yt-dlp version pinned in requirements.txt.
 plugin-test:
-	$(PY) -m pip install -q -r Tests/PluginTests/requirements.txt
 	$(PY) -I -B -m unittest discover -s Tests/PluginTests -p 'test_*.py'
 
 # make test [ONLY=AppUnitTests/SomeSuite]; builds into the same build/ dir as `make`, never DerivedData.
-test: plugin-test tools-test appcast-test release-assets-test release-scripts-test generate
+test: plugin-test scripts-test generate
 	xcodebuild -workspace $(APP_NAME).xcworkspace -scheme $(APP_NAME)-Workspace \
 		-destination 'platform=macOS' \
 		-derivedDataPath $(DERIVED) \
@@ -93,6 +89,10 @@ test: plugin-test tools-test appcast-test release-assets-test release-scripts-te
 lint:
 	mise exec -- swiftformat --lint .
 	mise exec -- swiftlint lint --strict
+
+# fix and check cover the changed files; the -all forms cover the whole repository.
+fix check fix-all check-all:
+	.venv/bin/python scripts/checks $@
 
 # --- Release ---
 

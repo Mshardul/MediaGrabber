@@ -36,7 +36,7 @@ final class RequestBuilderTests: XCTestCase {
             DownloadRequest(
                 url: "https://archive.org/details/x",
                 destFolder: dest,
-                kind: .video(maxHeight: 1080),
+                kind: .video(maxHeight: .max),
                 container: "mp4",
                 filenameTemplate: "%(title)s.%(ext)s"
             )

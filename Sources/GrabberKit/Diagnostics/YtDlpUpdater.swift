@@ -13,6 +13,18 @@ public protocol YtDlpUpdating: Sendable {
 public enum YtDlpUpdateCopy {
     public static let offline = "Couldn't download the update. Check your connection and try again."
     public static let damaged = "The update didn't download properly, so nothing was changed. Try again later."
+
+    public static func saveFailed(_ error: Error) -> String {
+        switch SaveFailureNotice.cause(of: error as NSError) {
+        case .diskFull:
+            "The update couldn't be saved because the disk is full. Free some space, then try again."
+        case .notPermitted:
+            "The update couldn't be saved because the app data folder isn't writable. "
+                + "Make the folder writable, then try again."
+        case .unavailable:
+            "The update couldn't be saved on this Mac. Try again."
+        }
+    }
 }
 
 public struct YtDlpFetchError: Error, Equatable, Sendable {
@@ -117,19 +129,23 @@ public struct YtDlpUpdater: YtDlpUpdating {
         let fileManager = FileManager.default
         let incoming = binDirectory.appendingPathComponent("yt-dlp.incoming")
         let destination = binDirectory.appendingPathComponent("yt-dlp")
+        let receipt = binDirectory.appendingPathComponent("yt-dlp.sha256")
         do {
             try fileManager.createDirectory(at: binDirectory, withIntermediateDirectories: true)
             try fetched.bytes.write(to: incoming, options: .atomic)
             try fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: incoming.path)
         } catch {
             try? fileManager.removeItem(at: incoming)
-            return .failure(reason: YtDlpUpdateCopy.offline)
+            return .failure(reason: YtDlpUpdateCopy.saveFailed(error))
         }
         guard await canary(incoming) else {
             try? fileManager.removeItem(at: incoming)
             return .failure(reason: "The new downloader didn't pass a check, so the included copy stays in use.")
         }
+        let previousReceipt = try? Data(contentsOf: receipt)
         do {
+            // Written before the move, so a new copy is never in place without its checksum.
+            try fetched.sha256Hex.lowercased().write(to: receipt, atomically: true, encoding: .utf8)
             if fileManager.fileExists(atPath: destination.path) {
                 _ = try fileManager.replaceItemAt(destination, withItemAt: incoming)
             } else {
@@ -137,9 +153,18 @@ public struct YtDlpUpdater: YtDlpUpdating {
             }
         } catch {
             try? fileManager.removeItem(at: incoming)
-            return .failure(reason: YtDlpUpdateCopy.offline)
+            restore(previousReceipt, at: receipt)
+            return .failure(reason: YtDlpUpdateCopy.saveFailed(error))
         }
         return .success(newVersion: fetched.version)
+    }
+
+    private func restore(_ previous: Data?, at receipt: URL) {
+        guard let previous else {
+            try? FileManager.default.removeItem(at: receipt)
+            return
+        }
+        try? previous.write(to: receipt, options: .atomic)
     }
 
     private func isCurrent(installed: String, latest: String) -> Bool {

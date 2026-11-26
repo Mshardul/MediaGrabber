@@ -1,13 +1,9 @@
 import SwiftUI
 
-// Placeholders — real profile/site URLs pending, developer to fill in later.
-private enum DeveloperLinks {
+enum DeveloperLinks {
     static let repoOwner = "Mshardul"
-    static let repoName = "Tools"
+    static let repoName = "MediaGrabber"
     static let githubProfile = URL(string: "https://github.com/\(repoOwner)")!
-    // static let linkedIn = URL(string: "https://linkedin.com/in/TODO")!
-    // static let personalSite = URL(string: "https://TODO")!
-    // static let xProfile = URL(string: "https://x.com/TODO")!
     static let sourceCode = URL(string: "https://github.com/\(repoOwner)/\(repoName)")!
     static let issues = URL(string: "https://github.com/\(repoOwner)/\(repoName)/issues")!
     static let license = URL(string: "https://github.com/\(repoOwner)/\(repoName)/blob/main/LICENSE")!
@@ -70,7 +66,6 @@ struct DeveloperView: View {
                 iconLink(title: "GitHub", glyph: "GH") {
                     appModel.openURLSink.open(DeveloperLinks.githubProfile)
                 }
-                // LinkedIn/personal site/X links pending real URLs — rows omitted until provided.
             }
         }
         .padding(.vertical, Spacing.s2)

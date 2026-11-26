@@ -34,6 +34,30 @@ final class PersistedJobPlaylistTests: XCTestCase {
         XCTAssertEqual(snapshot.playlistIndex, 3)
     }
 
+    func test_isProbeComplete_requiresTitleAndExtractor_notDuration() {
+        let request = request()
+        let base: (String?, String?, Int?) -> PersistedJob = { [jobID, addedAt] title, extractor, duration in
+            PersistedJob(
+                id: jobID,
+                request: request,
+                title: title,
+                extractor: extractor,
+                durationSeconds: duration,
+                state: .queued,
+                attempt: 0,
+                playlistGroupID: nil,
+                addedAt: addedAt
+            )
+        }
+
+        XCTAssertTrue(base("t", "youtube", 10).isProbeComplete)
+        // Duration is optional: a probed link with no duration is still probe-complete.
+        XCTAssertTrue(base("t", "youtube", nil).isProbeComplete)
+        XCTAssertFalse(base(nil, "youtube", 10).isProbeComplete)
+        XCTAssertFalse(base("t", nil, 10).isProbeComplete)
+        XCTAssertFalse(base(nil, nil, 10).isProbeComplete)
+    }
+
     func test_enginePersistenceProjectionPreservesPlaylistFields() {
         let job = DownloadJob(request: request(), id: jobID, addedAt: addedAt)
         job.playlistGroupID = playlistGroupID

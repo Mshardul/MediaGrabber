@@ -77,6 +77,7 @@ A ticket has the one component that holds most of its change.
 | `profile` | Who makes the app, and the other work shown there. | active |
 | `sign-in-policy` | When a download uses a browser sign-in, and what the app says when it cannot. | active |
 | `product-page` | The product page in `site/`. | active |
+| `agent-guardrails` | Shared rules, checks and short output for AI agents writing code. Spec: `docs/superpowers/specs/2026-11-26-ai-guardrails-design.md`. | active |
 | `test-suite` | What the unit, plugin and shell tests protect for the app as a whole. Spec: `docs/superpowers/specs/2026-11-17-media-grabber-phase-25-test-suite-review-design.md`. | active |
 
 ## Priority

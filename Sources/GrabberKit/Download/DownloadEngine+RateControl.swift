@@ -43,8 +43,7 @@ extension DownloadEngine {
     }
 
     private func jobNeedsProbe(_ job: DownloadJob) -> Bool {
-        job.state == .queued
-            && (job.title == nil || job.extractor == nil || job.durationSeconds == nil)
+        job.state == .queued && Scheduler.needsMetadata(title: job.title, extractor: job.extractor)
     }
 
     // A host under any rate pressure gets the throttled fragment count so a retry is gentler.

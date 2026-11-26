@@ -12,7 +12,7 @@ final class RunwaySeedTests: XCTestCase {
     func test_fallsBackToDefaults() {
         let seed = runwaySeed(from: prefs())
         XCTAssertEqual(seed.mediaType, .video)
-        XCTAssertEqual(seed.videoHeight, 1080)
+        XCTAssertEqual(seed.videoHeight, .max)
         XCTAssertEqual(seed.audioFormat, .m4a)
     }
 

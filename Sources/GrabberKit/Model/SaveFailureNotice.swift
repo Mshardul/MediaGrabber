@@ -23,13 +23,13 @@ public enum SaveFailureNotice {
         }
     }
 
-    private enum Cause {
+    enum Cause {
         case diskFull
         case notPermitted
         case unavailable
     }
 
-    private static func cause(of error: NSError) -> Cause {
+    static func cause(of error: NSError) -> Cause {
         if let direct = directCause(error) {
             return direct
         }

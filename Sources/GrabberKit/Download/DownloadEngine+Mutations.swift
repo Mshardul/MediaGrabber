@@ -49,6 +49,7 @@ extension DownloadEngine {
             job.title = meta.title
             job.extractor = meta.extractor
             job.durationSeconds = meta.durationSeconds
+            job.prepared = meta.prepared
             job.state = .queued
         case .failure(.launchFailed):
             haltForDepMissing(offending: job)

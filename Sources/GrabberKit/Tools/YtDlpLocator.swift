@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 public final class YtDlpLocator: Sendable {
@@ -9,13 +10,31 @@ public final class YtDlpLocator: Sendable {
         current.read { $0 }
     }
 
-    public init(tools: ManagedTools, runner: ProcessRunning, timeout: Duration = .seconds(5)) {
+    public convenience init(
+        tools: ManagedTools,
+        runner: ProcessRunning,
+        timeout: Duration = .seconds(5)
+    ) {
+        self.init(
+            tools: tools,
+            runner: runner,
+            timeout: timeout,
+            verifyChecksum: { await YtDlpLocator.matchesRecordedChecksum(tools: tools, url: $0) }
+        )
+    }
+
+    init(
+        tools: ManagedTools,
+        runner: ProcessRunning,
+        timeout: Duration = .seconds(5),
+        verifyChecksum: @escaping @Sendable (URL) async -> Bool
+    ) {
         current = Locked(tools.bundledYtDlp)
         let reader: @Sendable (URL) async -> String? = { url in
             await Self.version(of: url, runner: runner, timeout: timeout)
         }
         readVersion = reader
-        resolve = { await Self.pick(tools: tools, readVersion: reader) }
+        resolve = { await Self.pick(tools: tools, readVersion: reader, verifyChecksum: verifyChecksum) }
     }
 
     private init(fixed url: URL) {
@@ -40,11 +59,13 @@ public final class YtDlpLocator: Sendable {
 
     private static func pick(
         tools: ManagedTools,
-        readVersion: @Sendable (URL) async -> String?
+        readVersion: @Sendable (URL) async -> String?,
+        verifyChecksum: @Sendable (URL) async -> Bool
     ) async -> URL {
         let bundled = tools.bundledYtDlp
         let updated = tools.updatedYtDlp
-        guard tools.isExecutable(updated) else { return bundled }
+        // Verify before anything runs the file: asking its version already executes it.
+        guard tools.isExecutable(updated), await verifyChecksum(updated) else { return bundled }
         guard tools.isExecutable(bundled) else { return updated }
         async let bundledVersion = readVersion(bundled)
         async let updatedVersion = readVersion(updated)
@@ -53,6 +74,16 @@ public final class YtDlpLocator: Sendable {
               candidate > have
         else { return bundled }
         return updated
+    }
+
+    // The updater writes the installed copy's SHA-256 beside it; a swapped file no longer matches.
+    static func matchesRecordedChecksum(tools: ManagedTools, url: URL) async -> Bool {
+        guard let text = try? String(contentsOf: tools.updatedYtDlpChecksum, encoding: .utf8),
+              let bytes = try? Data(contentsOf: url)
+        else { return false }
+        let recorded = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let digest = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
+        return digest == recorded.lowercased()
     }
 
     private static func version(of url: URL, runner: ProcessRunning, timeout: Duration) async -> String? {

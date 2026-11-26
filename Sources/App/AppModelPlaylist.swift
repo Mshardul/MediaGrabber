@@ -48,7 +48,7 @@ extension AppModel {
             resolved = nil
             isPlaylistPickerPresented = false
             await showProbeFailure(error, url: url)
-            await log.log(.probeCompleted(url: url, title: nil, ok: false))
+            await log.log(.probeCompleted(url: url, title: nil, ok: false, reason: error.logReason))
         }
     }
 
@@ -87,6 +87,7 @@ extension AppModel {
         case .running: nil
         case .down: .restart
         case .missing: .setUp
+        case .restarting: nil
         }
     }
 
@@ -103,7 +104,7 @@ extension AppModel {
         case let .failure(error):
             resolved = nil
             await showProbeFailure(error, url: url)
-            await log.log(.probeCompleted(url: url, title: nil, ok: false))
+            await log.log(.probeCompleted(url: url, title: nil, ok: false, reason: error.logReason))
         }
     }
 

@@ -31,6 +31,8 @@ final class DownloadJob: @unchecked Sendable {
     var probeWaitUntil: Date?
     // Memory only, never persisted; cleared when this job reaches a final state.
     var videoPassword: String?
+    // Memory only. The first download launch takes it, so a retry always starts from the link.
+    var prepared: PreparedInfo?
 
     init(request: DownloadRequest, id: UUID = UUID(), addedAt: Date = .now) {
         self.id = id

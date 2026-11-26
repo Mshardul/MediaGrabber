@@ -38,6 +38,9 @@ extension DownloadEngine {
         )
         let result = await processResult
         prepared.jobLog.close()
+        if let file = prepared.infoFile {
+            try? FileManager.default.removeItem(at: file)
+        }
         let integrity = await runIntegrityCheck(
             id: id, result: result, runner: prepared.runner,
             ffprobeURL: prepared.ffprobeURL,
@@ -60,6 +63,7 @@ extension DownloadEngine {
         var launch: ProcessLaunch
         var jobLog: JobLog
         var cookieArgument: String?
+        var infoFile: URL?
         var ffprobeURL: URL?
         var ffprobeIsExecutable: @Sendable (URL) -> Bool
     }
@@ -76,9 +80,12 @@ extension DownloadEngine {
         )
         job.playerClientUsed = context.playerClient
         let cookieArgument = context.cookieArgument
+        let infoFile = takePreparedInfoFile(for: job)
         let launch = ProcessLaunch(
             executableURL: dependencies.ytDlpURL,
-            arguments: downloadArguments(for: job, cookieArgument: cookieArgument, context: context),
+            arguments: downloadArguments(
+                for: job, cookieArgument: cookieArgument, context: context, preparedInfoPath: infoFile?.path
+            ),
             environment: BundledYtDlpPlugins.launchEnvironment
         )
         let jobLog = JobLog(
@@ -93,15 +100,24 @@ extension DownloadEngine {
             launch: launch,
             jobLog: jobLog,
             cookieArgument: cookieArgument,
+            infoFile: infoFile,
             ffprobeURL: dependencies.ffprobeURL,
             ffprobeIsExecutable: dependencies.ffprobeIsExecutable
         )
     }
 
+    private func takePreparedInfoFile(for job: DownloadJob) -> URL? {
+        guard let info = job.prepared else { return nil }
+        job.prepared = nil
+        guard info.isFresh(at: dependencies.clock.now) else { return nil }
+        return try? info.write(jobID: job.id)
+    }
+
     func downloadArguments(
         for job: DownloadJob,
         cookieArgument: String?,
-        context: ExtractorContext
+        context: ExtractorContext,
+        preparedInfoPath: String? = nil
     ) -> [String] {
         let options = GlobalDownloadOptions(
             proxyURL: preferences.proxyURL,
@@ -114,7 +130,8 @@ extension DownloadEngine {
             tuning: dependencies.tuning.ytDlp,
             cookieArgument: cookieArgument,
             context: context,
-            concurrentFragments: fragmentCount(for: job.request.url)
+            concurrentFragments: fragmentCount(for: job.request.url),
+            preparedInfoPath: preparedInfoPath
         )
     }
 

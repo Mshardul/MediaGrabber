@@ -30,6 +30,10 @@ public struct ManagedTools: Sendable {
         supportRoot.appendingPathComponent("bin/yt-dlp")
     }
 
+    public var updatedYtDlpChecksum: URL {
+        supportRoot.appendingPathComponent("bin/yt-dlp.sha256")
+    }
+
     public var ffmpegURL: URL {
         resourceRoot.appendingPathComponent("Tools/ffmpeg")
     }

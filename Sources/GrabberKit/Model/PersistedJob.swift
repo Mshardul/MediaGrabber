@@ -121,8 +121,7 @@ public extension PersistedState {
 }
 
 public extension PersistedJob {
-    // Probe-complete when title, extractor and durationSeconds are all present.
     var isProbeComplete: Bool {
-        title != nil && extractor != nil && durationSeconds != nil
+        !Scheduler.needsMetadata(title: title, extractor: extractor)
     }
 }

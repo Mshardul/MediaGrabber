@@ -6,6 +6,7 @@ import socket
 import tempfile
 import unittest
 from unittest import mock
+from urllib.parse import parse_qs
 
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.common import InfoExtractor
@@ -177,6 +178,7 @@ class FakeZoom:
 class ShareFlowTests(unittest.TestCase):
     def setUp(self):
         self.plugin = load_plugin()
+        self.plugin._pace = lambda: None
 
     def test_passcode_flow_reads_the_recording_from_the_play_info(self):
         fake = FakeZoom(self.plugin)
@@ -272,6 +274,128 @@ class ShareFlowTests(unittest.TestCase):
         fake = FakeZoom(self.plugin, share_page="<html><body>nothing useful</body></html>")
         with self.assertRaisesRegex(ExtractorError, "Zoom changed how its recordings work"):
             fake.ie._real_extract(SHARE_URL)
+
+
+DATA_PAGE = "<html><script>window.__data__ = { meetingId: 'MEET-1', fileId: '', isLogin: false };</script></html>"
+COMPONENT_PAGE = (
+    "<html><script>window.__data__ = { meeting_id: 'MEET-2', fileId: 'FILE-2', action: 'viewdetailpage',\n"
+    " useWhichPasswd: 'recording', sharelevel: 'meeting', needRecaptcha: %s };</script></html>"
+)
+SHARE_LOCKED = {
+    "result": {"componentName": "need-password", "redirectUrl": "/rec/component-page", "meetingId": "MEET-1"}
+}
+SHARE_OPEN = {"result": {"redirectUrl": "/rec/play/PLAY-TOKEN"}}
+
+
+class FakeDataPageZoom:
+    def __init__(self, plugin, passcode="secret", share_infos=None, verify=None, captcha=False):
+        self.events = []
+        self.verify_form = None
+        self.share_infos = list(share_infos if share_infos is not None else [SHARE_LOCKED, SHARE_OPEN])
+        self.verify = {"status": True} if verify is None else verify
+        self.component = COMPONENT_PAGE % ("true" if captcha else "false")
+        params = {"quiet": True, "no_warnings": True}
+        if passcode is not None:
+            params["videopassword"] = passcode
+        self.ie = plugin.ZoomIE(YoutubeDL(params))
+        self.ie._download_webpage = self.download_webpage
+        self.ie._download_json = self.download_json
+
+    def download_webpage(self, request, video_id, note=None, headers=None, **kwargs):
+        url = getattr(request, "url", request)
+        self.events.append(url)
+        if url == SHARE_URL:
+            return DATA_PAGE
+        if url.startswith(f"{BASE}rec/component-page"):
+            return self.component
+        if "csrf_js" in url:
+            return "ZOOM-CSRFTOKEN:TOKEN-1234"
+        raise AssertionError(f"unexpected webpage request {url}")
+
+    def download_json(self, url, video_id, note=None, data=None, headers=None, **kwargs):
+        self.events.append(url)
+        if url.endswith("validate-context"):
+            return {"status": True}
+        if url.endswith("validate-meeting-passwd"):
+            self.verify_form = parse_qs(data.decode())
+            return self.verify
+        if "play/share-info/" in url:
+            return self.share_infos.pop(0)
+        raise AssertionError(f"unexpected json request {url}")
+
+    def count(self, fragment):
+        return sum(1 for event in self.events if fragment in event)
+
+
+class DataPageShareFlowTests(unittest.TestCase):
+    def setUp(self):
+        self.plugin = load_plugin()
+        self.stock_urls = []
+
+    def extract(self, fake):
+        def stock(ie, url):
+            self.stock_urls.append(url)
+            fake.events.append("stock-play")
+            return {"id": "FILE-2", "title": "Topic", "formats": [{"url": PLAY_URL}]}
+
+        with (
+            mock.patch.object(BaseZoomIE, "_real_extract", stock),
+            mock.patch.object(self.plugin, "_pace", lambda: fake.events.append("pace")),
+        ):
+            return fake.ie._real_extract(SHARE_URL)
+
+    def test_passcode_flow_ends_on_the_stock_play_page(self):
+        fake = FakeDataPageZoom(self.plugin)
+        info = self.extract(fake)
+        self.assertEqual(self.stock_urls, [f"{BASE}rec/play/PLAY-TOKEN"])
+        self.assertEqual(info["id"], "TOKEN.ABC")
+        self.assertEqual(info["title"], "GMT20261114-121249_Recording_1920x1080")
+        info_url = f"{BASE}nws/recording/1.0/play/share-info/%s?originDomain=example.zoom.us&accessLevel=meeting"
+        self.assertEqual(fake.events[:2], [SHARE_URL, info_url % "MEET-1"])
+        self.assertEqual(fake.count("validate-meeting-passwd"), 1)
+        self.assertIn(info_url % "MEET-2", fake.events)
+        self.assertEqual(fake.verify_form["passwd"], ["secret"])
+        self.assertEqual(fake.verify_form["id"], ["MEET-2"])
+
+    def test_open_recording_sends_no_passcode(self):
+        fake = FakeDataPageZoom(self.plugin, passcode=None, share_infos=[SHARE_OPEN])
+        self.extract(fake)
+        self.assertEqual(fake.count("validate"), 0)
+        self.assertEqual(fake.count("csrf_js"), 0)
+
+    def test_missing_passcode_stops_before_the_passcode_page(self):
+        fake = FakeDataPageZoom(self.plugin, passcode=None)
+        with self.assertRaisesRegex(ExtractorError, "protected by a passcode"):
+            self.extract(fake)
+        self.assertEqual(fake.count("component-page"), 0)
+
+    def test_rejected_passcode_is_sent_exactly_once(self):
+        fake = FakeDataPageZoom(self.plugin, verify={"status": False})
+        with self.assertRaisesRegex(ExtractorError, "Zoom rejected the passcode"):
+            self.extract(fake)
+        self.assertEqual(fake.count("validate-meeting-passwd"), 1)
+
+    def test_captcha_stops_before_any_passcode_is_sent(self):
+        fake = FakeDataPageZoom(self.plugin, captcha=True)
+        with self.assertRaisesRegex(ExtractorError, "not a bot"):
+            self.extract(fake)
+        self.assertEqual(fake.count("validate"), 0)
+
+    def test_share_info_without_a_play_page_says_zoom_changed(self):
+        fake = FakeDataPageZoom(self.plugin, share_infos=[{"result": {"componentName": "something-new"}}])
+        with self.assertRaisesRegex(ExtractorError, "Zoom changed how its recordings work"):
+            self.extract(fake)
+
+    def test_a_link_check_does_not_wait_for_a_download_that_will_not_follow(self):
+        fake = FakeDataPageZoom(self.plugin)
+        fake.ie._downloader.params["simulate"] = True
+        self.extract(fake)
+        self.assertEqual(fake.events[-1], "stock-play")
+
+    def test_the_video_download_is_paced_after_the_last_request(self):
+        fake = FakeDataPageZoom(self.plugin)
+        self.extract(fake)
+        self.assertEqual(fake.events[-2:], ["stock-play", "pace"])
 
 
 if __name__ == "__main__":

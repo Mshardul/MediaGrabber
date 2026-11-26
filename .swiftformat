@@ -8,3 +8,4 @@
 --commas inline
 --trimwhitespace always
 --disable docComments
+--disable noForceUnwrapInTests

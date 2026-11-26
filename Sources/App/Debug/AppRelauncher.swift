@@ -32,7 +32,7 @@ struct AppRelauncher {
     init(
         launcher: RelaunchProcessLaunching = SystemProcessLauncher(),
         processID: Int32 = ProcessInfo.processInfo.processIdentifier,
-        terminate: @escaping () -> Void = { NSApplication.shared.terminate(nil) }
+        terminate: @escaping () -> Void = { AppTermination.request() }
     ) {
         self.launcher = launcher
         self.processID = processID

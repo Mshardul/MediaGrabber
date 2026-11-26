@@ -30,14 +30,29 @@ public enum YtDlpArguments {
         tuning: YtDlpTuning = .default,
         cookieArgument: String? = nil,
         context: ExtractorContext = .none,
-        concurrentFragments: Int
+        concurrentFragments: Int,
+        preparedInfoPath: String? = nil
     ) -> [String] {
-        baseArgv(for: request, tuning: tuning)
+        var tuning = tuning
+        if preparedInfoPath != nil {
+            // The video request follows the link check with no extractor in between to space them.
+            tuning.sleepInterval = preparedDownloadWaitSeconds
+            tuning.maxSleepInterval = preparedDownloadWaitSeconds
+        }
+        return baseArgv(for: request, tuning: tuning)
             + ["--concurrent-fragments", String(concurrentFragments)]
             + cookieFlags(cookieArgument, redact: false)
             + extractorFlags(context: context)
             + globalFlags(options, proxyURL: options.proxyURL)
-            + [request.url]
+            + source(url: request.url, preparedInfoPath: preparedInfoPath)
+    }
+
+    private static let preparedDownloadWaitSeconds = 5
+
+    // yt-dlp falls back from saved data to its page only when a download error is allowed to abort.
+    private static func source(url: String, preparedInfoPath: String?) -> [String] {
+        guard let path = preparedInfoPath else { return [url] }
+        return ["--abort-on-error", "--load-info-json", path]
     }
 
     // Proxy userinfo is masked in the returned proxy URL; the cookie spec is masked too.
@@ -118,6 +133,9 @@ public enum YtDlpArguments {
         switch request.kind {
         case let .video(maxHeight: height):
             var tokens = ["-f", videoSelector(height: height, language: request.audioLanguage)]
+            if height == .max {
+                tokens += ["-S", "res,ext:mp4:m4a"]
+            }
             if let container = request.container {
                 tokens += ["--merge-output-format", container]
             }
@@ -137,6 +155,7 @@ public enum YtDlpArguments {
     }
 
     private static func videoSelector(height: Int, language: AudioLanguage) -> String {
+        guard height != .max else { return bestSelector(language: language) }
         let unfiltered = "bv*[height<=\(height)][ext=mp4]+ba[ext=m4a]"
             + "/bv*[height<=\(height)]+ba"
             + "/b[height<=\(height)]"
@@ -144,6 +163,12 @@ public enum YtDlpArguments {
         let preferred = "bv*[height<=\(height)][ext=mp4]+ba[\(filter)][ext=m4a]"
             + "/bv*[height<=\(height)]+ba[\(filter)]"
         return preferred + "/" + unfiltered
+    }
+
+    // No height rule: some sites report none. mp4 is only a tie-break, so a taller webm still wins.
+    private static func bestSelector(language: AudioLanguage) -> String {
+        guard let filter = baFilter(language) else { return "bv*+ba/b" }
+        return "bv*+ba[\(filter)]/bv*+ba/b"
     }
 
     private static func audioFormatFilter(_ language: AudioLanguage) -> [String] {

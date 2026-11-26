@@ -14,7 +14,9 @@ from yt_dlp.utils import (
     ExtractorError,
     int_or_none,
     parse_resolution,
+    update_url_query,
     url_basename,
+    urlencode_postdata,
     urljoin,
 )
 from yt_dlp.utils.traversal import traverse_obj
@@ -103,6 +105,12 @@ class ZoomClipsIE(_PacedMixin, BaseZoomClipsIE):
 
 # Stock yt-dlp's zoom extractor still follows the retired share page, so share links are handled here.
 class ZoomIE(_PacedMixin, BaseZoomIE):
+    # The video download follows at once and does not pass through the extractor, so wait before handing it over.
+    def _ready_to_download(self, info):
+        if not (self.get_param("simulate") or self.get_param("skip_download")):
+            _pace()
+        return _named_after_zoom_file(info)
+
     def _csrf_token(self, base_url, video_id):
         body = self._download_webpage(
             Request(f"{base_url}csrf_js?t_x_zm_rid=1", data=b"", headers={"FETCH-CSRF-TOKEN": "1"}),
@@ -114,13 +122,17 @@ class ZoomIE(_PacedMixin, BaseZoomIE):
     def _share_info(self, api_url, base_url, video_id, note):
         return self._download_json(api_url, video_id, note=note, headers={"Referer": base_url})
 
-    def _verify_passcode(self, verify_url, base_url, video_id):
+    def _required_passcode(self):
         passcode = self.get_param("videopassword")
         if not passcode:
             raise ExtractorError(
                 "This video is protected by a passcode, use the --video-password option",
                 expected=True,
             )
+        return passcode
+
+    def _verify_passcode(self, verify_url, base_url, video_id):
+        passcode = self._required_passcode()
         validation = self._download_json(
             verify_url,
             video_id,
@@ -135,15 +147,114 @@ class ZoomIE(_PacedMixin, BaseZoomIE):
         if not validation.get("status"):
             raise ExtractorError("Zoom rejected the passcode", expected=True)
 
+    def _data_page_share_info(self, base_url, meeting_id, video_id):
+        domain = base_url.split("//", 1)[1].strip("/")
+        payload = self._download_json(
+            f"{base_url}nws/recording/1.0/play/share-info/{meeting_id}"
+            f"?originDomain={domain}&accessLevel=meeting",
+            video_id,
+            note="Downloading share info JSON",
+            headers={"X-Requested-With": "XMLHttpRequest"},
+        )
+        result = traverse_obj(payload, ("result", {dict}))
+        if not (result and result.get("redirectUrl")):
+            raise _zoom_error(payload.get("errorMessage"))
+        return result
+
+    def _redirect_target(self, base_url, result, origin_url=None):
+        redirect = urljoin(base_url, result["redirectUrl"])
+        if "?" in redirect:
+            return redirect
+        query = {
+            key: value
+            for key, value in result.items()
+            if isinstance(value, str) and key != "redirectUrl"
+        }
+        if origin_url:
+            query["originRequestUrl"] = origin_url
+        return update_url_query(redirect, query) if query else redirect
+
+    # One attempt per run: a lockout from repeated guesses cannot be undone.
+    def _unlock_data_page(self, base_url, share_url, result, video_id):
+        passcode = self._required_passcode()
+        component_url = self._redirect_target(base_url, result, origin_url=share_url)
+        component = self._download_webpage(
+            component_url, video_id, note="Downloading passcode page", headers={"Referer": share_url}
+        )
+        data = self._get_page_data(component, video_id)
+        if data.get("needRecaptcha") in (True, "true"):
+            raise ExtractorError(
+                "Zoom is asking to confirm you're not a bot. "
+                "Open the link in your browser once, then try again.",
+                expected=True,
+            )
+        headers = {
+            "zoom-csrftoken": self._csrf_token(base_url, video_id),
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": component_url,
+        }
+        self._download_json(
+            f"{base_url}nws/recording/1.0/validate-context",
+            video_id,
+            note="Validating context",
+            data=urlencode_postdata(
+                {
+                    "meetingId": data["meeting_id"],
+                    "fileId": data["fileId"],
+                    "useWhichPasswd": data["useWhichPasswd"],
+                    "sharelevel": data["sharelevel"],
+                    "iet": "",
+                }
+            ),
+            headers=headers,
+        )
+        validation = self._download_json(
+            f"{base_url}nws/recording/1.0/validate-meeting-passwd",
+            video_id,
+            note="Validating passcode",
+            data=urlencode_postdata(
+                {
+                    "id": data["meeting_id"],
+                    "passwd": passcode,
+                    "action": data["action"],
+                    "recaptcha": "",
+                }
+            ),
+            headers=headers,
+        )
+        if not validation.get("status"):
+            raise ExtractorError("Zoom rejected the passcode", expected=True)
+        return data["meeting_id"]
+
+    def _extract_data_page(self, share_url, webpage, base_url, video_id):
+        meeting_id = self._get_page_data(webpage, video_id).get("meetingId")
+        if not meeting_id:
+            raise _zoom_error(_error_message(webpage))
+        result = self._data_page_share_info(base_url, meeting_id, video_id)
+        if result.get("componentName") == "need-password":
+            meeting_id = self._unlock_data_page(base_url, share_url, result, video_id)
+            result = self._data_page_share_info(base_url, meeting_id, video_id)
+        play_url = self._redirect_target(base_url, result)
+        if "/rec/play/" not in play_url:
+            self.write_debug(f"share info component: {result.get('componentName')}")
+            raise _zoom_error(None)
+        info = super()._real_extract(play_url)
+        info["id"] = video_id
+        return info
+
     def _real_extract(self, url):
         base_url, url_type, video_id = self._match_valid_url(url).group("base_url", "type", "id")
         if url_type != "share":
-            return _named_after_zoom_file(super()._real_extract(url))
+            return self._ready_to_download(super()._real_extract(url))
 
         webpage = self._download_webpage(url, video_id, note="Downloading share webpage")
         api_domain = _player_field(webpage, "apiDomain")
         play_path = _player_field(webpage, "playInfoApi")
         if not (api_domain and play_path):
+            if "window.__data__" in webpage:
+                return self._ready_to_download(
+                    self._extract_data_page(url, webpage, base_url, video_id)
+                )
             raise _zoom_error(_error_message(webpage))
 
         api_url = urljoin(api_domain, play_path)
@@ -155,7 +266,7 @@ class ZoomIE(_PacedMixin, BaseZoomIE):
         media = traverse_obj(payload, ("result", "mediaInfo"), default={})
         if not media.get("playUrl"):
             raise _zoom_error(payload.get("errorMessage"))
-        return _named_after_zoom_file(
+        return self._ready_to_download(
             {
                 "id": video_id,
                 "title": media.get("mediaTopic") or video_id,

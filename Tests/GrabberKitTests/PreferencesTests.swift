@@ -20,7 +20,7 @@ final class PreferencesTests: XCTestCase {
 
     func test_defaults() {
         let prefs = Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads)
-        XCTAssertEqual(prefs.defaultVideoHeight, 1080)
+        XCTAssertEqual(prefs.defaultVideoHeight, .max)
         XCTAssertEqual(prefs.defaultAudioFormat, .m4a)
         XCTAssertEqual(prefs.filenameTemplate, "%(title)s.%(ext)s")
         XCTAssertEqual(prefs.maxAutoRetries, 5)
@@ -54,7 +54,7 @@ final class PreferencesTests: XCTestCase {
         defaults.set(480, forKey: "mg.defaultMaxHeight")
         XCTAssertEqual(
             Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads).defaultVideoHeight,
-            1080
+            .max
         )
     }
 
@@ -171,7 +171,7 @@ final class PreferencesTests: XCTestCase {
         prefs.filenameTemplate = "%(id)s.%(ext)s"
         prefs.lastMediaType = .audio
         prefs.resetToDefaults()
-        XCTAssertEqual(prefs.defaultVideoHeight, 1080)
+        XCTAssertEqual(prefs.defaultVideoHeight, .max)
         XCTAssertEqual(prefs.theme, .aurora)
         XCTAssertEqual(prefs.palette, .auroraMintIris)
         XCTAssertFalse(prefs.forceIPv4)

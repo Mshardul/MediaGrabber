@@ -143,7 +143,8 @@ public struct EngineDependencies: Sendable {
             runner: runner,
             pinger: URLSessionShieldPinger(),
             tuning: tuning,
-            log: log
+            log: log,
+            portChecker: LoopbackPortChecker()
         )
         return EngineDependencies(
             runner: runner,

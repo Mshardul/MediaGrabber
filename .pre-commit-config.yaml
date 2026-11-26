@@ -1,13 +1,6 @@
 # Install: pip install pre-commit && pre-commit install
 
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.5
-    hooks:
-      - id: ruff
-        args: [--fix]
-      - id: ruff-format
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -16,6 +9,17 @@ repos:
 
   - repo: local
     hooks:
+      - id: project-checks
+        name: project checks
+        language: system
+        entry: scripts/checks/hook.sh
+        require_serial: true
+        # Without this a passing commit would hide the report.
+        verbose: true
+        pass_filenames: false
+        # A commit that only deletes files would otherwise skip the hook.
+        always_run: true
+
       - id: prettier-markdown
         name: prettier (markdown)
         language: node

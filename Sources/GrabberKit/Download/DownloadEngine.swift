@@ -77,6 +77,7 @@ public actor DownloadEngine: DownloadEngineProtocol {
             job.title = meta.title
             job.extractor = meta.extractor
             job.durationSeconds = meta.durationSeconds
+            job.prepared = meta.prepared
         }
         jobs.append(job)
         let position = queuedCount()

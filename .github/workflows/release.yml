@@ -118,6 +118,8 @@ jobs:
           DMG: ${{ steps.dmg.outputs.assets }}/MediaGrabber-${{ steps.version.outputs.version }}.dmg
           ASSETS: ${{ steps.dmg.outputs.assets }}
           SPARKLE_EDDSA_PRIVATE_KEY: ${{ secrets.SPARKLE_EDDSA_PRIVATE_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: scripts/release/sign-update.sh "$DMG" "$VERSION" "$ASSETS"
 

@@ -53,6 +53,11 @@ public enum Scheduler {
     }
 
     private static func needsMetadata(_ job: JobSnapshot) -> Bool {
-        job.title == nil || job.extractor == nil || job.durationSeconds == nil
+        needsMetadata(title: job.title, extractor: job.extractor)
+    }
+
+    // Duration is left out: some links have none, and requiring it would probe them forever.
+    static func needsMetadata(title: String?, extractor: String?) -> Bool {
+        title == nil || extractor == nil
     }
 }

@@ -10,8 +10,12 @@ public actor PotProviderProcess: PotProviding {
 
     private var statusValue: ShieldStatus = .missing
     private var childTask: Task<Void, Never>?
+    private var childStartedAt = ContinuousClock.now
     private var generation = 0
     private var exitCount = 0
+
+    // Actors are reentrant across `await`, so start, restart, stop and crash recovery are chained through this.
+    private var tail: Task<Void, Never> = Task {}
 
     public init(
         installer: PotPluginInstaller,
@@ -45,22 +49,46 @@ public actor PotProviderProcess: PotProviding {
     }
 
     public func ensure() async {
+        await enqueue { await self.ensureSerialized() }
+    }
+
+    public func restart() async {
+        await enqueue { await self.restartSerialized() }
+    }
+
+    public func stop() async {
+        await enqueue { await self.stopSerialized() }
+    }
+
+    private func enqueue(_ operation: @escaping @Sendable () async -> Void) async {
+        let predecessor = tail
+        let work = Task {
+            await predecessor.value
+            await operation()
+        }
+        tail = Task { _ = await work.value }
+        await work.value
+    }
+
+    private func ensureSerialized() async {
         if await isHealthyRunning() {
             return
         }
         await startChild()
     }
 
-    public func restart() async {
-        await stop()
+    private func restartSerialized() async {
+        stopSerialized()
+        statusValue = .restarting
         await logEvent(.shieldRestarted(reason: "user"))
-        await ensure()
+        await startChild()
     }
 
-    public func stop() async {
+    private func stopSerialized() {
         abandonChild()
-        if case .running = statusValue {
-            statusValue = .down
+        switch statusValue {
+        case .running, .restarting: statusValue = .down
+        case .down, .missing: break
         }
     }
 
@@ -68,13 +96,21 @@ public actor PotProviderProcess: PotProviding {
         guard case let .running(port) = statusValue, let url = pingURL(port: port) else {
             return false
         }
-        return await pinger.ping(url, timeout: TimeInterval(tuning.potHealthTimeoutSeconds))
+        return await pingChild(url)
+    }
+
+    private func pingChild(_ url: URL) async -> Bool {
+        let age = childStartedAt.duration(to: .now).components
+        // One second of slack covers the two clocks rounding differently.
+        let maxUptime = TimeInterval(age.seconds) + TimeInterval(age.attoseconds) / 1e18 + 1
+        return await pinger.ping(url, timeout: TimeInterval(tuning.potHealthTimeoutSeconds), maxUptime: maxUptime)
     }
 
     private func startChild() async {
         abandonChild()
         guard let port = firstFreePort() else {
             statusValue = .down
+            await logEvent(.shieldNoFreePort)
             return
         }
         guard let launch = installer.resolveServerLaunch(port: port, host: "127.0.0.1") else {
@@ -82,6 +118,7 @@ public actor PotProviderProcess: PotProviding {
             await logEvent(.shieldMissing)
             return
         }
+        childStartedAt = .now
         watch(runner.run(launch))
         await applyHealth(port: port)
     }
@@ -91,7 +128,7 @@ public actor PotProviderProcess: PotProviding {
         let token = generation
         childTask = Task { [weak self] in
             let result = await execution.result()
-            await self?.childExited(result, token: token)
+            await self?.recover(from: result, token: token)
         }
     }
 
@@ -104,7 +141,7 @@ public actor PotProviderProcess: PotProviding {
         let exitsBefore = exitCount
         let deadline = Date().addingTimeInterval(TimeInterval(max(tuning.potStartupWaitSeconds, 0)))
         while true {
-            if await pinger.ping(url, timeout: TimeInterval(tuning.potHealthTimeoutSeconds)) {
+            if await pingChild(url) {
                 statusValue = .running(port: port)
                 await logEvent(.shieldStarted(port: port))
                 return
@@ -118,19 +155,25 @@ public actor PotProviderProcess: PotProviding {
         statusValue = .down
     }
 
-    private func childExited(_ result: ProcessResult, token: Int) async {
+    private func recover(from result: ProcessResult, token: Int) async {
         guard token == generation, !result.wasCancelled else {
             return
         }
         exitCount += 1
+        // Set before suspending, so a later verdict from startup or stop is never overwritten.
+        statusValue = .restarting
         await logEvent(.shieldExited(code: result.exitCode))
-        statusValue = .down
         let delay = min(max(tuning.potRestartBackoffSeconds, 0), 30)
         try? await Task.sleep(for: .seconds(delay))
+        await enqueue { await self.recoverSerialized(token: token) }
+    }
+
+    // Checked inside the queue: a stop or restart waiting ahead of this retires the crashed child.
+    private func recoverSerialized(token: Int) async {
         guard token == generation else {
             return
         }
-        await ensure()
+        await ensureSerialized()
     }
 
     private func abandonChild() {

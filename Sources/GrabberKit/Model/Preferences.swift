@@ -56,7 +56,7 @@ public final class Preferences: @unchecked Sendable {
     }
 
     public var defaultVideoHeight: Int {
-        get { intValue(forKey: "defaultVideoHeight", default: 1080) }
+        get { intValue(forKey: "defaultVideoHeight", default: .max) }
         set { defaults.set(newValue, forKey: "mg.defaultVideoHeight") }
     }
 

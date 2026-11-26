@@ -55,6 +55,7 @@ struct MediaGrabberApp: App {
             columnConfig: columnConfig
         )
         Self.showSaveFailures(of: persistence, in: model)
+        Self.showLoadFailures(of: persistence, in: model)
 
         _installer = State(initialValue: installer)
         _appModel = State(initialValue: model)
@@ -65,6 +66,21 @@ struct MediaGrabberApp: App {
         persistence.reportSaveFailure { [weak model] sentence in
             Task { @MainActor in
                 model?.toastCenter.enqueue(ToastItem(text: sentence, actionTitle: nil, action: nil))
+            }
+        }
+    }
+
+    private static func showLoadFailures(of persistence: Persistence, in model: AppModel) {
+        persistence.reportLoadFailure { [weak model] notice in
+            Task { @MainActor in
+                guard let model else { return }
+                model.toastCenter.enqueue(ToastItem(
+                    text: notice.sentence,
+                    actionTitle: notice.actionTitle,
+                    action: { [revealSink = model.revealSink] in
+                        await MainActor.run { revealSink.reveal([notice.fileURL]) }
+                    }
+                ))
             }
         }
     }

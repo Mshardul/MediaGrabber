@@ -96,9 +96,16 @@ public final class Persistence: QueuePersisting {
     private let writesDisabled = Locked(false)
     private let writer: Writer
     private let saveFailed = Locked<(@Sendable (String) -> Void)?>(nil)
+    private let loadFailed = Locked<(@Sendable (QueueLoadNotice) -> Void)?>(nil)
+    private let loadFailureReported = Locked(false)
+    private let queueFileProtected = Locked(false)
 
     public func reportSaveFailure(_ handler: @escaping @Sendable (String) -> Void) {
         saveFailed.mutate { $0 = handler }
+    }
+
+    public func reportLoadFailure(_ handler: @escaping @Sendable (QueueLoadNotice) -> Void) {
+        loadFailed.mutate { $0 = handler }
     }
 
     public init(
@@ -188,10 +195,7 @@ public final class Persistence: QueuePersisting {
             )
             let jobs = snapshot.queue ?? cachedJobs ?? diskFile?.jobs ?? []
             let groups = snapshot.groups ?? cachedGroups ?? diskFile?.groups ?? []
-            await writer.write(
-                QueueFile(schemaVersion: Self.schemaVersion, jobs: jobs, groups: groups),
-                to: "queue.json"
-            )
+            await writeQueueFile(QueueFile(schemaVersion: Self.schemaVersion, jobs: jobs, groups: groups))
         }
         if let jobs = snapshot.history {
             await writer.write(
@@ -203,6 +207,11 @@ public final class Persistence: QueuePersisting {
                 ColumnsFile(schemaVersion: Self.schemaVersion, config: config), to: "columns.json"
             )
         }
+    }
+
+    private func writeQueueFile(_ file: QueueFile) async {
+        guard !queueFileProtected.read({ $0 }) else { return }
+        await writer.write(file, to: "queue.json")
     }
 
     // MARK: - Loads (direct, stateless)
@@ -246,16 +255,36 @@ public final class Persistence: QueuePersisting {
 
     private func loadQueueFile() -> QueueFile? {
         let url = dir.appendingPathComponent("queue.json")
-        guard let data = try? Data(contentsOf: url) else { return nil }
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        guard let data = try? Data(contentsOf: url) else {
+            setAside(url, cause: .unopenable)
+            emit(.persistenceCorrupt(file: "queue.json"))
+            return nil
+        }
         guard let file = try? JSONDecoder().decode(QueueFile.self, from: data) else {
+            setAside(url, cause: .damaged)
             emit(.persistenceCorrupt(file: "queue.json"))
             return nil
         }
         if file.schemaVersion > Self.schemaVersion {
+            setAside(url, cause: .newerVersion)
             emit(.persistenceSchemaAhead(file: "queue.json"))
             return nil
         }
         return file
+    }
+
+    private func setAside(_ url: URL, cause: QueueLoadNotice.Cause) {
+        let copy = UnreadableFileBackup.preserve(url)
+        if copy == nil {
+            queueFileProtected.mutate { $0 = true }
+        }
+        let isFirstReport = loadFailureReported.mutate { reported in
+            defer { reported = true }
+            return !reported
+        }
+        guard isFirstReport else { return }
+        loadFailed.read { $0 }?(QueueLoadNotice(cause: cause, copied: copy != nil, fileURL: copy ?? url))
     }
 
     private func loadQueueFileIfCacheCold(

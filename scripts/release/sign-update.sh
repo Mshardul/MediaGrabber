@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Signs the disk image for Sparkle and writes appcast.xml into the assets folder.
-# Run: scripts/release/sign-update.sh DMG VERSION ASSETS_DIR  (SPARKLE_EDDSA_PRIVATE_KEY, DRY)
+# Run: scripts/release/sign-update.sh DMG VERSION ASSETS_DIR  (SPARKLE_EDDSA_PRIVATE_KEY, DRY, GH_TOKEN, GITHUB_REPOSITORY)
 set -euo pipefail
 
 dmg="${1:?disk image}"
@@ -17,13 +17,16 @@ if [ -z "${SPARKLE_EDDSA_PRIVATE_KEY:-}" ]; then
     exit 1
 fi
 
+: "${GH_TOKEN:?GH_TOKEN is required}" "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is required}"
+
 tool="$(find . "$HOME/Library/Caches/tuist" "$HOME/Library/Developer/Xcode/DerivedData" -path '*Sparkle/bin/sign_update' -type f 2>/dev/null | head -1 || true)"
 [ -n "$tool" ] || { echo "sign_update not found" >&2; exit 1; }
 
 key="$(mktemp)"
 current="$(mktemp)"
 signature_file="$(mktemp)"
-trap 'rm -f "$key" "$current" "$signature_file"' EXIT
+lookup_error="$(mktemp)"
+trap 'rm -f "$key" "$current" "$signature_file" "$lookup_error"' EXIT
 printf '%s\n' "$SPARKLE_EDDSA_PRIVATE_KEY" > "$key"
 chmod 600 "$key"
 
@@ -31,9 +34,12 @@ chmod 600 "$key"
 signature="$(sed -n 's/.*edSignature="\([^"]*\)".*/\1/p' "$signature_file")"
 [ -n "$signature" ] || { echo "sign_update did not print an edSignature" >&2; cat "$signature_file" >&2; exit 1; }
 
-if gh release view --json tagName >/dev/null 2>&1; then
+if gh release view --json tagName >/dev/null 2>"$lookup_error"; then
     gh release download --pattern appcast.xml --output "$current" --clobber \
         || { echo "the latest release has no appcast.xml, so the update feed is broken" >&2; exit 1; }
+elif ! grep -q 'release not found' "$lookup_error"; then
+    echo "failed to look up the latest release: $(cat "$lookup_error")" >&2
+    exit 1
 fi
 
 length="$(wc -c < "$dmg" | tr -d " ")"

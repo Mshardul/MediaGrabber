@@ -8,7 +8,7 @@ public struct FakePinger: ShieldPinging {
         self.result = result
     }
 
-    public func ping(_: URL, timeout _: TimeInterval) async -> Bool {
+    public func ping(_: URL, timeout _: TimeInterval, maxUptime _: TimeInterval) async -> Bool {
         result
     }
 }
