@@ -33,7 +33,8 @@ The app in the picture is the real app: the real window, views, app model, theme
 ## Constraints
 
 - `make` is the only build path. `make screenshots` uses the normal install path, so exactly one `MediaGrabber.app` exists on the machine.
-- A one-time macOS Screen Recording grant to the program that runs `make` is acceptable.
+- A run needs no macOS permission grant. In particular it never needs Screen Recording, which macOS gives to a whole app: granted to an editor or terminal, it lets everything run inside record the screen.
+- Taking pictures needs macOS 14.4 or later.
 - Comments are one line and say why only. No ticket or spec references in source.
 
 ## Approaches considered
@@ -45,6 +46,12 @@ Where the tour lives:
 3. Offscreen rendering of hosted views. It loses the real window, sheets and popovers, and the AppKit downloads table renders wrongly outside a live window.
 4. XCUITest. Real clicks, but slow, flaky, needs Accessibility permission, and still needs the same dummy data.
 
+How the picture is taken:
+
+1. The app asks macOS for an image of its own windows (chosen). It needs no permission and the image shows what macOS draws, popovers and sheets over their page.
+2. A script running `screencapture`. It needs Screen Recording for the program that runs `make`.
+3. A separate capture helper holding that permission. It limits the grant to one program, which can still record the whole screen, and it is a second thing to build and sign.
+
 Where the data comes from:
 
 1. A dummy engine and dummy services behind the app's existing seams (chosen). Any state can be shown with exact values, the same on every run. The dummies have to keep up with the app's interfaces, which the compiler enforces for protocols.
@@ -53,7 +60,7 @@ Where the data comes from:
 
 ## Design
 
-**Launch.** Debug launch arguments put the app in tour mode: `-MGScreenshots <outputDir>`, optionally narrowed by `-MGScreenshotScene <name>` and `-MGScreenshotTheme <aurora|tapeDeck>`. The whole tour, dummies and view hooks sit behind `#if DEBUG`.
+**Launch.** Debug launch arguments put the app in tour mode: `-MGScreenshots <outputDir>`, optionally narrowed by `-MGScreenshotFlow <flow>`, `-MGScreenshotScene <name>` and `-MGScreenshotTheme <aurora|tapeDeck>`. The whole tour, dummies and view hooks sit behind `#if DEBUG`.
 
 **Isolation.** The run sets `MG_HOME` to a new temporary directory, which moves files, logs, browser profile folders and the settings domain away from the real ones. The tour seeds that directory with dummy logs and browser profiles, and the run removes the directory and its settings domain when it ends, whether it passed or failed. Tour mode refuses to start without `MG_HOME`.
 
@@ -86,11 +93,19 @@ Where the app has no such state yet, there is no scene for it. A planned state g
 
 **Staying complete.** Tests fail when a Preferences pane, About tab, job state or confirmation dialog has no scene or fixture. They also fail when a fixture would let a run reach the network or the real home directory.
 
-**Capture.** The app prepares a scene; the script run by `make` takes the picture with `screencapture`, so the image shows what macOS draws. The Screen Recording grant therefore goes to the program that runs `make`, not to the app, which is a new binary after each rebuild. A popover, sheet or overlay is shown over its page in one image. The app and script hand off through files in the output directory: after a scene settles the app writes `<scene>.ready` with the window ids and waits for `<scene>.done`. A scene that does not settle or capture in time fails the run. The window has a fixed size of 980 x 720, and animation is stopped or allowed to finish before capture.
+**Capture.** The app prepares a scene, waits for it to settle and saves the image itself, asking macOS only for its own windows: the main window with the sheets and popovers attached to it, composed as on screen and cropped to fit them. Nothing else on the screen can appear in an image, and the area outside the windows holds no desktop. The window has a fixed size of 980 x 720 and is centred on the sharpest display, so image scale and popover placement do not depend on where macOS opens it; animation is stopped or allowed to finish, and a text field gives up focus so no cursor blinks. The app reports the number of screens, the start and result of each, and the end of the run as lines of output. The script run by `make` starts the app, turns those lines into the progress display, and fails the run when a screen fails, the app ends without reporting that it finished, or it stops making progress.
 
-**Output.** `screenshots/<theme>/<scene>.png`. The directory is ignored by git. A full run clears it first; a narrowed run replaces only its own images. A failed run exits nonzero and names the scene and the reason.
+**Progress and summary.** Each screen prints `[n/total] theme/screen.png` as it starts, then a green tick, or a red cross with the reason, on the same line. `n` is the screen's place in the run, whatever happened to the ones before it. A failed screen does not stop the run. The run ends by saying where the images are and a table of how many screens were captured, failed and, if it stopped early, not run. Colour appears only on a terminal.
 
-**Make target.** `make screenshots [SCENE=<name>] [THEME=<theme>]` builds and installs a Debug build, runs the tour, leaves no tour-mode app running even when interrupted, and opens the output folder. It is documented with the other `make` commands.
+**Flows.** Every scene belongs to one flow, an area of the app: onboarding, home, table, popovers, overlays, preferences or about. A run can be narrowed to a flow, a theme, a scene, or a combination.
+
+**Running in the background.** A run does not bring the app forward and does not need it there: other apps can be used while it runs, and a window over the app never appears in a picture. Three things make that work, all only in a screenshot run. The app draws its windows as active by overriding private AppKit methods, because supported methods leave the window buttons and some system controls grey; if a macOS version drops one of those methods the run fails and says so, and after a macOS update the images are worth a look, since a method can stay and change meaning. The app ignores the pointer, so nothing is highlighted by where the mouse happens to be. It also asks macOS not to slow it down while it is hidden.
+
+**Trustworthy pictures.** A picture is saved only when two taken a moment apart match, so nothing is caught while appearing or fading. A scene that shows a popover or sheet fails unless that window is fully on screen and in the picture.
+
+**Output.** `screenshots/<time>/<theme>/<scene>.png`, where `<time>` is the run's start as seconds since 1970. Each run has its own folder, so it says when it ran, runs can be compared, and no run removes another's images. The directory is ignored by git. A run that saves nothing leaves no folder. A failed run exits nonzero and names the scene and the reason.
+
+**Make target.** `make screenshots [FLOW=<flow>] [SCENE=<name>] [THEME=<theme>]` builds and installs a Debug build, runs the tour, leaves no tour-mode app running even when interrupted, and opens the run's folder. It is documented with the other `make` commands.
 
 ## Left to the builder
 

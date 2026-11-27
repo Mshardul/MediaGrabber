@@ -78,7 +78,8 @@ struct DownloadsPane: View {
                         SkinnedPickerRow(id: $0.height, title: $0.label, subtitle: nil)
                     },
                     selection: $prefs.defaultVideoHeight,
-                    triggerLabel: qualityLabel(prefs.defaultVideoHeight)
+                    triggerLabel: qualityLabel(prefs.defaultVideoHeight),
+                    screen: "prefs"
                 )
             }
 

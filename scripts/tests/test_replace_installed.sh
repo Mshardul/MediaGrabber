@@ -69,6 +69,16 @@ for expected in "osascript called" "kill called with -9 12345 67890" "killall ca
 done
 ok "all commands called in order"
 
+echo "=== Testing MG_NO_OPEN installs without opening ==="
+: >"$calls_log"
+MG_NO_OPEN=1 bash "$REPLACE_SCRIPT" >"$work/output_no_open" 2>&1 ||
+    fail "replace-installed.sh failed: $(cat "$work/output_no_open")"
+grep -q -F "ditto called with" "$calls_log" || fail "app not installed"
+if grep -q -F "open called with" "$calls_log"; then
+    fail "app opened although MG_NO_OPEN=1"
+fi
+ok "MG_NO_OPEN=1 installs and does not open"
+
 echo "=== Testing missing build product exits non-zero ==="
 sandbox_init
 export APP="$work/missing.app"

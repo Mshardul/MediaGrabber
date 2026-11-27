@@ -11,6 +11,7 @@ struct SkinnedPicker<Option: Hashable>: View {
     @Environment(\.theme) private var theme
 
     private let caption: String
+    private let hookID: String
     private let rows: [SkinnedPickerRow<Option>]
     @Binding private var selection: Option
     private let triggerLabelOverride: String?
@@ -24,9 +25,11 @@ struct SkinnedPicker<Option: Hashable>: View {
         rows: [SkinnedPickerRow<Option>],
         selection: Binding<Option>,
         triggerLabel: String? = nil,
-        fillsWidth: Bool = false
+        fillsWidth: Bool = false,
+        screen: String? = nil
     ) {
         self.caption = caption
+        hookID = ["picker", screen, caption].compactMap(\.self).joined(separator: ".")
         self.rows = rows
         _selection = selection
         triggerLabelOverride = triggerLabel
@@ -35,8 +38,11 @@ struct SkinnedPicker<Option: Hashable>: View {
 
     var body: some View {
         Button {
-            highlighted = selection
-            isPresented.toggle()
+            if isPresented {
+                isPresented = false
+            } else {
+                open()
+            }
         } label: {
             HStack(spacing: Spacing.s1) {
                 Text(currentLabel)
@@ -68,6 +74,12 @@ struct SkinnedPicker<Option: Hashable>: View {
         .popover(isPresented: $isPresented, arrowEdge: .bottom) {
             popoverBody
         }
+        .screenshotHook(hookID) { open() }
+    }
+
+    private func open() {
+        highlighted = selection
+        isPresented = true
     }
 
     private var currentLabel: String {
@@ -154,7 +166,7 @@ struct SkinnedPicker<Option: Hashable>: View {
         .background(isHighlighted ? theme.palette.accent.opacity(0.12) : .clear)
         .contentShape(Rectangle())
         .onTapGesture { select(row.id) }
-        .onHover { hovering in
+        .onPointerHover { hovering in
             if hovering {
                 highlighted = row.id
             }

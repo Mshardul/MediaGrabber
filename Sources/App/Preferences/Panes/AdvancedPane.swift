@@ -1,4 +1,3 @@
-import AppKit
 import GrabberKit
 import SwiftUI
 
@@ -16,7 +15,7 @@ struct AdvancedPane: View {
 
             PrefRow("App data") {
                 Button("Show in Finder") {
-                    NSWorkspace.shared.activateFileViewerSelecting([appDataURL])
+                    appModel.revealSink.reveal([appDataURL])
                 }
             }
 

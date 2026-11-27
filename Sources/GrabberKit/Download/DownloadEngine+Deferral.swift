@@ -67,15 +67,26 @@ extension DownloadEngine {
         armDeferralTask()
     }
 
-    // Cancelling or failing the cooling row drops its timer. A queued sibling still needs a wake at the deadline.
-    func ensureHostCooldownWake(for host: RateHost) {
-        guard let deadline = rateLimiter.cooldownDeadline(for: host) else { return }
-        let sameHost: (DownloadJob) -> Bool = { RateHost(urlString: $0.request.url) == host }
-        let queued = jobs.contains { $0.state == .queued && sameHost($0) }
-        guard queued else { return }
-        let cooling = jobs.contains { isCooldownState($0.state) && sameHost($0) }
+    // A job can join a cooling host's queue at any time, so each scheduling pass checks that a wake is set.
+    func ensureHostCooldownWakes() {
+        let queuedHosts = Set(jobs.filter { $0.state == .queued }.map { RateHost(urlString: $0.request.url) })
+        for host in queuedHosts {
+            ensureHostCooldownWake(for: host)
+        }
+    }
+
+    private func ensureHostCooldownWake(for host: RateHost) {
+        // A deadline already past would fire at once, schedule again and never stop.
+        guard let deadline = rateLimiter.cooldownDeadline(for: host), deadline > dependencies.clock.now else {
+            return
+        }
+        let cooling = jobs.contains {
+            isCooldownState($0.state) && RateHost(urlString: $0.request.url) == host
+        }
         guard !cooling else { return }
-        deferStart(hostWakeID(for: host), until: deadline)
+        let wake = hostWakeID(for: host)
+        guard !deferrals.contains(where: { $0.id == wake && $0.notBefore == deadline }) else { return }
+        deferStart(wake, until: deadline)
     }
 
     private func hostWakeID(for host: RateHost) -> UUID {

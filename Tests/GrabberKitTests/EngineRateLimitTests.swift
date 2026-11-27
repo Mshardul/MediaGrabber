@@ -176,6 +176,39 @@ final class EngineRateLimitTests: XCTestCase {
         XCTAssertTrue(started)
     }
 
+    // The sibling's check is slow, so it is not yet queued when the cooling job fails for good.
+    func testSiblingStillBeingCheckedStartsAfterTheCoolingJobFailsForGood() async {
+        let clock = FakeClock(now: Date(timeIntervalSince1970: 1000))
+        let runner = FakeProcessRunner()
+        runner.scripts(
+            [rl429, rl429, Fix.completingScript()],
+            forPathEndingIn: "yt-dlp"
+        )
+        let probe = successProbe()
+        let engine = Fix.engine(
+            runner: runner, probe: probe, cap: 2, clock: clock,
+            tuning: EngineTuning.resolved(environment: ["MG_BACKOFF_LADDER": "1"]),
+            maxAutoRetries: 1
+        )
+        let collector = EventCollector(engine.events)
+
+        let cooling = await submitJob(engine, Fix.request(url: "https://youtube.com/watch?v=a"))
+        _ = await collector.waitForState(cooling) { self.isCooldown($0) }
+        probe.perProbeDelay = .milliseconds(500)
+        let waiting = await submitJob(engine, Fix.request(url: "https://youtube.com/watch?v=b"))
+
+        clock.advance(by: .seconds(2))
+        let failed = await collector.waitForState(cooling) { self.isFailed($0) }
+        XCTAssertTrue(failed)
+        let checking = await collector.waitForState(waiting) { $0 == .probing }
+        XCTAssertTrue(checking, "the sibling must still be being checked here")
+        let checked = await collector.waitForState(waiting) { $0 == .queued }
+        XCTAssertTrue(checked)
+
+        let started = await advanceUntilLeftQueue(collector, waiting, clock: clock)
+        XCTAssertTrue(started)
+    }
+
     func testTerminalRateLimitedStillStrikes() async {
         let clock = FakeClock(now: Date(timeIntervalSince1970: 1000))
         let runner = FakeProcessRunner()

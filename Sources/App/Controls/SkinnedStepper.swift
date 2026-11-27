@@ -71,7 +71,7 @@ struct SkinnedStepper: View {
         .disabled(!enabled)
         .focusable()
         .focused($focused)
-        .onHover { hovering = $0 && enabled }
+        .onPointerHover { hovering = $0 && enabled }
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in pressing = enabled }

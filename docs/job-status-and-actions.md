@@ -90,7 +90,7 @@ stateDiagram-v2
 - **Resume** only from `paused`.
 - **Force start** from `queued` when not immediately schedulable, or from `cooldown` (not from `waitingForNetwork`). Eviction → oldest running job back to `queued`; **no Remark** on victim or forced job for that event. Confirm when eviction will happen (§6).
 - Auto-retry landing in `queued` (deferred) vs `cooldown` is an engine detail; row status stays honest. Backoff / host clock → Remark.
-- **`depMissing`:** keep `queueHalt` (nothing schedules); blocking dialog + banner/HealthStrip. Do **not** mass-flip jobs to `paused`. Product copy may say the queue is paused.
+- **`depMissing`:** keep `queueHalt` (nothing schedules); blocking dialog + the Tools health chip. Do **not** mass-flip jobs to `paused`. Product copy may say the queue is paused.
 
 ## 3b. Playlist group (second diagram)
 
@@ -127,7 +127,7 @@ stateDiagram-v2
 
 ## 4. Actions per state (single job)
 
-Only list actions that are **enabled** (offered). Others are absent — not disabled placeholders.
+Each video row's three-dot menu lists every video-level action; those not offered in the current state are disabled. A playlist header's menu does the same for the group-level actions. In the table below, ✓ means enabled.
 
 | State | Pause | Resume | Cancel | Force start | Restart | Restart with sign-in | Reveal | Remove | Open | Log |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -210,7 +210,7 @@ Used for quit prompt and in-flight motif — **not** the same set as the Downloa
 
 Batch actions use the **same** verbs and eligibility as single-row / playlist group. Apply only to selected rows that offer that action.
 
-**Chrome (locked 2026-09-22):** when ≥1 row is selected, a bar above the Downloads table shows `N selected` plus the eligible batch verbs; the bar hides when selection is empty. Not a floating footer. Per-row Actions stay visible; the batch bar is additive — a row action still targets only that row. Header select-all covers **currently visible rows only** (after rail + column filters); collapsed-away playlist children are not selected (locked 2026-09-22). On rail or column-filter change: **keep selected IDs that remain visible, drop the rest** — batch never applies to off-screen selection (locked 2026-09-22). Input: checkboxes + ⌘-click toggle + Shift-click range over visible-row order (locked 2026-09-22).
+**Chrome (locked 2026-09-22):** when ≥1 row is selected, the Columns-button row above the Downloads table shows `N selected` plus every video-level action, enabled when any selected row offers it; these hide when selection is empty. Table rows do not move. Not a floating footer. Per-row Actions stay visible; selection actions are additive — a row action still targets only that row. Header select-all covers **currently visible rows only** (after rail + column filters); collapsed-away playlist children are not selected (locked 2026-09-22). On rail or column-filter change: **keep selected IDs that remain visible, drop the rest** — batch never applies to off-screen selection (locked 2026-09-22). Input: checkboxes + ⌘-click toggle + Shift-click range over visible-row order (locked 2026-09-22).
 
 | Batch       | Eligibility                                            |
 | ----------- | ------------------------------------------------------ |

@@ -165,6 +165,7 @@ struct HomeView: View {
             canGrab: appModel.resolved != nil,
             onGrab: grab
         )
+        .screenshotHook("home.audio") { mediaType = .audio }
     }
 
     private var runwayAttached: Bool {

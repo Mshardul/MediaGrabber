@@ -20,10 +20,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_: Notification) {
+        // A screenshot run takes no links from outside: no Services entry and no clipboard checks.
+        guard !RunMode.isScreenshotTour else { return }
         NSApp.servicesProvider = self
     }
 
     func applicationDidBecomeActive(_: Notification) {
+        guard !RunMode.isScreenshotTour else { return }
         Task { await incomingLinks?.applicationDidBecomeActive() }
         startClipboardPolling()
     }

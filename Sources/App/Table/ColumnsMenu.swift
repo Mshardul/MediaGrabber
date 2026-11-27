@@ -43,6 +43,7 @@ struct ColumnsMenu: View {
                 onDismiss: { isPresented = false }
             )
         }
+        .screenshotHook("columns.menu") { isPresented = true }
     }
 
     private var showsClearFilters: Bool {

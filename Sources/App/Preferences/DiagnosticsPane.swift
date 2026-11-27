@@ -196,22 +196,29 @@ struct DiagnosticsPane: View {
             Divider().overlay(theme.palette.hair)
 
             if let model {
-                lastRunLine(model)
-                if model.hasReport {
-                    reportRows(model)
-                    actionButtons(model)
-                } else {
-                    Text(DiagnosticsPaneModel.emptyPlaceholder)
-                        .font(theme.bodyFont(13, .regular))
-                        .foregroundStyle(theme.palette.dim)
-                        .padding(.top, Spacing.s3)
-                }
+                results(model)
+                    .screenshotHook("diagnostics.run") { await model.runCheck() }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task {
             if model == nil {
                 model = makeModel()
+            }
+        }
+    }
+
+    private func results(_ model: DiagnosticsPaneModel) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            lastRunLine(model)
+            if model.hasReport {
+                reportRows(model)
+                actionButtons(model)
+            } else {
+                Text(DiagnosticsPaneModel.emptyPlaceholder)
+                    .font(theme.bodyFont(13, .regular))
+                    .foregroundStyle(theme.palette.dim)
+                    .padding(.top, Spacing.s3)
             }
         }
     }

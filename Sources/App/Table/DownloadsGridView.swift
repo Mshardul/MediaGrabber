@@ -26,6 +26,9 @@ struct DownloadsGridView: NSViewRepresentable {
     func updateNSView(_: NSView, context: Context) {
         let controller = context.coordinator.controller
         wire(controller: controller)
+        #if DEBUG
+            context.coordinator.registerFilterHooks(for: columnConfig.orderedVisibleColumns())
+        #endif
         let state = DownloadsGridSyncState(
             items: store.visibleItems,
             visibleColumns: columnConfig.orderedVisibleColumns(),
@@ -100,9 +103,18 @@ struct DownloadsGridView: NSViewRepresentable {
         controller.onRowReorder = onRowReorder
     }
 
+    #if DEBUG
+        static func dismantleNSView(_: NSView, coordinator: Coordinator) {
+            coordinator.removeFilterHooks()
+        }
+    #endif
+
     @MainActor
     final class Coordinator {
         let controller = DownloadsGridController()
         var paintedTick = 0
+        #if DEBUG
+            var filterHookTokens: [String: UUID] = [:]
+        #endif
     }
 }

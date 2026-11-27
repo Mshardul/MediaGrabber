@@ -172,7 +172,6 @@ extension DownloadEngine {
         job.finishedAt = .now
         dropPasscode(for: job)
         finishTerminal()
-        ensureHostCooldownWake(for: host)
     }
 
     private func recordCleanSuccessFor(_ job: DownloadJob) {
@@ -334,7 +333,6 @@ extension DownloadEngine {
 
     func markCancelled(_ id: UUID) {
         guard let job = jobs.first(where: { $0.id == id }) else { return }
-        let host = RateHost(urlString: job.request.url)
         job.state = .cancelled
         job.finishedAt = .now
         job.probeWaitUntil = nil
@@ -343,7 +341,6 @@ extension DownloadEngine {
         bump()
         emitSnapshot()
         evaluateSchedule()
-        ensureHostCooldownWake(for: host)
     }
 
     // In-memory terminal jobs, history.json, and JobLog files evict the same 200 by finishedAt.

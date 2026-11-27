@@ -8,7 +8,7 @@
 
 **Tech Stack:** Swift 6 / SwiftUI / AppKit (App target only), XCTest (`AppUnitTests`), bash, Makefile, Tuist.
 
-**Spec:** `docs/superpowers/specs/2026-11-21-screenshot-tour-design.md`
+**Spec:** `docs/superpowers/specs/archived/2026-11-21-screenshot-tour-design.md`
 
 ## Global Constraints
 

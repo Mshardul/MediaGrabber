@@ -45,4 +45,6 @@ ditto "$APP" "$INSTALLED" || {
 
 make --no-print-directory drop-build-app DERIVED="$DERIVED"
 
-open "$INSTALLED"
+if [ "${MG_NO_OPEN:-}" != "1" ]; then
+    open "$INSTALLED"
+fi

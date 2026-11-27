@@ -129,6 +129,7 @@ struct OnboardingView: View {
             primaryButton("Set up", enabled: installer.canProceedToHome) {
                 Task { await installer.installShieldOnly() }
             }
+            .screenshotHook("onboarding.setUpShield") { await installer.installShieldOnly() }
         case (_, .failed):
             Button("Try again") { Task { await retry(step) } }
                 .buttonStyle(.plain)

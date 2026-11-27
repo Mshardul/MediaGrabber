@@ -67,6 +67,7 @@ struct HealthStrip: View {
             )) {
                 HostRatePopover()
             }
+            .screenshotHook("health.\(chip.id)") { openPopoverID = chip.id }
         case let .refresh(isBusy):
             refreshChip(chip, isBusy: isBusy)
         case .setUp:
@@ -152,11 +153,11 @@ struct HealthStrip: View {
     }
 
     func isPulsing(_ dot: DotState, reduceMotion: Bool) -> Bool {
-        dot == .busy && !reduceMotion
+        dot == .busy && !reduceMotion && !RunMode.isScreenshotTour
     }
 
     func isSpinning(_ isBusy: Bool, reduceMotion: Bool) -> Bool {
-        isBusy && !reduceMotion
+        isBusy && !reduceMotion && !RunMode.isScreenshotTour
     }
 
     @ViewBuilder

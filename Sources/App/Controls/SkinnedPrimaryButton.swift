@@ -32,7 +32,7 @@ struct SkinnedPrimaryButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
-        .onHover { hovering = $0 }
+        .onPointerHover { hovering = $0 }
     }
 
     private var gradientColors: [Color] {

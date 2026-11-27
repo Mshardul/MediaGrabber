@@ -52,6 +52,8 @@ The first release has been published, so the download link and the captures are 
 
 ## 9. App mark
 
+Tracked in mg-238, which also covers matching both themes, 2D and 3D forms, and shapes and sizes. Where this brief and that ticket differ, the ticket applies.
+
 Decided before the screenshots, because the wordmark and the Dock icon appear in them. The question is whether a new mark replaces the orb. The brief: one fixed mark in every theme; it says "if you can watch it, you can download it" from any site, not a file type or a particular site; it reads at 16px and as a Dock tile; it works on dark and light grounds; it is not tied to the Aurora colours. Directions looked at and not chosen: a flat glyph (frame, drop-in tray, M-arrow, queue, pin), a type-only wordmark, a one-eye character, a claw, a jar, a letter G and creature mascots. The look of a character was not settled and needs real illustration craft, so a designer or illustrator is an option.
 
 ## Deferred decisions

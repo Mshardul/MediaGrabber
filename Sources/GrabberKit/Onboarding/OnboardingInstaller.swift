@@ -21,26 +21,23 @@ public final class OnboardingInstaller {
     public private(set) var canProceedToHome: Bool
 
     private let probe: EnvironmentProbing
-    private let runner: ProcessRunning
-    private let injectedMetadataProbe: MetadataProbing?
+    private let makeCanaryProbe: @Sendable (URL) -> any MetadataProbing
     private let shieldInstaller: ShieldInstaller
     private let isShieldInstalled: @Sendable () -> Bool
 
     public init(
         locations: AppLocations,
         probe: EnvironmentProbing? = nil,
-        runner: ProcessRunning = ProcessRunner(),
-        metadataProbe: MetadataProbing? = nil,
+        makeCanaryProbe: @escaping @Sendable (URL) -> any MetadataProbing = { CanaryProbe.liveProbe(ytDlpURL: $0) },
         shieldInstaller: ShieldInstaller? = nil,
         isShieldInstalled: (@Sendable () -> Bool)? = nil
     ) {
         self.probe = probe ?? EnvironmentProbe(tools: .live(locations: locations))
-        self.runner = runner
+        self.makeCanaryProbe = makeCanaryProbe
         self.isShieldInstalled = isShieldInstalled ?? {
             PotPluginInstaller.live(locations: locations).resolveServerLaunch(port: 0) != nil
         }
         self.shieldInstaller = shieldInstaller ?? ShieldInstaller(tools: .live(locations: locations))
-        injectedMetadataProbe = metadataProbe
         steps = Dictionary(
             uniqueKeysWithValues: OnboardingStepID.allCases.map { ($0, .pending) }
         )
@@ -62,15 +59,10 @@ public final class OnboardingInstaller {
     }
 
     private func runCanaryProbe(ytDlpPath: URL?) async -> OnboardingStepState {
-        guard canProceedToHome else {
+        guard canProceedToHome, let ytDlpPath else {
             return .pending
         }
-        let result: Result<MediaMetadata, MetadataError> = if let injectedMetadataProbe {
-            await injectedMetadataProbe.probe(CanaryProbe.url)
-        } else {
-            await CanaryProbe.run(ytDlpPath: ytDlpPath, runner: runner)
-        }
-        switch result {
+        switch await makeCanaryProbe(ytDlpPath).probe(CanaryProbe.url) {
         case .success:
             return .done
         case let .failure(error):

@@ -1,81 +1,39 @@
 #if DEBUG
     import Foundation
-    import GrabberKit
-    import SwiftUI
 
-    struct SceneSpec: Equatable {
+    @MainActor
+    struct SceneSpec {
+        typealias Step = @MainActor (ScreenshotStage) async -> Void
+
         let name: String
-        let navigate: @MainActor @Sendable (AppModel) async -> Void
-
-        static func == (lhs: SceneSpec, rhs: SceneSpec) -> Bool {
-            lhs.name == rhs.name
-        }
+        // Set by the registry; a scene built outside it belongs to no flow.
+        var flow: ScreenshotFlow?
+        // Runs before the views are rebuilt: data and model state a view reads when it appears.
+        var prepare: Step = { _ in }
+        // Runs once the views are on screen: changes a view only reacts to while it is showing.
+        var interact: Step = { _ in }
+        var hooks: [String] = []
+        // Popovers and sheets that must be on screen in the picture.
+        var overlays = 0
+        // Checked before the capture, so a state that was not reached fails the run.
+        var expect: @MainActor (AppModel) -> Bool
     }
 
+    @MainActor
     enum ScreenshotScenes {
-        static let all: [SceneSpec] = makeRegistry()
-
-        static func makeRegistry() -> [SceneSpec] {
-            var scenes: [SceneSpec] = []
-
-            for pane in PreferencesPane.allCases {
-                scenes.append(SceneSpec(name: "prefs-\(pane.rawValue)") { model in
-                    await model.navigateToPreferences(pane)
-                })
+        static let all: [SceneSpec] = ScreenshotFlow.allCases.flatMap { flow in
+            flow.scenes.map { scene in
+                var member = scene
+                member.flow = flow
+                return member
             }
-
-            for tab in AboutTab.allCases {
-                scenes.append(SceneSpec(name: tab.rawValue) { model in
-                    model.page = .about(tab)
-                })
-            }
-
-            scenes.append(SceneSpec(name: "dialog-confirm") { model in
-                model.pendingConfirmation = AppModelDialogs.removeConfirmation()
-            })
-
-            scenes.append(SceneSpec(name: "banner-warning") { model in
-                model.bannerContent = BannerContent(
-                    text: "This is a warning banner with a button",
-                    buttonTitle: "Action",
-                    action: {}
-                )
-            })
-
-            scenes.append(SceneSpec(name: "picker-playlist") { model in
-                model.isPlaylistPickerPresented = true
-                model.resolved = .playlist(ScreenshotFixtures.playlistDump)
-            })
-
-            scenes.append(SceneSpec(name: "onboarding") { model in
-                await model.refreshOnboardingState()
-            })
-
-            scenes.append(SceneSpec(name: "home-empty") { model in
-                model.page = .home
-                model.homeFieldText = ""
-            })
-
-            scenes.append(SceneSpec(name: "home-with-input") { model in
-                model.page = .home
-                model.homeFieldText = "https://example.com/video"
-            })
-
-            scenes.append(SceneSpec(name: "home-probing") { model in
-                model.page = .home
-                model.homeFieldText = "https://example.com/video"
-                model.isProbing = true
-                model.probingURL = "https://example.com/video"
-            })
-
-            return scenes
         }
 
-        static func selected(_ options: ScreenshotOptions) -> [SceneSpec] {
-            guard let sceneName = options.scene else {
-                return all
+        static func selected(_ options: ScreenshotOptions, from scenes: [SceneSpec] = all) -> [SceneSpec] {
+            scenes.filter { scene in
+                (options.flow == nil || scene.flow == options.flow)
+                    && (options.scene == nil || scene.name == options.scene)
             }
-            return all.filter { $0.name == sceneName }
         }
     }
 #endif

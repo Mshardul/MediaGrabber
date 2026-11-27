@@ -1,3 +1,6 @@
+# Finder metadata
+.DS_Store
+
 # Tuist / Xcode generated — scoped to this leaf
 *.xcodeproj
 *.xcworkspace
@@ -28,6 +31,9 @@ Resources/Licenses/*
 __pycache__/
 .ruff_cache/
 .pytest_cache/
+
+# make screenshots output
+/screenshots/
 
 # Playwright MCP captures
 .playwright-mcp/

@@ -11,6 +11,10 @@ public enum CanaryProbe {
         return await makeProbe(ytDlpURL: ytDlpPath, runner: runner).probe(url)
     }
 
+    public static func liveProbe(ytDlpURL: URL) -> any MetadataProbing {
+        makeProbe(ytDlpURL: ytDlpURL, runner: ProcessRunner())
+    }
+
     // Shared with production DiagnosticsPaneModel construction so there is one line that builds this probe.
     public static func makeProbe(ytDlpURL: URL, runner: ProcessRunning) -> MetadataProbing {
         MetadataProbe(ytDlpURL: ytDlpURL, runner: runner)

@@ -202,6 +202,7 @@ User reset comes from the warning banner's "Retry now" and the host-rate popover
 
 1. **`blockedHostIDs` / `blockedProbeHostIDs`** — a `.queued` job (or a job needing a probe) whose host is `rateLimiter.blocked` is excluded from the scheduler. `blocked`: `.normal → false`, `.cooldown → until > now`, `.circuitOpen → always true`. Host-at-cap jobs are unioned into the same blocked set via `hostCapBlockedIDs` (per-host adaptive slot pressure).
 2. **`reQueueForHostRate`** — on a `.rateLimited` retryable failure, exactly one job per host goes `.cooldown(deadline)`; the rest stay `.queued` and are held out by `blockedHostIDs`. If the host is already `.circuitOpen` (no cooldown deadline), the job goes `.queued` and is held the same way.
+   - **Host wake:** each `evaluateSchedule` ends with `ensureHostCooldownWakes`. For a host with a `.queued` job, a cooldown deadline still ahead and no `.cooldown` job, it defers a per-host wake id to that deadline, so a job held by `blockedHostIDs` or `blockedProbeHostIDs` is looked at again when the cooldown ends, however and whenever it became `.queued`.
 3. **`effectiveQueueHalt()`** derives the `.circuitOpen` queue halt (see §1).
 4. **`preview` / `previewPlaylist`** return `.failure(.hostBlocked)` when the host is blocked — the probe never launches.
 5. **Adaptive concurrency** (per-`RateHost` on `RateLimiter`; prefs cap is global):

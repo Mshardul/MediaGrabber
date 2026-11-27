@@ -40,7 +40,7 @@ struct SkinnedToggle: View {
             .frame(width: 34, height: 20)
             .contentShape(Rectangle())
             .onTapGesture { isOn.toggle() }
-            .onHover { hovering = $0 }
+            .onPointerHover { hovering = $0 }
             .focusable()
             .focused($focused)
             .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)

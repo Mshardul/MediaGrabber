@@ -20,6 +20,8 @@ struct SignInCookiesPane: View {
                 model = CookiePaneModel(
                     prefs: appModel.prefs,
                     resolver: CookieResolver(browsers: appModel.locations.browsers),
+                    settingsLink: appModel.settingsLink,
+                    openURL: appModel.openURLSink,
                     signInProbe: appModel.makeSignInTestProbe()
                 )
             }
@@ -124,6 +126,7 @@ struct SignInCookiesPane: View {
                 .disabled(model.signInTest == .running)
                 testResultLine(model.signInTest)
             }
+            .screenshotHook("signIn.test") { await model.testSignIn() }
         }
     }
 

@@ -23,6 +23,14 @@ struct PlaylistPickerView: View {
         .frame(minWidth: 620, idealWidth: 720, maxWidth: 820, minHeight: 520, maxHeight: 680)
         .background(theme.palette.panelSolid)
         .accessibilityElement(children: .contain)
+        .screenshotHook("playlistPicker.partialSelection") {
+            for entry in model.dump.entries.prefix(2) {
+                toggle(entry.playlistIndex)
+            }
+        }
+        .screenshotHook("playlistPicker.filter") {
+            model.filter = model.dump.entries.last?.title.split(separator: " ").last.map(String.init) ?? ""
+        }
     }
 
     private var header: some View {

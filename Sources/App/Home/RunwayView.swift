@@ -68,7 +68,8 @@ struct RunwayView: View {
                 caption: "Resolution",
                 rows: qualityRows,
                 selection: $videoHeight,
-                triggerLabel: qualityLabel(videoHeight)
+                triggerLabel: qualityLabel(videoHeight),
+                screen: "home"
             )
         case .audio:
             SkinnedPicker(

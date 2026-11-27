@@ -14,7 +14,7 @@ struct MotifView: View {
     ]
 
     func isSpinning(reduceMotion: Bool) -> Bool {
-        isActive && !reduceMotion
+        isActive && !reduceMotion && !RunMode.isScreenshotTour
     }
 
     var body: some View {

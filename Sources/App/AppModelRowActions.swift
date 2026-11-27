@@ -206,9 +206,7 @@ extension AppModel {
         guard let row = rowStore.rows.first(where: { $0.id == jobID }),
               let url = URL(string: row.snapshot.url)
         else { return }
-        #if canImport(AppKit)
-            NSWorkspace.shared.open(url)
-        #endif
+        openURLSink.open(url)
     }
 }
 

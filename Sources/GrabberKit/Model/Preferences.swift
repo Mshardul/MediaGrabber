@@ -285,7 +285,7 @@ public final class Preferences: @unchecked Sendable {
         }
     }
 
-    private static let ownedKeys = [
+    static let ownedKeys = [
         "mg.defaultDownloadFolder", "mg.lastUsedDownloadFolder", "mg.defaultMediaType",
         "mg.defaultVideoHeight", "mg.defaultAudioFormat", "mg.filenameTemplate",
         "mg.maxAutoRetries", "mg.maxConcurrentDownloads", "mg.verboseLogging",

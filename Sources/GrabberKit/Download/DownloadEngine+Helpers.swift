@@ -1,7 +1,7 @@
 import Foundation
 
 extension DownloadEngine {
-    static func availableActions(
+    public static func availableActions(
         for state: JobState,
         isImmediatelySchedulable: Bool = false,
         signInAdvice: SignInAdvice = .none,

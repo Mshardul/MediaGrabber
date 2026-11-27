@@ -34,6 +34,7 @@ Read [docs/coding-standards.md](docs/coding-standards.md) before writing code an
 | --- | --- |
 | `make` | Builds, replaces the app in `/Applications` and relaunches it |
 | `make test` | Plugin tests, script tests, then unit tests; `ONLY=Target/Suite` narrows the unit tests |
+| `make screenshots` | Installs a Debug build and screenshots pages and states on dummy data; `FLOW`, `THEME`, `SCENE` narrow it |
 | `make fix` / `make check` | Checks the changed files; `fix` edits them, `check` does not |
 | `make fix-all` / `make check-all` | The same over the whole repository |
 

@@ -23,7 +23,7 @@ This is the source of truth for visual design. Mockups in `mockups/` mirror thes
     - [4.2.3 Downloads table](#423-downloads-table)
     - [4.2.4 Playlist group in the table](#424-playlist-group-in-the-table)
   - [4.3 Playlist picker (modal)](#43-playlist-picker-modal)
-  - [4.4 Toast](#44-toast)
+  - [4.4 Alerts](#44-alerts)
   - [4.5 Onboarding](#45-onboarding)
   - [4.6 Preferences](#46-preferences)
   - [4.7 Diagnostics](#47-diagnostics)
@@ -60,7 +60,7 @@ Warm, tactile, nostalgic hi-fi. Light-first.
 
 | Axis | Value |
 | --- | --- |
-| Display face | **Bricolage Grotesque** 700 / 800 — headlines, wordmark, Go button, banner heading |
+| Display face | **Bricolage Grotesque** 700 / 800 — headlines, wordmark, Go button |
 | Body face | **DM Sans** 400 / 500 / 700 — UI text, table cells, field labels |
 | Utility face | **DM Mono** 400 / 500 — chips, status pills, table headers, data, kicker |
 | Border | 2px solid `--ink` on structural edges; 1.5px on chips / pills / small controls |
@@ -118,7 +118,7 @@ Icons are **bundled SVGs, one library per theme** — the only axis where the tw
 
 Within a theme every glyph comes from that one library — never mixed. Only the ~26 glyphs actually used are bundled (≈ 48 SVGs total across both themes), as an asset catalog. A `NOTICE` file credits both libraries.
 
-**Rendering.** Each glyph is a template image tinted with the current context colour (`--text`, `--dim`, `--accent`, `--danger`, …). An `Icon` SwiftUI view takes a semantic case (`Icon(.pause)`), reads the active theme from `ThemeEnvironment`, and resolves the right asset. Nominal size 16px in dense spots (row actions, table headers, chips), 15px in nav, up to 20–22px in the banner and onboarding.
+**Rendering.** Each glyph is a template image tinted with the current context colour (`--text`, `--dim`, `--accent`, `--danger`, …). An `Icon` SwiftUI view takes a semantic case (`Icon(.pause)`), reads the active theme from `ThemeEnvironment`, and resolves the right asset. Nominal size 16px in dense spots (row actions, table headers, chips), 15px in nav, up to 20–22px in onboarding.
 
 **Glyph set** (semantic name → Phosphor Bold / Lucide):
 
@@ -161,22 +161,46 @@ The `warning` glyph is reused for the Preferences concurrency note (§4.6) — n
 
 ### 4.1 App chrome
 
-- **Brand row** — wordmark (motif + name) left; nav right (`Home · Preferences · About`) as in-app page links. Active page gets a filled `--panel` background. Diagnostics is not a nav item — it is a Preferences pane (§4.6); About (§4.8) is the third top-level destination, replacing Diagnostics there. The brand row is the only chrome that stays fixed regardless of page.
+- **Title bar** — the app extends into the macOS title bar and keeps the system's close, minimise and zoom buttons; the system title is hidden. It holds the wordmark (logo + name) on the left and, on the right, the nav (`Home · Preferences · About`) as in-app page links; the active page gets a filled `--panel` background. Diagnostics is not a nav item — it is a Preferences pane (§4.6); About (§4.8) is the third top-level destination. The health strip sits on the row below. The title bar is the only chrome that stays fixed regardless of page. Dragging and double-clicking its empty areas behave as in any macOS window, and it dims when the window is inactive.
+- **Logo** — while anything is downloading, a ring around it shows overall progress, drawn in the chosen theme and palette gradient and never in an issue colour (Aurora: `--accent` to `--accent-2`; Tape Deck: `--go` to `--accent`, since its title bar is `--accent-2`). No ring when nothing is downloading. One click goes Home; a triple-click opens the hidden orb view.
 - **Left rail** — one persistent rail, same visual shell, sits below the health strip on every page; its _content_ changes with the active page while the rail's position, width, and row styling stay identical everywhere:
   - **Home** — the status filter rail (§4.2.3: All · Downloading · Done · Inactive), hidden until the first Grab (no rail in the first-run empty state).
   - **Preferences** — the pane rail (§4.6: General / YouTube / System groups).
   - **About** — the tab rail (§4.8: About / Developer). Selecting a rail row updates the app's current page state directly (e.g. `.preferences(.diagnostics)`), so the rail's own selection and the page's content can never drift apart.
-- **Health strip** — below the brand row. Small utility-face chips carrying ambient state: `bot-check shield`, `engine` (yt-dlp version drift against the app's declared minimum), `online`, and a `<host> · cooldown m:ss` chip that appears only during a cooldown. Green dot = ok, amber dot = attention.
-  - **When a chip is in a bad state, a `↻` icon appears at its right edge.** Clicking it runs that chip's fix routine in the background and puts the chip in a **busy state** for the duration — the `↻` glyph spins, the dot dims to a pulsing neutral state, and the icon is disabled so a second click can't overlap the action (disabled under `prefers-reduced-motion`; the glyph and dot simply hold still). This busy treatment is uniform across every chip that can act:
-    | chip bad state | `↻` runs |
-    | --- | --- |
-    | `shield · offline` | restart the POT provider process, re-run its health check |
-    | `Downloader · update available` | re-run a version-pinned `brew reinstall yt-dlp` (or `upgrade`) to the app's declared minimum, re-read the version — never an unconditional upgrade to latest |
-    | `offline` | re-poll `NWPathMonitor` |
-    | `Downloader · missing` (dependency gone) | _not a refresh_ — routes back to Onboarding; hard block |
-  - On success the chip flips green and the icon disappears. On failure an **error toast** shows the reason and the chip stays in its bad state (icon remains, no longer busy).
-  - The `cooldown m:ss` chip is not an error — no refresh icon. Clicking it opens a small popover: why the cooldown happened, when it clears, and a **Retry now** button.
-- **Warning banner** — docked to the **bottom** of the window, floating over the table, `left/right: 16`, `bottom: 16`. The table gets bottom padding (≈ 78–82px) so its last row never sits under the banner. Reserved for **engine / host-level** conditions only: cooldown explainer, circuit-breaker open, dependency missing, POT provider down. One sentence + one action button. The theme styles it as a solid warm fill (Tape Deck: `--accent` on `--ink` border; Aurora: `--banner-fill` gradient).
+- **Health strip** — below the brand row. One small utility-face chip per **issue category**. Every category chip is always visible, healthy or not, and its dot shows the most severe thing it holds.
+  - **Issues dialog** — clicking a chip opens a centred dialog listing everything in that category, warnings included. Each entry says in plain words what is wrong and has its action buttons aligned right. Order: severity first, then newest first.
+  - **Actions** live in the dialog (restart the YouTube check, update the downloader, retry a paused site, and so on). While an action runs, its button and the chip show a busy state and cannot be pressed again (static under `prefers-reduced-motion`). A failed action raises an alert with the reason and the issue stays listed.
+- **Problems** — there is no banner. A new **Blocked** or **Problem** issue raises one untimed alert (§4.4); when it clears, a new alert says so and the earlier one is not changed. Warnings raise no alert.
+- **What counts as an issue** — all three: it affects the app or could affect several downloads; it lasts until something changes; the app can detect it. One failed download stays on its row; a one-off event is an alert; a decision is a dialog; advice (such as turning off a VPN) sits inside its issue.
+
+| Level | Meaning | Mark |
+| --- | --- | --- |
+| Blocked | Affected downloads stop, and waiting on a known timer is not enough | Red stop sign |
+| Problem | Something is broken; some downloads may fail or work less well | Orange triangle |
+| Warning | Nothing is broken, or the app is already recovering | Yellow information circle |
+| Healthy | Nothing to report | Green check |
+
+Each level differs in shape and colour. Its colours are their own tokens, apart from the palette accent. A chip shows its most severe level; the dialog lists each affected site separately.
+
+| Chip | Issue | Level | Action |
+| --- | --- | --- | --- |
+| Connection | Offline | Blocked | Check again |
+| Connection | A site paused after repeated limits | Blocked | Retry now |
+| Connection | A site cooling down | Warning | none; countdown |
+| Connection | A site's downloads running one at a time | Warning | none |
+| YouTube & sign-in | YouTube check stopped | Problem | Restart |
+| YouTube & sign-in | Browser needs permission | Problem | Open System Settings |
+| YouTube & sign-in | Chosen browser has no usable profile | Problem | Choose browser |
+| YouTube & sign-in | YouTube check not set up | Warning | Set up |
+| YouTube & sign-in | YouTube check restarting | Warning | none |
+| Tools | Downloader or main media tool missing | Blocked | Fix setup |
+| Tools | Tool that checks finished files missing | Problem | Open Diagnostics |
+| Tools | Downloader outdated | Warning | Update |
+| Tools | App cannot update from its current folder | Warning | Move to Applications |
+| Tools | App update available | Warning | View update |
+| Storage | Disk full | Blocked | Show folder |
+| Storage | Download folder missing or not writable | Blocked | Choose folder |
+| Storage | List, history or column layout cannot be saved | Problem | Try again |
 
 ### 4.2 Home
 
@@ -186,23 +210,44 @@ Behavioural contract in spec §5.3. Home is one screen with three states and fou
 
 - **First run, no download ever made:** header + paste field + a **horizontal numbered strip** ("Paste a link · Pick a format · Press Grab") fill the body. The paste field is the only card. **No Downloads table is rendered** — no headers, status rail, or Columns button. The runway is not shown either (no link yet).
 - **After the first Grab:** the strip is gone permanently. The Downloads table (with its toolbar) is rendered from now on. The field sits above it; the runway appears when a pasted link resolves and is hidden otherwise.
-- **Table emptied later** (user removed every row): the table stays, showing a single centered line "No downloads — paste a link above." The strip does **not** return; it is first-run-only.
+- **Table emptied later** (user removed every row): the empty-table state of §4.2.5. The strip does **not** return; it is first-run-only.
+
+#### 4.2.5 The oracle orb: empty and welcome states
+
+The orb holds everything: "whatever you need". A large animated 3D orb appears on empty tables, first launch and onboarding, each with a message and, where useful, actions.
+
+- **Styles** — Aurora: glass, slow inner light, glowing rim. Tape Deck: thick ink outline, flat colour, dot shading, hard shadow, sparkles, motion stepped at 12 frames per second.
+- **Contents** — many different media symbols floating at different depths inside, behind the glass; two rings and small lights circle it.
+- **Pointer** — it turns and leans towards the pointer in true 3D, tracked across the whole surrounding area.
+- **Quiet** — still under Reduce Motion; hidden from VoiceOver, which reads the message; animation stops while the window is not visible.
+- **Table headings** show only when column filters cause the empty result.
+- **Empty rail views** each say what that view holds and offer a way on.
+
+| Mood | Meaning | Shown on |
+| --- | --- | --- |
+| Waiting | Give me a link | First launch, onboarding, no downloads at all |
+| Resting | Nothing here right now | Empty Downloading, Done and Inactive views |
+| Clouded | Something is in the way | Filters matching nothing; a failed link check, failed setup step or being offline while the large orb is visible |
+| Searching | Working on it | Checking a link on first launch; the onboarding test run. The inside, symbols and rings speed up and a bright point sweeps the rings |
+| Link dragged over | Ready to catch it | Any screen with the large orb, during the drag |
+
+When more than one applies: Link dragged over, then Searching, then Clouded, then Waiting or Resting.
 
 #### 4.2.2 Paste field + runway _(the hero)_
 
 The "resolve link & arm Grab" pattern.
 
-- **Field** — full-width card (`--panel`). Rounded on all corners. Holds the pasted URL. After a successful probe, an inline status appears at the right end: `✓ <title>` (or `✓ "<playlist>" · N items`). On probe failure: `--danger` text with the reason, inside the same card below the input.
-- **Runway** — **hidden until a pasted link resolves.** When shown, it is a **separate full-width card** (`--panel-hi`) below the field, with `--sp-3` gap between the two — not a shared border. Rounded on all corners. A row of labelled slots:
-  - `Link` — filled when the probe resolves to a downloadable item
+- **Field** — full-width card (`--panel`). Rounded on all corners. Holds the pasted URL, which stays visible after a check. After a successful check, an inline status appears at the right end: `✓ <title>` (or `✓ "<playlist>" · N items`). On a failed check: `--danger` text with the reason, inside the same card below the input, with **Try again** only when retrying could help.
+- **No setup suggestion** — Home shows no separate prompt to set up the YouTube check; the health chip and the link under a failed check offer it.
+- **Details before Grab** — the page picture beside the title; the file name this grab will write, saying when it is already in the folder; and the approximate size and length for the current choice.
+- **Runway** — **hidden until a pasted link resolves.** When shown, it is a **separate full-width card** (`--panel-hi`) below the field, with `--sp-3` gap between the two — not a shared border. Rounded on all corners. A row of choices, each with a small label, or an icon where the icon alone is clear:
   - `Type` — `SkinnedSegment` (§4.10) — Video / Audio; seeded from last-used or Preferences
   - `Format` — contextual: `SkinnedPicker` (§4.11) quality rungs this probe actually offers (video), or `SkinnedSegment` `M4A` / `MP3` (audio); seeded from last-used or Preferences
   - `Language` — `SkinnedPicker` of this probe's audio tracks; always filled (last pick if offered, else Preferences YouTube-default / Original policy, else YouTube's default track). Shown for Video and Audio.
   - `Save to` — `SkinnedPicker`: default folder, last-used (if distinct), "Choose…" for a new folder. Always seeded — never renders unfilled.
   - _(playlist only)_ no extra slot — item selection happens in the picker modal (§4.3)
-  - Each slot: hollow dot `○` (`--faint`) when unset, filled dot `●` (`--accent`) when set.
   - The slots use `SkinnedSegment` / `SkinnedPicker`, not the native `Menu`.
-- **Grab button** — at the end of the runway, past a divider. **Disabled** (opacity .3, grayscale) until the link is resolved _and_ downloadable. Type, Format, Language, and Save-to are always pre-filled; the user may change any of them before Grab. Label: `Grab` (single item) / `Grab all N` / `Add N` (after picker). Theme fill: Tape Deck `--go` solid; Aurora `--go-fill` gradient.
+- **Grab button** — at the end of the runway, past a divider. Type, Format, Language, and Save-to are always pre-filled; the user may change any of them before Grab. Label: `Grab` (single item) / `Grab all N` / `Add N` (after picker). Theme fill: Tape Deck `--go` solid; Aurora `--go-fill` gradient.
 
 #### 4.2.3 Downloads table
 
@@ -222,7 +267,7 @@ One table, newest at top. One **row per video** (a playlist contributes N rows, 
 | Progress | ✓ visible | yes | yes | yes | — |
 | Speed | ✓ visible | yes | yes | yes | — |
 | ETA | ✓ visible | yes | yes | yes | — |
-| Type | ✓ visible | yes | yes | yes | yes (checklist — Audio / Video) |
+| Type | hidden | yes | yes | yes | yes (checklist — Audio / Video) |
 | Quality | ✓ visible | yes | yes | yes | yes (checklist — 1080p / 720p / … / m4a / mp3) |
 | Size | ✓ visible | yes | yes | yes | — |
 | Site | hidden | yes | yes | yes | yes (checklist) |
@@ -241,25 +286,26 @@ One table, newest at top. One **row per video** (a playlist contributes N rows, 
 - Nil values always sort **last**, regardless of direction.
 - There is **no "Playlist" column** — a playlist's membership is shown by the group header + indented child rows + spine (§4.2.4), not a column.
 - No per-row expansion. No detail view. The Actions column remains the primary per-row interaction model and stays visible while a multi-select is active.
+- **Default columns fit** the default window without sideways scrolling, with full headings and values.
 - **Selection column** (leading, fixed width, not a `ColumnID`) + ⌘-click / Shift-click over visible child order; header checkbox selects all currently visible children.
-- **Batch bar** (SwiftUI, above the AppKit grid): when selection is non-empty, `N selected` + eligible verbs (`job-status-and-actions.md` §8); hidden when empty. Not a floating footer.
+- **Selection actions** use the Columns-button row, so table rows never move: `N selected`, every video-level action as an icon (enabled when any selected row offers it, per `job-status-and-actions.md` §8), and Clear. Shown only while rows are selected. Not a floating footer.
 - **Grid substrate:** AppKit draws headers and body cells with shared palette / type / spacing tokens (`DownloadsGridTokens`). SwiftUI owns shell outside the grid (rail, batch bar, Columns menu). Do not default to `NSHostingView` per cell.
 
 **Cell treatments:**
 
-- _Title_ — motif spinner prefix on an actively-downloading row; playlist children indented with the spine connector (§4.2.4); full title as hover tooltip when truncated.
+- _Title_ — in order: status icon, page picture (on by default, hideable from Columns), title, and a Video or Audio icon. The status icon differs in shape and colour per status, names it on hover and to VoiceOver, and is the motif spinner on an actively-downloading row; a row with no title yet shows its link; playlist children indented with the spine connector (§4.2.4); full title as hover tooltip when truncated.
 - _Remark_ (optional column / hover+focus) — queue `#N`, backoff / host rate, failure reason sentence — never invents a second status vocabulary.
 - _Status_ (optional column) — plain 1:1 label only; never free text.
 - _Progress_ — thin bar (`--bar-fill`), only on active rows; blank otherwise.
 - _Speed_, _ETA_ — utility face, `--dim`; blank on non-running rows.
-- _Type_ — `Audio` / `Video`. _Quality_ — the selector (`1080p` … or `m4a` / `mp3`). Both `--dim`.
+- _Type_ — `Audio` / `Video`. _Quality_ — what was actually downloaded (`1080p` … or `m4a` / `mp3`), never the requested value or an arrow; a dash until it is known. Both `--dim`.
 - _Size_ — known total; `--dim`; em-dash until known.
 - _Site_ — utility face, `--dim`.
-- _Actions_ — contextual icon buttons (glyphs per §3.4) per `job-status-and-actions.md`: pause/resume, cancel, force-start (conditional), restart / restart-with-sign-in, reveal-in-Finder, open-in-browser, remove (deletes entry), show-log. Offer only enabled actions for the state (~5 max).
+- _Actions_ — one three-dot button per row, opening a small toolbar of icon buttons (glyphs per §3.4), each with a hover label. It holds every video-level action in `job-status-and-actions.md`; those not offered in the current state are disabled.
 
 #### 4.2.4 Playlist group in the table
 
-- **Group header row** — spans the table above the playlist's videos. Contains: a disclosure caret (collapses/expands the whole group), the playlist name, a rollup (`N items · M done` + a mini progress bar), and group actions (Pause all · Restart failed · Cancel all — see `job-status-and-actions.md` §3b). Background `--accent-2` at low alpha. Show the group when any child matches the selected rail.
+- **Group header row** — spans the table above the playlist's videos. Contains: a disclosure caret (collapses/expands the whole group), the playlist name, a rollup (`N items · M done` + a mini progress bar), and a three-dot menu holding the group-level actions (Pause all · Restart failed · Cancel all — see `job-status-and-actions.md` §3b), each enabled or disabled by what the group's videos allow. Video rows inside the group keep their own menu of video-level actions. Background `--accent-2` at low alpha. Show the group when any child matches the selected rail.
 - **Child rows** — the playlist's videos, indented. A single **continuous vertical spine** runs down the left at the indent position. Each child has a short horizontal connector from the spine to its content.
 - **Row divider lines between children start _after_ the spine** (indented to align with content) — they never cross it, so the spine reads as one unbroken line.
 - **Collapsed** — children hidden; the header row remains, showing the rollup only.
@@ -267,23 +313,24 @@ One table, newest at top. One **row per video** (a playlist contributes N rows, 
 
 ### 4.3 Playlist picker (modal)
 
-Opens automatically when a resolved link is a playlist, **before** any rows are added.
+Opens from **Grab all N**, after the choices on Home are set, and **before** any rows are added. It never opens on its own.
 
 - **Header** — "Choose videos to download" + `<playlist> · <site> · by <uploader> · N items`.
 - **Banner** (when this playlist is already in the queue) — "This playlist is already in your queue."
-- **Tools row** — `Select all` / `Select none` links (apply to the current filter); a filter-in-playlist text field (right).
-- **List** — scrollable, one row per video: checkbox · thumbnail · title (truncates) · duration · optional **In queue** / **Already saved**. Whole row toggles.
+- **Tools row** — `Select all` / `Select none` buttons; a filter-in-playlist text field (right). While a filter is active they read `Select all shown` / `Select none shown` and change only the shown videos.
+- **List** — scrollable, one row per video: checkbox · thumbnail · title (truncates) · duration · approximate size when known · optional **In queue** / **Already saved**. Whole row toggles.
 - **Defaults** — all checked except warned rows (those start unchecked). Select all can still check them. Checks are not remembered the next open.
-- **Footer** — live `M of N selected · K already in queue · ≈ H:MM:SS` (sum of known durations among checked; omit K when 0) · `Cancel` · `Add M` (primary; disabled at 0). No invented MB/GB.
+- **Footer** — live `M of N selected · K already in queue · ≈ H:MM:SS` (sum of known durations among checked; omit K when 0), plus the total approximate size of checked videos when known, and `S shown` while filtering · `Cancel` · `Add M` (primary; disabled at 0). Never an invented size.
 - Only checked videos become table rows (as the group in §4.2.4). Unchecked are not added and not remembered.
 
-### 4.4 Toast
+### 4.4 Alerts
 
-- **Bottom-right**, stacked, transient (≈ 4s, auto-dismiss), one line + optional action.
-- Fires for: **download successes** (`<title> saved` + `Reveal`) and **health-chip refresh failures** (the reason a `↻` fix did not work).
-- **Per-job download failures do not toast.** They surface via row treatment + the Inactive rail badge.
-- While the app is **backgrounded**, a failure fires a **native macOS notification** (not a toast).
-- Engine/host conditions use the bottom banner (§4.1), never a toast.
+- **Bottom-right**, sliding in from the right and stacked, **newest on top**. One line plus an optional action; every alert can be closed by hand.
+- **Timed** alerts hide themselves after about 4s. **Untimed** alerts stay until closed by hand.
+- **Questions are not alerts** — anything that needs an answer stays a centred dialog (§4.9).
+- Fire for: **download successes** (`<title> saved` + `Reveal`, timed), **a failed fix from a chip's issues dialog** (the reason), and **a new Blocked or Problem issue, and again when it clears** (untimed; §4.1). Warnings raise none.
+- **Per-job download failures raise no alert.** They surface via row treatment + the Inactive rail badge.
+- While the app is **backgrounded**, a failure fires a **native macOS notification** (not an alert).
 
 ### 4.5 Onboarding
 
@@ -540,7 +587,6 @@ Every palette defines the full set. Names are stable across palettes; only value
 --go            Go button fill (Tape Deck: solid; Aurora: use --go-fill)
 --go-fill       Go button gradient (Aurora)
 --bar-fill      progress bar fill
---banner-fill   warning banner fill
 --glow-a        glow inner colour (Aurora elevation)
 --glow-b        glow outer colour (Aurora elevation)
 ```
@@ -569,7 +615,6 @@ Shared: `--ground` is a warm off-white a shade darker than `--surface` (`--panel
 | --danger | `#B4472A` |
 | --go | `#E4A11B` |
 | --bar-fill | `#D2601A` |
-| --banner-fill | `#D2601A` |
 | status: downloading / saved / fail / cooldown / queued | `#CFE3E1` / `#D9E8C8` / `#F3D2C3` / `#F6E2B8` / `#FBF4E6` |
 
 **Tape Deck / Plum & Blush**
@@ -590,7 +635,6 @@ Shared: `--ground` is a warm off-white a shade darker than `--surface` (`--panel
 | --danger | `#C25B57` |
 | --go | `#E8B24A` |
 | --bar-fill | `#E98C89` |
-| --banner-fill | `#E98C89` |
 | status: downloading / saved / fail / cooldown / queued | `#E1DCEC` / `#D8E6D0` / `#F4D6D6` / `#F3E3C0` / `#FBF5F5` |
 
 _Note: with Blush as `--accent`, warning/cooldown reads softer. Confirmed acceptable in review._
@@ -613,7 +657,6 @@ _Note: with Blush as `--accent`, warning/cooldown reads softer. Confirmed accept
 | --danger | `#D9694C` |
 | --go | `#F2B12E` |
 | --bar-fill | `#2FA69A` |
-| --banner-fill | `#2FA69A` |
 | status: downloading / saved / fail / cooldown / queued | `#D6E6E3` / `#D8E6D0` / `#F3D8CC` / `#F6E6B6` / `#F5F6F3` |
 
 ### 5.3 Aurora palettes (dark)
@@ -637,7 +680,6 @@ Shared: `--panel` = `rgba(255,255,255,.05)`, `--panel-hi` = `rgba(255,255,255,.0
 | --danger            | `#FF7A6B`                                        |
 | --go-fill           | `linear-gradient(135deg,#5EF2C8,#8B7BFF)`        |
 | --bar-fill          | `linear-gradient(90deg,#5EF2C8,#8B7BFF)`         |
-| --banner-fill       | `linear-gradient(90deg,#FF7A6B,#FFC24B)`         |
 | --glow-a / --glow-b | `rgba(94,242,200,.14)` / `rgba(139,123,255,.16)` |
 
 **Aurora / Lime & Forest**
@@ -657,7 +699,6 @@ Shared: `--panel` = `rgba(255,255,255,.05)`, `--panel-hi` = `rgba(255,255,255,.0
 | --danger            | `#FF6F6F`                                       |
 | --go-fill           | `linear-gradient(135deg,#B6F04A,#4ED6A0)`       |
 | --bar-fill          | `linear-gradient(90deg,#B6F04A,#4ED6A0)`        |
-| --banner-fill       | `linear-gradient(90deg,#FF6F6F,#F2C14E)`        |
 | --glow-a / --glow-b | `rgba(182,240,74,.16)` / `rgba(78,214,160,.14)` |
 
 **Aurora / Magenta & Violet**
@@ -677,7 +718,6 @@ Shared: `--panel` = `rgba(255,255,255,.05)`, `--panel-hi` = `rgba(255,255,255,.0
 | --danger            | `#FF6B6B`                                        |
 | --go-fill           | `linear-gradient(135deg,#F25C9E,#9B6BFF)`        |
 | --bar-fill          | `linear-gradient(90deg,#F25C9E,#9B6BFF)`         |
-| --banner-fill       | `linear-gradient(90deg,#FF6B6B,#FFC24B)`         |
 | --glow-a / --glow-b | `rgba(242,92,158,.16)` / `rgba(155,107,255,.16)` |
 
 ---

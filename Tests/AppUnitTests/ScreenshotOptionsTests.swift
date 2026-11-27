@@ -33,6 +33,15 @@ final class ScreenshotOptionsTests: XCTestCase {
         XCTAssertEqual(result?.theme, .tapeDeck)
     }
 
+    func test_flow() {
+        let result = ScreenshotOptions.parse(["x", "-MGScreenshots", "/tmp/out", "-MGScreenshotFlow", "onboarding"])
+        XCTAssertEqual(result?.flow, .onboarding)
+    }
+
+    func test_unknownFlow_returnsNil() {
+        XCTAssertNil(ScreenshotOptions.parse(["x", "-MGScreenshots", "/tmp/out", "-MGScreenshotFlow", "nowhere"]))
+    }
+
     func test_unknownTheme_returnsNil() {
         let result = ScreenshotOptions.parse(["x", "-MGScreenshots", "/tmp/out", "-MGScreenshotTheme", "neon"])
         XCTAssertNil(result)

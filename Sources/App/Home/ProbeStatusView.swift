@@ -33,7 +33,7 @@ struct ProbeStatusView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(ProbeStatusCopy.message(for: link))
         .onAppear {
-            guard !reduceMotion else { return }
+            guard !reduceMotion, !RunMode.isScreenshotTour else { return }
             withAnimation(.linear(duration: 0.9).repeatForever(autoreverses: false)) {
                 angle = 360
             }

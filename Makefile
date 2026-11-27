@@ -4,7 +4,7 @@ CONFIG ?= Debug
 APP := $(abspath $(DERIVED)/Build/Products/$(CONFIG)/$(APP_NAME).app)
 
 .DEFAULT_GOAL := run
-.PHONY: fix check fix-all check-all generate build install reinstall remove-copies replace-installed drop-build-app run plugin-test scripts-test test venv tools e2e release release-patch release-minor release-major release-dry-run release-overwrite site-deploy help dead-code
+.PHONY: fix check fix-all check-all generate build install reinstall remove-copies replace-installed drop-build-app run screenshots plugin-test scripts-test test venv tools e2e release release-patch release-minor release-major release-dry-run release-overwrite site-deploy help dead-code
 
 TOOLS_CMD := scripts/fetch-tools.sh
 SCRIPT_TEST_CMD = scripts/run-script-tests.sh $(SCRIPT_TEST_ARGS)
@@ -61,6 +61,13 @@ drop-build-app:
 
 ## Build, install, and launch (default target)
 run: install
+
+## Screenshot pages and states into screenshots/<time> [FLOW=<flow>] [SCENE=<name>] [THEME=aurora|tapeDeck]
+screenshots:
+# Only a Debug build has the screenshot mode, whatever CONFIG says.
+	@$(MAKE) --no-print-directory build CONFIG=Debug
+	@CONFIG=Debug MG_NO_OPEN=1 scripts/make/replace-installed.sh
+	@scripts/screenshots.sh /Applications/$(APP_NAME).app screenshots "$(SCENE)" "$(THEME)" "$(FLOW)"
 
 PY ?= .venv/bin/python
 PLUGIN_TEST_CMD = $(PY) -I -B -m unittest discover -s Tests/PluginTests -p 'test_*.py'

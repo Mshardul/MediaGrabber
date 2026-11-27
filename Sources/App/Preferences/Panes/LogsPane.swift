@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 struct LogsPane: View {
@@ -15,7 +14,7 @@ struct LogsPane: View {
 
             PrefRow("Log files") {
                 Button("Show in Finder") {
-                    NSWorkspace.shared.activateFileViewerSelecting([logFolderURL])
+                    appModel.revealSink.reveal([logFolderURL])
                 }
             }
 

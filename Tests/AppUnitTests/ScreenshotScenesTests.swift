@@ -1,35 +1,34 @@
 import Foundation
 @testable import GrabberKit
 @testable import MediaGrabber
+import TestSupport
 import XCTest
 
 @MainActor
 final class ScreenshotScenesTests: XCTestCase {
-    private var defaults: UserDefaults!
-    private var logDirectory: URL!
-    private var suiteName: String!
+    private var home: URL!
+    private var domain: String!
 
     override func setUp() async throws {
-        suiteName = "mg.screenshots.\(UUID().uuidString)"
-        defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        logDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("mg-screenshots-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: logDirectory, withIntermediateDirectories: true)
+        home = TestLocations.make().home
+        domain = "mg.scenes.\(UUID().uuidString)"
     }
 
     override func tearDown() async throws {
-        defaults.removePersistentDomain(forName: suiteName)
-        try? FileManager.default.removeItem(at: logDirectory)
+        UserDefaults.standard.removePersistentDomain(forName: domain)
+        try FileManager.default.removeItem(at: home)
     }
 
-    private func makeModel(onboardingCompleted: Bool = true) -> AppModel {
-        AppModelTestHelpers.makeModel(
-            defaults: defaults,
-            logDirectory: logDirectory,
-            engine: FakeEngine(),
-            envReady: true,
-            onboardingCompleted: onboardingCompleted
-        )
+    private func makeStage() async throws -> ScreenshotStage {
+        let locations = AppLocations(home: home, settingsDomain: domain)
+        let composition = try ScreenshotComposition.make(locations: locations)
+        try await ScreenshotSettingsSeed.seedHome(locations)
+        composition.model.startConsumerForTesting()
+        return ScreenshotStage(composition: composition)
+    }
+
+    private func scene(_ name: String) throws -> SceneSpec {
+        try XCTUnwrap(ScreenshotScenes.all.first { $0.name == name }, "no scene named \(name)")
     }
 
     func test_namesAreUnique() {
@@ -38,70 +37,106 @@ final class ScreenshotScenesTests: XCTestCase {
     }
 
     func test_everyPreferencesPaneHasAScene() {
-        let prefsScenes = ScreenshotScenes.all.filter { $0.name.hasPrefix("prefs-") }
-        let expectedCount = PreferencesPane.allCases.count
-        XCTAssertEqual(prefsScenes.count, expectedCount)
+        let names = Set(ScreenshotScenes.all.map(\.name))
         for pane in PreferencesPane.allCases {
-            XCTAssertTrue(ScreenshotScenes.all.contains { $0.name == "prefs-\(pane.rawValue)" })
+            XCTAssertTrue(names.contains("prefs-\(pane.rawValue)"), pane.rawValue)
         }
     }
 
     func test_everyAboutTabHasAScene() {
-        XCTAssertTrue(ScreenshotScenes.all.contains { $0.name == "about" })
-        XCTAssertTrue(ScreenshotScenes.all.contains { $0.name == "developer" })
+        let names = Set(ScreenshotScenes.all.map(\.name))
+        for tab in AboutTab.allCases {
+            XCTAssertTrue(names.contains(tab.rawValue), tab.rawValue)
+        }
+    }
+
+    func test_everyDialogHasAScene() throws {
+        let source = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Sources/App/AppModelDialogs.swift")
+        let text = try String(contentsOf: source, encoding: .utf8)
+        let pattern = /static func (\w+)\([^)]*\) -> ConfirmationRequest/
+        let builders = text.matches(of: pattern).map { String($0.1) }
+        XCTAssertFalse(builders.isEmpty, "no dialog builders found in the source")
+
+        let names = Set(ScreenshotScenes.all.map(\.name))
+        for builder in builders {
+            let scenes = OverlayScenes.dialogScenes[builder] ?? []
+            XCTAssertFalse(scenes.isEmpty, "\(builder) has no scene")
+            for name in scenes {
+                XCTAssertTrue(names.contains(name), "\(builder) names a missing scene \(name)")
+            }
+        }
+    }
+
+    func test_banners_comeFromQueueState() async throws {
+        let stage = try await makeStage()
+        let expected: [(String, BannerReason)] = [
+            ("banner-network", .networkDown),
+            ("banner-circuit", .circuitOpen),
+            ("banner-shield", .potProviderDown)
+        ]
+        for (name, reason) in expected {
+            await stage.reset()
+            try await scene(name).prepare(stage)
+            let hosts = reason == .circuitOpen ? ["YouTube"] : []
+            XCTAssertEqual(
+                stage.model.bannerContent?.text,
+                bannerCopy(for: reason, circuitHosts: hosts) {}?.text,
+                name
+            )
+        }
+    }
+
+    func test_preparedStatesSatisfyExpect() async throws {
+        let stage = try await makeStage()
+        for scene in ScreenshotScenes.all where scene.hooks.isEmpty {
+            await stage.reset()
+            await scene.prepare(stage)
+            await scene.interact(stage)
+            XCTAssertTrue(scene.expect(stage.model), scene.name)
+        }
+    }
+
+    func test_everyFlowHasScenesAndEverySceneAFlow() {
+        for flow in ScreenshotFlow.allCases {
+            XCTAssertTrue(ScreenshotScenes.all.contains { $0.flow == flow }, flow.rawValue)
+        }
+        XCTAssertTrue(ScreenshotScenes.all.allSatisfy { $0.flow != nil })
+    }
+
+    func test_popoverAndSheetScenesRequireTheirWindow() {
+        for scene in ScreenshotScenes.all {
+            let hasOwnWindow = scene.flow == .popovers
+                || scene.name.hasPrefix("sheet-")
+                || scene.name.hasPrefix("picker-")
+            XCTAssertEqual(scene.overlays, hasOwnWindow ? 1 : 0, scene.name)
+        }
+    }
+
+    func test_selectedByFlow() {
+        let onboarding = ScreenshotOptions(
+            outputDir: URL(fileURLWithPath: "/tmp"), scene: nil, theme: nil, flow: .onboarding
+        )
+        XCTAssertEqual(
+            ScreenshotScenes.selected(onboarding).map(\.name),
+            [
+                "onboarding-ready", "onboarding-shield-pending", "onboarding-shield-failed",
+                "onboarding-test-failed", "onboarding-not-ready"
+            ]
+        )
+
+        let elsewhere = ScreenshotOptions(
+            outputDir: URL(fileURLWithPath: "/tmp"), scene: "about", theme: nil, flow: .onboarding
+        )
+        XCTAssertTrue(ScreenshotScenes.selected(elsewhere).isEmpty)
     }
 
     func test_selectedByName() {
-        let options = ScreenshotOptions(
-            outputDir: URL(fileURLWithPath: "/tmp"),
-            scene: "about",
-            theme: nil
-        )
-        let selected = ScreenshotScenes.selected(options)
-        XCTAssertEqual(selected.count, 1)
-        XCTAssertEqual(selected[0].name, "about")
+        let one = ScreenshotOptions(outputDir: URL(fileURLWithPath: "/tmp"), scene: "about", theme: nil)
+        XCTAssertEqual(ScreenshotScenes.selected(one).map(\.name), ["about"])
 
-        let unknownOptions = ScreenshotOptions(
-            outputDir: URL(fileURLWithPath: "/tmp"),
-            scene: "nonexistent",
-            theme: nil
-        )
-        XCTAssertTrue(ScreenshotScenes.selected(unknownOptions).isEmpty)
-    }
-
-    func test_navigatePreferencesCookies() async throws {
-        let model = makeModel()
-        let scene = try XCTUnwrap(ScreenshotScenes.all.first { $0.name == "prefs-cookies" })
-        await scene.navigate(model)
-        XCTAssertEqual(model.page, .preferences(.cookies))
-    }
-
-    func test_navigateConfirmDialog() async throws {
-        let model = makeModel()
-        let scene = try XCTUnwrap(ScreenshotScenes.all.first { $0.name == "dialog-confirm" })
-        await scene.navigate(model)
-        XCTAssertEqual(model.pendingConfirmation?.title, AppModelDialogs.removeConfirmation().title)
-    }
-
-    func test_navigateBanner() async throws {
-        let model = makeModel()
-        let scene = try XCTUnwrap(ScreenshotScenes.all.first { $0.name == "banner-warning" })
-        await scene.navigate(model)
-        XCTAssertNotNil(model.bannerContent)
-    }
-
-    func test_navigatePlaylistPicker() async throws {
-        let model = makeModel()
-        let scene = try XCTUnwrap(ScreenshotScenes.all.first { $0.name == "picker-playlist" })
-        await scene.navigate(model)
-        XCTAssertTrue(model.isPlaylistPickerPresented)
-        XCTAssertEqual(model.resolved, .playlist(ScreenshotFixtures.playlistDump))
-    }
-
-    func test_navigateOnboarding() async throws {
-        let model = makeModel(onboardingCompleted: false)
-        let scene = try XCTUnwrap(ScreenshotScenes.all.first { $0.name == "onboarding" })
-        await scene.navigate(model)
-        XCTAssertTrue(model.needsOnboarding)
+        let unknown = ScreenshotOptions(outputDir: URL(fileURLWithPath: "/tmp"), scene: "nonexistent", theme: nil)
+        XCTAssertTrue(ScreenshotScenes.selected(unknown).isEmpty)
     }
 }

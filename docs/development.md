@@ -42,6 +42,18 @@ make test ONLY=AppUnitTests/SomeSuite
 - The `MediaGrabber` scheme only exists because `AppUnitTests` depends on it; the workspace-wide scheme is `MediaGrabber-Workspace`.
 - `MediaGrabber-Workspace` is defined explicitly in `Project.swift` (not auto-generated) so it can carry code coverage for `GrabberKit` + `MediaGrabber`.
 
+## Screenshots
+
+```bash
+make screenshots
+make screenshots FLOW=onboarding THEME=aurora
+make screenshots SCENE=<name>
+```
+
+`make screenshots` builds and installs a Debug build, which force-quits a running MediaGrabber, then runs the app on dummy data and writes `screenshots/<time>/<theme>/<scene>.png` for every page and UI state in both themes. `<time>` is the run's start in seconds since 1970 (`date -r <time>` shows it as a date), so each run keeps its own folder and none replaces another; delete old ones when you no longer need them. The run uses a temporary home, so it does not touch your queue, settings or logs, and it removes that home and its settings when it ends. Each screen shows `[n/total]` as it starts and then a tick or a cross with the reason. A failed screen does not stop the others; the run ends with a table of the results and fails if any screen did. `FLOW`, `THEME` and `SCENE` narrow the run and can be combined. The flows are `onboarding`, `home`, `table`, `popovers`, `overlays` (playlist picker, sheets, banners, toasts, dialogs), `preferences` and `about`. Scene names are in `Sources/App/Screenshots/Scenes/`.
+
+The app takes pictures of its own windows only, so no Screen Recording permission is needed. It needs macOS 14.4 or later. You can use other apps while it runs: the tour stays behind them. Do not click or close its window. To draw that window as active it overrides private macOS methods, so look through the images after a macOS update. Relaunch the normal app afterwards with `make`.
+
 ## Checks and the commit hook
 
 Set up once. You need Python 3.15, which `.python-version` pins (`brew install python@3.15`), and `pre-commit` (`brew install pre-commit`).

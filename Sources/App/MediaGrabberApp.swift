@@ -11,8 +11,33 @@ struct MediaGrabberApp: App {
     @State private var appModel: AppModel
     @State private var installer: OnboardingInstaller
     @State private var incomingLinks: IncomingLinkController
+    #if DEBUG
+        @State private var tour: ScreenshotTour?
+    #endif
 
     init() {
+        #if DEBUG
+            if CommandLine.arguments.contains(ScreenshotOptions.flag) {
+                let options = Self.screenshotOptions()
+                let composition = Self.screenshotComposition()
+                _installer = State(initialValue: composition.installer)
+                _appModel = State(initialValue: composition.model)
+                _incomingLinks = State(initialValue: composition.incomingLinks)
+                _tour = State(initialValue: ScreenshotTour(
+                    composition: composition,
+                    options: options,
+                    window: AppKitScreenshotWindow()
+                ))
+                return
+            }
+        #endif
+        let live = Self.liveApp()
+        _installer = State(initialValue: live.installer)
+        _appModel = State(initialValue: live.model)
+        _incomingLinks = State(initialValue: IncomingLinkController(home: live.model))
+    }
+
+    private static func liveApp() -> (installer: OnboardingInstaller, model: AppModel) {
         let debugFlags = DebugFlags.parse(CommandLine.arguments)
         let locations = AppLocations.live()
         let settings = locations.makeSettings()
@@ -53,13 +78,36 @@ struct MediaGrabberApp: App {
             persistence: persistence,
             columnConfig: columnConfig
         )
-        Self.showSaveFailures(of: persistence, in: model)
-        Self.showLoadFailures(of: persistence, in: model)
-
-        _installer = State(initialValue: installer)
-        _appModel = State(initialValue: model)
-        _incomingLinks = State(initialValue: IncomingLinkController(home: model))
+        showSaveFailures(of: persistence, in: model)
+        showLoadFailures(of: persistence, in: model)
+        return (installer, model)
     }
+
+    #if DEBUG
+        private static func screenshotOptions() -> ScreenshotOptions {
+            guard let options = ScreenshotOptions.parse(CommandLine.arguments) else {
+                let flows = ScreenshotFlow.allCases.map(\.rawValue).joined(separator: ", ")
+                quitTour("an option is incomplete or unknown. Themes: aurora, tapeDeck. Flows: \(flows)")
+            }
+            return options
+        }
+
+        // Never falls back to the real app: a tour that cannot be isolated must not start at all.
+        private static func screenshotComposition() -> ScreenshotComposition {
+            do {
+                let composition = try ScreenshotComposition.make(locations: .live())
+                ScreenshotMode.isActive = true
+                return composition
+            } catch {
+                quitTour("MG_HOME must name a temporary folder (\(error))")
+            }
+        }
+
+        private static func quitTour(_ reason: String) -> Never {
+            FileHandle.standardError.write(Data("Screenshot tour did not start: \(reason)\n".utf8))
+            exit(1)
+        }
+    #endif
 
     private static func showSaveFailures(of persistence: Persistence, in model: AppModel) {
         persistence.reportSaveFailure { [weak model] sentence in
@@ -86,7 +134,7 @@ struct MediaGrabberApp: App {
 
     var body: some Scene {
         WindowGroup {
-            content
+            rootContent
                 .theme(Theme(
                     themeKind: appModel.prefs.theme,
                     paletteKind: appModel.prefs.palette
@@ -94,7 +142,12 @@ struct MediaGrabberApp: App {
                 .preferredColorScheme(appModel.prefs.theme == .aurora ? .dark : .light)
                 .environment(appModel)
                 .environment(incomingLinks)
-                .background(WindowFrameAutosave(name: "MediaGrabberMain"))
+                .defaultAppStorage(appModel.defaults)
+                .background {
+                    if !RunMode.isScreenshotTour {
+                        WindowFrameAutosave(name: "MediaGrabberMain")
+                    }
+                }
                 .handlesExternalEvents(
                     preferring: MainWindowPolicy.externalEvents,
                     allowing: MainWindowPolicy.externalEvents
@@ -107,7 +160,14 @@ struct MediaGrabberApp: App {
                     appDelegate.incomingLinks = incomingLinks
                     appModel.incomingLinkController = incomingLinks
                     await appModel.onAppear()
-                    await incomingLinks.applicationDidBecomeActive()
+                    if !RunMode.isScreenshotTour {
+                        await incomingLinks.applicationDidBecomeActive()
+                    }
+                    #if DEBUG
+                        if let tour {
+                            await exit(tour.run())
+                        }
+                    #endif
                 }
         }
         .handlesExternalEvents(matching: MainWindowPolicy.externalEvents)
@@ -122,6 +182,19 @@ struct MediaGrabberApp: App {
             }
             DebugMenuCommands(appModel: appModel, relauncher: AppRelauncher())
         }
+    }
+
+    @ViewBuilder
+    private var rootContent: some View {
+        #if DEBUG
+            if let tour {
+                ScreenshotRootView(tour: tour) { content }
+            } else {
+                content
+            }
+        #else
+            content
+        #endif
     }
 
     @ViewBuilder

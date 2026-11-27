@@ -91,6 +91,7 @@ final class AppModel {
     let bundleURL: URL
     let makeCanaryProbe: @MainActor (URL) -> any MetadataProbing
     let sharePresenter: any SharePresenting
+    let settingsLink: any SettingsLinkOpening
     let locations: AppLocations
     private let suppression: SuppressionStore
     private var confirmationContinuation: CheckedContinuation<Bool, Never>?
@@ -117,14 +118,16 @@ final class AppModel {
         columnConfig: ColumnConfig = .default,
         vpnDetector: any VPNDetecting = InterfaceVPNDetector(),
         makeCanaryProbe: @escaping @MainActor (URL) -> any MetadataProbing = {
-            CanaryProbe.makeProbe(ytDlpURL: $0, runner: ProcessRunner())
+            CanaryProbe.liveProbe(ytDlpURL: $0)
         },
-        sharePresenter: any SharePresenting = SharePresenter()
+        sharePresenter: any SharePresenting = SharePresenter(),
+        settingsLink: any SettingsLinkOpening = WorkspaceSettingsLink()
     ) {
         self.engine = engine
         self.vpnDetector = vpnDetector
         self.makeCanaryProbe = makeCanaryProbe
         self.sharePresenter = sharePresenter
+        self.settingsLink = settingsLink
         self.prefs = prefs
         self.log = log
         self.envProbe = envProbe ?? EnvironmentProbe(tools: .live(locations: locations))

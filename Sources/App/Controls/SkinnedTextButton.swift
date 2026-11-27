@@ -37,7 +37,7 @@ struct SkinnedTextButton: View {
         .buttonStyle(.plain)
         .focusable()
         .focused($focused)
-        .onHover { hovering = $0 }
+        .onPointerHover { hovering = $0 }
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in pressing = true }

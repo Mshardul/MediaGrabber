@@ -311,6 +311,7 @@ extension DownloadEngine {
             markProbing(probeID)
             launchProbe(id: probeID)
         }
+        ensureHostCooldownWakes()
     }
 
     private func snapshotsForState(_ match: (JobState) -> Bool) -> [JobSnapshot] {
