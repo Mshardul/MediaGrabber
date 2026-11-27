@@ -29,8 +29,7 @@ public final class NWPathNetworkMonitor: NetworkPathMonitoring, @unchecked Senda
         self.sleep = sleep
         (stream, continuation) = AsyncStream<Bool>.makeStream()
         monitor.pathUpdateHandler = { [weak self] path in
-            let satisfied = path.status == .satisfied
-            self?.queue.async { self?.handleRaw(satisfied: satisfied) }
+            self?.handleRaw(satisfied: path.status == .satisfied)
         }
         monitor.start(queue: queue)
     }

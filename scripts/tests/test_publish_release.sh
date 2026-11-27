@@ -8,7 +8,7 @@ stub="$root/tests/stubs/gh"
 version="0.1.0"
 tag="v$version"
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+trap 'rm -rf "$work" 2>/dev/null || true' EXIT
 fails=0
 
 log="$work/gh.log"

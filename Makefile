@@ -1,144 +1,137 @@
 APP_NAME := MediaGrabber
-BUNDLE_ID := app.mediagrabber.mac
 DERIVED := build
 CONFIG ?= Debug
 APP := $(abspath $(DERIVED)/Build/Products/$(CONFIG)/$(APP_NAME).app)
-INSTALLED := /Applications/$(APP_NAME).app
-LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
 .DEFAULT_GOAL := run
-.PHONY: fix check fix-all check-all generate build install reinstall remove-copies replace-installed drop-build-app run plugin-test scripts-test test venv tools e2e release release-patch release-minor release-major release-dry-run release-overwrite site-deploy
+.PHONY: fix check fix-all check-all generate build install reinstall remove-copies replace-installed drop-build-app run plugin-test scripts-test test venv tools e2e release release-patch release-minor release-major release-dry-run release-overwrite site-deploy help dead-code
 
+TOOLS_CMD := scripts/fetch-tools.sh
+SCRIPT_TEST_CMD = scripts/run-script-tests.sh $(SCRIPT_TEST_ARGS)
+
+## Fetch and install build tools
 tools:
-	scripts/fetch-tools.sh
+	$(TOOLS_CMD)
 
+## Run all script tests
 scripts-test:
-	scripts/run-script-tests.sh $(SCRIPT_TEST_ARGS)
+	$(SCRIPT_TEST_CMD)
 
+## Run end-to-end test on Release build
 e2e:
-	$(MAKE) build CONFIG=Release
-	app="$(abspath $(DERIVED))/Build/Products/Release/$(APP_NAME).app" ; \
-		scripts/sign-app.sh "$$app" - && scripts/e2e/run.sh "$$app" ; \
-		status=$$? ; \
-		$(MAKE) --no-print-directory drop-build-app ; \
-		exit $$status
+	scripts/make/e2e.sh
 
+GENERATE_CMD := mise exec -- tuist generate --no-open
+XCODEBUILD = xcodebuild -workspace $(APP_NAME).xcworkspace -destination 'platform=macOS' -derivedDataPath $(DERIVED)
+BUILDLOG = $(PY) -B scripts/buildlog
+DROP_APP_CMD = make --no-print-directory drop-build-app DERIVED=$(DERIVED)
+
+## Generate Xcode project
 generate:
-	mise exec -- tuist generate --no-open
+	$(GENERATE_CMD)
 
-build: tools generate
-	xcodebuild -workspace $(APP_NAME).xcworkspace -scheme $(APP_NAME) \
-		-configuration $(CONFIG) \
-		-destination 'platform=macOS' \
-		-derivedDataPath $(DERIVED) \
-		build
+## Build the app [CONFIG=Debug|Release]
+build:
+	@$(BUILDLOG) build \
+		@stage tools $(TOOLS_CMD) \
+		@stage generate $(GENERATE_CMD) \
+		@stage build $(XCODEBUILD) -scheme $(APP_NAME) -configuration $(CONFIG) build \
+		@cleanup $(DROP_APP_CMD)
 
-# make install [CONFIG=Release]; replaces the app in /Applications and removes the build copy so only one exists.
+## Build and install app to /Applications [CONFIG=Debug|Release]
 install: build
-	@$(MAKE) --no-print-directory replace-installed
+	@scripts/make/replace-installed.sh
 
-# make reinstall [CONFIG=Release]; builds, removes every other copy on this Mac, then installs. A failed build removes nothing.
+## Build, remove all copies, then install [CONFIG=Debug|Release]
 reinstall: build
 	scripts/remove-app-copies.sh --keep "$(APP)"
-	@$(MAKE) --no-print-directory replace-installed
+	@scripts/make/replace-installed.sh
 
-# make remove-copies; quits the app and removes every copy of it. Saved data and downloads stay.
+## Quit app and remove all copies; saved data and downloads stay
 remove-copies:
 	scripts/remove-app-copies.sh
 
+## Replace installed app with built product
 replace-installed:
-	@pids=`osascript -e 'tell application "System Events" to get unix id of (every process whose bundle identifier is "$(BUNDLE_ID)")' 2>/dev/null | tr ',' ' '` ; \
-		if [ -n "$$pids" ]; then kill -9 $$pids; fi
-	@killall -9 $(APP_NAME) >/dev/null 2>&1 || true
-	@while pgrep -x $(APP_NAME) >/dev/null 2>&1; do sleep 0.05; done
-	@test -d "$(APP)" || { echo "build product missing: $(APP)"; exit 1; }
-	rm -rf "$(INSTALLED)"
-	ditto "$(APP)" "$(INSTALLED)"
-	$(LSREGISTER) -f "$(INSTALLED)"
-	@$(MAKE) --no-print-directory drop-build-app
-	open "$(INSTALLED)"
+	@scripts/make/replace-installed.sh
 
+## Remove built app copies from build directory
 drop-build-app:
-	@for config in Debug Release; do \
-		app="$(abspath $(DERIVED))/Build/Products/$$config/$(APP_NAME).app" ; \
-		if [ -d "$$app" ]; then $(LSREGISTER) -u "$$app" ; rm -rf "$$app" ; fi ; \
-	done
+	@scripts/make/drop-build-app.sh
 
+## Build, install, and launch (default target)
 run: install
 
 PY ?= .venv/bin/python
+PLUGIN_TEST_CMD = $(PY) -I -B -m unittest discover -s Tests/PluginTests -p 'test_*.py'
 
+## Create or update Python virtual environment
 venv:
 	scripts/make/venv.sh
 
-# Runs the bundled yt-dlp plugin's tests against the yt-dlp version pinned in requirements.txt.
+## Run plugin tests against bundled yt-dlp
 plugin-test:
-	$(PY) -I -B -m unittest discover -s Tests/PluginTests -p 'test_*.py'
+	$(PLUGIN_TEST_CMD)
 
-# make test [ONLY=AppUnitTests/SomeSuite]; builds into the same build/ dir as `make`, never DerivedData.
-test: plugin-test scripts-test generate
-	xcodebuild -workspace $(APP_NAME).xcworkspace -scheme $(APP_NAME)-Workspace \
-		-destination 'platform=macOS' \
-		-derivedDataPath $(DERIVED) \
-		$(if $(ONLY),-only-testing:$(ONLY)) \
-		test ; \
-		status=$$? ; \
-		$(MAKE) --no-print-directory drop-build-app ; \
-		exit $$status
+## Run all tests (plugin, script, Xcode) [ONLY=AppUnitTests/SomeSuite]
+test:
+	@$(BUILDLOG) test \
+		@tests "plugin tests" $(PLUGIN_TEST_CMD) \
+		@tests "script tests" $(SCRIPT_TEST_CMD) \
+		@stage generate $(GENERATE_CMD) \
+		@tests "Xcode tests" $(XCODEBUILD) -scheme $(APP_NAME)-Workspace \
+			-resultBundlePath $(DERIVED)/logs/tests.xcresult \
+			$(if $(ONLY),-only-testing:$(ONLY)) test \
+		@cleanup $(DROP_APP_CMD)
 
-# fix and check cover the changed files; the -all forms cover the whole repository.
-fix check fix-all check-all:
-	.venv/bin/python scripts/checks $@ $(CHECK_ARGS)
+## Run checks on changed files
+fix:
+	.venv/bin/python scripts/checks fix $(CHECK_ARGS)
 
-# --- Release ---
+## Check changed files without editing
+check:
+	.venv/bin/python scripts/checks check $(CHECK_ARGS)
 
-CURRENT_VERSION = $(shell git tag --list 'v[0-9]*' | scripts/current-version.sh)
+## Run checks on all files
+fix-all:
+	.venv/bin/python scripts/checks fix-all $(CHECK_ARGS)
 
-VERSION_CHECK = test -n "$(VERSION)" || { echo "VERSION=X.Y.Z required"; exit 1; } ; echo "$(VERSION)" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "VERSION must be N.N.N"; exit 1; }
+## Check all files without editing
+check-all:
+	.venv/bin/python scripts/checks check-all $(CHECK_ARGS)
 
-release-patch: BUMP := patch
-release-minor: BUMP := minor
-release-major: BUMP := major
-release-patch release-minor release-major: release
+## Run Periphery to find dead Swift code (on demand, not part of check/definition of done)
+dead-code:
+	scripts/make/dead-code.sh
 
+## Print this help message
+help:
+	@scripts/make/help.sh
+
+## Bump patch version and start release
+release-patch:
+	@scripts/make/release.sh patch
+
+## Bump minor version and start release
+release-minor:
+	@scripts/make/release.sh minor
+
+## Bump major version and start release
+release-major:
+	@scripts/make/release.sh major
+
+## Start release workflow (requires BUMP=patch|minor|major)
 release:
-	@test -n "$(BUMP)" || { echo "pick one: make release-patch | release-minor | release-major"; exit 1; }
-	@git diff --quiet && git diff --cached --quiet || { echo "working tree dirty — commit first"; exit 1; }
-	@test "`git rev-parse --abbrev-ref HEAD`" = main || { echo "not on main"; exit 1; }
-	@git fetch --quiet origin main
-	@test "`git rev-parse HEAD`" = "`git rev-parse origin/main`" || { echo "local main != origin/main — push or pull first"; exit 1; }
-	@next=$$(scripts/bump-version.sh $(CURRENT_VERSION) $(BUMP)) || exit 1 ; \
-		echo "$(CURRENT_VERSION)  ->  $$next" ; \
-		trigger="$$(date -u +%Y-%m-%dT%H:%M:%SZ)" ; \
-		gh workflow run release.yml -f version=$$next -f dry_run=true >/dev/null ; \
-		id="" ; \
-		for i in $$(seq 1 30); do \
-			id="$$(gh run list --workflow release.yml --json databaseId,event,createdAt -q '[.[] | select(.event=="workflow_dispatch" and .createdAt > "'"$$trigger"'")] | .[0].databaseId // empty' 2>/dev/null)" ; \
-			[ -n "$$id" ] && break ; \
-			sleep 5 ; \
-		done ; \
-		[ -n "$$id" ] || { echo "no dry-run workflow found"; exit 1; } ; \
-		gh run watch $$id --exit-status || { echo "dry-run release failed"; exit 1; } ; \
-		cat docs/release-checklist.md ; \
-		read -p "type yes to proceed: " ok ; \
-		[ "$$ok" = yes ] || { echo aborted; exit 1; } ; \
-		read -p "tag v$$next and push? [y/N] " confirm ; \
-		[ "$$confirm" = y ] || { echo aborted; exit 1; } ; \
-		git tag -a "v$$next" -m "MediaGrabber v$$next" ; \
-		git push origin "v$$next" ; \
-		echo "pushed v$$next — CI builds the release now"
+	@scripts/make/release.sh $(BUMP)
 
-# make release-dry-run VERSION=X.Y.Z; builds and signs without publishing.
+## Build and sign release without publishing [VERSION=X.Y.Z]
 release-dry-run:
-	@$(VERSION_CHECK)
-	gh workflow run release.yml -f version=$(VERSION) -f dry_run=true
+	@VERSION="$(VERSION)" scripts/make/release-dispatch.sh dry-run
 
-# make release-overwrite VERSION=X.Y.Z; replaces an already published release.
+## Replace an already published release [VERSION=X.Y.Z]
 release-overwrite:
-	@$(VERSION_CHECK)
-	@read -p "replace the published release v$(VERSION)? [y/N] " ok ; \
-		[ "$$ok" = y ] || { echo aborted; exit 1; }
-	gh workflow run release.yml -f version=$(VERSION) -f overwrite=true
+	@VERSION="$(VERSION)" scripts/make/release-dispatch.sh overwrite
 
+## Deploy documentation site
 site-deploy:
 	gh workflow run pages.yml

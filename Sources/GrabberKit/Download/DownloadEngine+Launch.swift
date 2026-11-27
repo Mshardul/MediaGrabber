@@ -46,7 +46,7 @@ extension DownloadEngine {
             ffprobeURL: prepared.ffprobeURL,
             ffprobeIsExecutable: prepared.ffprobeIsExecutable
         )
-        await recordExit(
+        recordExit(
             id,
             result,
             integrity: integrity,

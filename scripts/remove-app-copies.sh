@@ -9,14 +9,15 @@ fi
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
 bundle_id="app.mediagrabber.mac"
-lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+lsregister="${MG_LSREGISTER:-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister}"
+applications_dir="${MG_APPLICATIONS_DIR:-/Applications}"
 
 pkill -9 -x MediaGrabber 2>/dev/null || true
 # The helper outlives an app that was force-quit.
 pkill -9 -f 'MediaGrabber\.app/Contents/Resources/Tools/node' 2>/dev/null || true
 
 candidates() {
-    printf '%s\n' /Applications/MediaGrabber.app "$HOME/Applications/MediaGrabber.app"
+    printf '%s\n' "$applications_dir/MediaGrabber.app" "$HOME/Applications/MediaGrabber.app"
     mdfind "kMDItemCFBundleIdentifier == '$bundle_id'" 2>/dev/null || true
     # Spotlight skips Index.noindex, so build folders are searched directly.
     find "$root/build" "$HOME"/Library/Developer/Xcode/DerivedData/MediaGrabber-* \

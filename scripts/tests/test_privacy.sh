@@ -8,7 +8,7 @@ cd "$root"
 fails=0
 
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+trap 'rm -rf "$work" 2>/dev/null || true' EXIT
 
 check() {
     local name="$1"

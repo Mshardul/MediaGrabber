@@ -32,7 +32,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -54,8 +54,8 @@ jobs:
       - id: xcodever
         run: echo "v=$(cat .xcode-version)" >> "$GITHUB_OUTPUT"
 
-      # Pin: jdx/mise-action@v2 → c37c93293d6b742fc901e1406b8f764f6fb19dac
-      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+      # Pin: jdx/mise-action@v5 → 924e7c586e33d7d4bae9c14e26c5d22e2beb6e78
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78
         with:
           install_args: tuist
           # A cache of its own keeps whatever a CI run saved out of the shipped build.

@@ -5,7 +5,7 @@ set -euo pipefail
 
 runner="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/run-script-tests.sh"
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+trap 'rm -rf "$work" 2>/dev/null || true' EXIT
 
 fail() {
     echo "FAIL: $1" >&2

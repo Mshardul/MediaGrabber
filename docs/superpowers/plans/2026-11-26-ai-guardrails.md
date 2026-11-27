@@ -285,7 +285,7 @@ def test_unusable_summary_base_is_stated_and_status_unchanged(self):
 - [x] **Step 1:** In the Linux check job: check out with full history, set up Python from `.python-version`, run `make venv` and `scripts/tests/test_checks.sh`, then `make check-all` with `--summary-base` set to the pull request base or the previous push commit, and `--summary-file` set to the job summary. Remove the two Swift lint steps.
 - [x] **Step 2:** Remove the `scripts-test` job. In the macOS test job, set up Python from `.python-version`, run `make venv`, `make plugin-test` and `make scripts-test`, excluding the check script's tests, which the check job runs. A scheduled run uses the same steps.
 - [x] **Step 3:** Remove `make lint` and update its mentions in `CLAUDE.md`, `AGENTS.md` and the documents under `docs/`, leaving archived ones as they are.
-- [ ] **Step 4:** Ask the user to push, then to run a release dry run so the release job's tool install is proved. Both must pass.
+- [x] **Step 4:** Ask the user to push, then to run a release dry run so the release job's tool install is proved. Both must pass.
 
 ---
 
@@ -303,7 +303,7 @@ def run_stages(stages: list[Stage], log_dir: Path, idle_timeout: float, cleanup:
 def read_xcresult(bundle: Path, exec: Exec) -> TestCounts  # executed, skipped, failures
 ```
 
-- [ ] **Step 1:** Write failing tests with short fake stage commands:
+- [x] **Step 1:** Write failing tests with short fake stage commands:
 
 ```python
 def test_prints_one_progress_line_per_stage(self):
@@ -318,8 +318,8 @@ def test_idle_timeout_kills_the_process_group_and_runs_cleanup(self):
 def test_interrupt_kills_children_and_runs_cleanup(self):
 ```
 
-- [ ] **Step 2:** Run `scripts/tests/test_buildlog.sh` (FAIL), implement using the `xcresulttool` command from Task 1, run again (PASS). The plugin stage counts `unittest` tests; the script stage counts scripts run. Use `xcrun xcresulttool get test-results summary --path <bundle>`; its `totalTestCount` includes skips, so executed is that minus `skippedTests`. The command is proven on local Xcode 27.1, not on the pinned 26.3, so the reader fails and names any expected field that is missing.
-- [ ] **Step 3:** Route `make build` and `make test` through it, with `cleanup` removing the built app.
+- [x] **Step 2:** Run `scripts/tests/test_buildlog.sh` (FAIL), implement using the `xcresulttool` command from Task 1, run again (PASS). The plugin stage counts `unittest` tests; the script stage counts scripts run. Use `xcrun xcresulttool get test-results summary --path <bundle>`; its `totalTestCount` includes skips, so executed is that minus `skippedTests`. The command is proven on local Xcode 27.1, not on the pinned 26.3, so the reader fails and names any expected field that is missing.
+- [x] **Step 3:** Route `make build` and `make test` through it, with `cleanup` removing the built app.
 - [ ] **Step 4:** Run `make test` (PASS, three non-zero counts), `make test ONLY=GrabberKitTests/NoSuchSuite` (FAIL, zero Xcode tests), and plain `make` (app relaunches, one copy). Interrupt one `make test` with Ctrl-C and confirm no `.app` remains under `build/`.
 
 ---
@@ -328,13 +328,13 @@ def test_interrupt_kills_children_and_runs_cleanup(self):
 
 **Files:** Create `scripts/tests/lib/sandbox.sh`, `scripts/make/replace-installed.sh`, `drop-build-app.sh`, `e2e.sh`, `help.sh`, and `scripts/tests/test_sandbox.sh`, `test_replace_installed.sh`, `test_drop_build_app.sh`, `test_e2e.sh`, `test_remove_app_copies.sh`, `test_make_help.sh`. Modify `Makefile`, `scripts/remove-app-copies.sh`.
 
-**Interfaces — Produces:** `sandbox_init` (temporary `HOME` and apps folder; a `PATH` of failing stubs for `git`, `gh`, `curl`, `pkill`, `killall`, `osascript`, `open`, `mdfind`, `ditto`) and `sandbox_fake NAME BODY`. Scripts take overrides `MG_APPLICATIONS_DIR`, `MG_LSREGISTER`, `MG_DERIVED` and `MG_PGREP`, with today's values as defaults. In the sandbox, `MG_LSREGISTER` points at a failing stub. Built-ins that signal processes, such as `kill`, are overridden by a failing function.
+**Interfaces — Produces:** `sandbox_init` (temporary `HOME` and apps folder; a `PATH` of failing stubs for `git`, `gh`, `curl`, `pkill`, `killall`, `osascript`, `open`, `mdfind`, `ditto`) and `sandbox_fake NAME BODY`. Scripts take overrides `MG_APPLICATIONS_DIR` and `MG_LSREGISTER`, with today's values as defaults. In the sandbox, `MG_LSREGISTER` points at a failing stub. Built-ins that signal processes, such as `kill`, are overridden by a failing function.
 
-- [ ] **Step 1:** Write `test_sandbox.sh` first: each unfaked risky command fails, including `kill` and the launch-services path; `HOME` and the apps folder are temporary.
-- [ ] **Step 2:** For each script, write a failing test from today's recipe before moving it: the order of calls; a missing build product removes nothing; a failed removal exits non-zero; `--keep` is honoured; `e2e` removes the built app after a failure and after an interrupt.
-- [ ] **Step 3:** Move each recipe without changing behaviour, passing `CONFIG`, `ONLY`, `VERSION`, `PY` and `DERIVED` explicitly.
-- [ ] **Step 4:** Give each public target a trailing `## description` that names its options. `make help` lists them. `test_make_help.sh` fails if a public target lacks one. Plain `make` still builds and relaunches.
-- [ ] **Step 5:** Run `make scripts-test`, `make help`, `make e2e` and plain `make`. Expected: all pass with one app on the machine. Ask the user before running `make reinstall` or `make remove-copies`, which delete app copies.
+- [x] **Step 1:** Write `test_sandbox.sh` first: each unfaked risky command fails, including `kill` and the launch-services path; `HOME` and the apps folder are temporary.
+- [x] **Step 2:** For each script, write a failing test from today's recipe before moving it: the order of calls; a missing build product removes nothing; a failed removal exits non-zero; `--keep` is honoured; `e2e` removes the built app after a failure and after an interrupt.
+- [x] **Step 3:** Move each recipe without changing behaviour, passing `CONFIG`, `ONLY`, `VERSION`, `PY` and `DERIVED` explicitly.
+- [x] **Step 4:** Give each public target a `## description` on the line above it that names its options. `make help` lists them. `test_make_help.sh` fails if a public target lacks one. Plain `make` still builds and relaunches.
+- [x] **Step 5:** Run `make scripts-test`, `make help`, `make e2e` and plain `make`. Expected: all pass with one app on the machine. Ask the user before running `make reinstall` or `make remove-copies`, which delete app copies.
 
 ---
 
@@ -344,9 +344,9 @@ def test_interrupt_kills_children_and_runs_cleanup(self):
 
 **Interfaces — Consumes:** `sandbox_init`, `sandbox_fake`. **Produces:** `release.sh <patch|minor|major>`; `release-dispatch.sh <dry-run|overwrite> <VERSION>`.
 
-- [ ] **Step 1:** Write failing tests with fake `git` and `gh` that record every call: no bump, a dirty tree, the wrong branch and a diverged branch each stop before any `gh` call; the dry-run poll retries after a failed or empty lookup and stops after 30 tries; a failed dry run stops; any answer but `yes`, then any but `y`, creates and pushes no tag; the success path records tag then push, with `vX.Y.Z`; a bad or missing `VERSION` calls nothing; declining an overwrite calls nothing.
-- [ ] **Step 2:** Move the logic, keeping retries and ignored failures as they are today. Run `make scripts-test`. Expected: PASS.
-- [ ] **Step 3:** Ask the user to run `make release-dry-run` with a valid version. Expected: the workflow starts and passes. Do not run it yourself.
+- [x] **Step 1:** Write failing tests with fake `git` and `gh` that record every call: no bump, a dirty tree, the wrong branch and a diverged branch each stop before any `gh` call; the dry-run poll retries after a failed or empty lookup and stops after 30 tries; a failed dry run stops; any answer but `yes`, then any but `y`, creates and pushes no tag; the success path records tag then push, with `vX.Y.Z`; a bad or missing `VERSION` calls nothing; declining an overwrite calls nothing.
+- [x] **Step 2:** Move the logic, keeping retries and ignored failures as they are today. Run `make scripts-test`. Expected: PASS.
+- [x] **Step 3:** Ask the user to run `make release-dry-run` with a valid version. Expected: the workflow starts and passes. Do not run it yourself.
 
 ---
 
@@ -354,9 +354,9 @@ def test_interrupt_kills_children_and_runs_cleanup(self):
 
 **Files:** Create `scripts/make/dead-code.sh`, `scripts/tests/test_dead_code.sh`. Modify `Makefile`, `docs/development.md`.
 
-- [ ] **Step 1:** Write a failing sandbox test: the app and tests are built into `build/`, Periphery gets the skip-build, index-store and `--skip-schemes-validation` options, and the built app is removed after success and after failure. Without the last option, Periphery reports that the `MediaGrabber-Workspace` scheme does not exist.
-- [ ] **Step 2:** Implement `make dead-code` using the invocation proved in Task 1.
-- [ ] **Step 3:** Run `make dead-code`. Expected: a result list, no `.app` under `build/`, and no new DerivedData folder. Report the findings to the user; fixing them is not part of this plan, so file a ticket for them if there are any.
+- [x] **Step 1:** Write a failing sandbox test: the app and tests are built into `build/`, Periphery gets the skip-build, index-store and `--skip-schemes-validation` options, and the built app is removed after success and after failure. Without the last option, Periphery reports that the `MediaGrabber-Workspace` scheme does not exist.
+- [x] **Step 2:** Implement `make dead-code` using the invocation proved in Task 1.
+- [x] **Step 3:** Run `make dead-code`. Expected: a result list, no `.app` under `build/`, and no new DerivedData folder. Report the findings to the user; fixing them is not part of this plan, so file a ticket for them if there are any.
 
 ---
 

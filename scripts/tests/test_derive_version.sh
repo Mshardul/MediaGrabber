@@ -4,7 +4,7 @@ set -euo pipefail
 
 script="$(cd "$(dirname "$0")/.." && pwd)/release/derive-version.sh"
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+trap 'rm -rf "$work" 2>/dev/null || true' EXIT
 fails=0
 mkdir -p "$work/release-notes"
 printf 'Notes.\n' >"$work/release-notes/0.1.0.md"

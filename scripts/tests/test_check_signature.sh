@@ -6,7 +6,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 script="$root/release/check-signature.sh"
 signer="$root/ed25519.swift"
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+trap 'rm -rf "$work" 2>/dev/null || true' EXIT
 fails=0
 
 check() {

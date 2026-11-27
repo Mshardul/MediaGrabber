@@ -15,8 +15,11 @@ MediaGrabber is a macOS app in a Tuist-generated project. It has two main target
 ```bash
 brew install mise
 mise install
+make venv
 make
 ```
+
+`make build` and `make test` run through `scripts/buildlog`, so they need the venv; [Checks and the commit hook](#checks-and-the-commit-hook) says what `make venv` needs. They print one line as each stage starts and a short result, and save the full output, warnings included, to `build/logs/build.log` or `build/logs/test.log`. A stage that prints nothing for 600 seconds is stopped; `MG_STAGE_IDLE_TIMEOUT` sets another number of seconds.
 
 `make` fetches the bundled tools (the first run compiles ffmpeg and takes a while), rebuilds, replaces `/Applications/MediaGrabber.app`, and opens it. Run it again to replace the copy that is already running.
 
@@ -33,7 +36,7 @@ make test
 make test ONLY=AppUnitTests/SomeSuite
 ```
 
-`make test` runs the plugin tests and the script tests, generates the Tuist project, then runs the unit tests. It installs no Python packages, so run `make venv` first (see below). `make scripts-test` runs every `scripts/tests/test_*.sh` on its own. One suite is `ONLY=Target/Suite`, for example `make test ONLY=GrabberKitTests/<SuiteName>` or `make test ONLY=AppUnitTests/<SuiteName>`.
+`make test` runs the plugin tests and the script tests, generates the Tuist project, then runs the unit tests. It shows how many tests each of the three ran, and a stage that runs none fails. It installs no Python packages, so run `make venv` first (see below). `make scripts-test` runs every `scripts/tests/test_*.sh` on its own. One suite is `ONLY=Target/Suite`, for example `make test ONLY=GrabberKitTests/<SuiteName>` or `make test ONLY=AppUnitTests/<SuiteName>`.
 
 - Do NOT use `tuist test` when debugging — its output filtering hides compiler errors. `tuist test` is fine in CI where a pass/fail is all that matters.
 - The `MediaGrabber` scheme only exists because `AppUnitTests` depends on it; the workspace-wide scheme is `MediaGrabber-Workspace`.
@@ -66,6 +69,10 @@ Changed files are those that differ from the last commit, plus new files that ar
 
 - `mise` pins tuist, swiftformat, swiftlint, shellcheck, shfmt and periphery (macOS only) to exact versions in `.mise.toml`. Don't run `mise use <tool>@latest` — it rewrites the pin.
 - Xcode is pinned in `.xcode-version` (currently `26.3`, the newest on the macos-15 CI image). tuist 4.205.0's `ProjectDescription` is built for the Swift 6.2 SDK — Xcode < 26 fails `tuist generate` with a compiler/SDK mismatch. Any local Xcode 26.x works; `xcodes select "$(cat .xcode-version)"` to match CI exactly.
+
+## Dead code
+
+`make dead-code` runs Periphery to find unused Swift code. It fetches the tools, generates the project, builds the app and tests into `build/`, runs Periphery on that index with `--skip-build --index-store-path --skip-schemes-validation`, and removes the built app and its Launch Services entry. It is run on demand and is not part of the check commands, pre-commit, or definition of done.
 
 ## Fonts and bundled resources
 

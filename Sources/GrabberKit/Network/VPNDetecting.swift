@@ -75,16 +75,20 @@ public struct InterfaceVPNDetector: VPNDetecting {
             guard inet_ntop(AF_INET, &copy.sin_addr, &buffer, socklen_t(INET_ADDRSTRLEN)) != nil else {
                 return nil
             }
-            return String(cString: buffer)
+            return string(fromNullTerminated: buffer)
         case AF_INET6:
             var copy = address.withMemoryRebound(to: sockaddr_in6.self, capacity: 1) { $0.pointee }
             var buffer = [CChar](repeating: 0, count: Int(INET6_ADDRSTRLEN))
             guard inet_ntop(AF_INET6, &copy.sin6_addr, &buffer, socklen_t(INET6_ADDRSTRLEN)) != nil else {
                 return nil
             }
-            return String(cString: buffer)
+            return string(fromNullTerminated: buffer)
         default:
             return nil
         }
+    }
+
+    private static func string(fromNullTerminated buffer: [CChar]) -> String? {
+        String(bytes: buffer.prefix { $0 != 0 }.map(UInt8.init(bitPattern:)), encoding: .utf8)
     }
 }

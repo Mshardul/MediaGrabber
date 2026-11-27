@@ -63,7 +63,7 @@ final class PotProviderRecoveryTests: XCTestCase {
         await second.value
         let finalStatus = await provider.status
         guard case .running = finalStatus
-        else { return await XCTFail("expected running after overlap, got \(finalStatus)") }
+        else { return XCTFail("expected running after overlap, got \(finalStatus)") }
         await provider.stop()
     }
 

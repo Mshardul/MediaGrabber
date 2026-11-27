@@ -8,7 +8,7 @@ SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/appcast.py"
 PROJECT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/Project.swift"
 EXPECTED_FEED="https://github.com/Mshardul/MediaGrabber/releases/latest/download/appcast.xml"
 work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
+trap 'rm -rf "$work" 2>/dev/null || true' EXIT
 fails=0
 
 check() {
