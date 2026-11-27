@@ -139,7 +139,6 @@ final class AppModelPlaylistTests: XCTestCase {
             jobs: [AppModelTestHelpers.jobSnapshot(playlistGroupID: groupID)],
             revision: 1,
             queueHalt: nil,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         ))
@@ -173,7 +172,6 @@ final class AppModelPlaylistTests: XCTestCase {
             jobs: [AppModelTestHelpers.jobSnapshot(playlistGroupID: groupID)],
             revision: 1,
             queueHalt: nil,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         ))
@@ -210,7 +208,6 @@ final class AppModelPlaylistTests: XCTestCase {
         PlaylistDump(
             title: "Road Trip Mix",
             uploader: "Sampler",
-            extractor: "youtube:tab",
             sourceURL: sourceURL,
             entries: [
                 PlaylistEntry(

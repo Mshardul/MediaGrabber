@@ -43,7 +43,8 @@ let project = Project(
     name: "MediaGrabber",
     options: .options(
         automaticSchemesOptions: .enabled(),
-        developmentRegion: "en"
+        developmentRegion: "en",
+        disableSynthesizedResourceAccessors: true
     ),
     packages: [
         .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.7.1")

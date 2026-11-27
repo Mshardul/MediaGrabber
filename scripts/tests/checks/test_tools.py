@@ -673,6 +673,19 @@ class RealToolTests(unittest.TestCase):
         self.assert_reported("shellcheck", "scripts/info.sh", "SC2086")
         self.assert_reported("shellcheck", "scripts/style.sh", "SC2006")
 
+    def test_shellcheck_follows_a_sourced_file_outside_the_checked_list(self):
+        library = self.root / "scripts/lib/shared.sh"
+        library.parent.mkdir(parents=True)
+        library.write_text('#!/usr/bin/env bash\nexport SHARED_DIR="/tmp"\n')
+        self.write(
+            "scripts/use.sh",
+            "#!/usr/bin/env bash\n# shellcheck source=scripts/lib/shared.sh\n"
+            'source "$1"\necho "$SHARED_DIR"\n',
+        )
+        result = self.run_real()
+        self.assertEqual(result.broken, [], result.log)
+        self.assertEqual([f for f in result.findings if f.check == "shellcheck"], [], result.log)
+
     def test_shellcheck_ignores_every_settings_file_that_would_silence_it(self):
         for settings in (
             "scripts/.shellcheckrc",

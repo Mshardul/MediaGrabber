@@ -49,108 +49,108 @@ public final class Preferences: @unchecked Sendable {
 
     public var defaultMediaType: MediaType {
         get {
-            (defaults.string(forKey: "mg.defaultMediaType"))
+            (saved.string(forKey: "mg.defaultMediaType"))
                 .flatMap(MediaType.init) ?? .video
         }
-        set { defaults.set(newValue.rawValue, forKey: "mg.defaultMediaType") }
+        set { store(newValue.rawValue, forKey: "mg.defaultMediaType") }
     }
 
     public var defaultVideoHeight: Int {
         get { intValue(forKey: "defaultVideoHeight", default: .max) }
-        set { defaults.set(newValue, forKey: "mg.defaultVideoHeight") }
+        set { store(newValue, forKey: "mg.defaultVideoHeight") }
     }
 
     public var defaultAudioFormat: AudioFormat {
         get {
-            (defaults.string(forKey: "mg.defaultAudioFormat"))
+            (saved.string(forKey: "mg.defaultAudioFormat"))
                 .flatMap(AudioFormat.init) ?? .m4a
         }
-        set { defaults.set(newValue.rawValue, forKey: "mg.defaultAudioFormat") }
+        set { store(newValue.rawValue, forKey: "mg.defaultAudioFormat") }
     }
 
     public var filenameTemplate: String {
-        get { defaults.string(forKey: "mg.filenameTemplate") ?? "%(title)s.%(ext)s" }
-        set { defaults.set(newValue, forKey: "mg.filenameTemplate") }
+        get { saved.string(forKey: "mg.filenameTemplate") ?? "%(title)s.%(ext)s" }
+        set { store(newValue, forKey: "mg.filenameTemplate") }
     }
 
     // MARK: - Behavior
 
     public var maxAutoRetries: Int {
         get { intValue(forKey: "maxAutoRetries", default: 5) }
-        set { defaults.set(min(5, max(1, newValue)), forKey: "mg.maxAutoRetries") }
+        set { store(min(5, max(1, newValue)), forKey: "mg.maxAutoRetries") }
     }
 
     // Gates concurrent downloads only, not probes. DebugFlags.concurrencyCapOverride wins.
     public var maxConcurrentDownloads: Int {
         get { intValue(forKey: "maxConcurrentDownloads", default: 3) }
-        set { defaults.set(min(6, max(1, newValue)), forKey: "mg.maxConcurrentDownloads") }
+        set { store(min(6, max(1, newValue)), forKey: "mg.maxConcurrentDownloads") }
     }
 
     public var verboseLogging: Bool {
-        get { defaults.bool(forKey: "mg.verboseLogging") }
-        set { defaults.set(newValue, forKey: "mg.verboseLogging") }
+        get { saved.bool(forKey: "mg.verboseLogging") }
+        set { store(newValue, forKey: "mg.verboseLogging") }
     }
 
     // MARK: - Clipboard
 
     public var detectClipboardLinks: Bool {
         get {
-            defaults.object(forKey: "mg.detectClipboardLinks") == nil
+            saved.object(forKey: "mg.detectClipboardLinks") == nil
                 ? true
-                : defaults.bool(forKey: "mg.detectClipboardLinks")
+                : saved.bool(forKey: "mg.detectClipboardLinks")
         }
-        set { defaults.set(newValue, forKey: "mg.detectClipboardLinks") }
+        set { store(newValue, forKey: "mg.detectClipboardLinks") }
     }
 
     // MARK: - Updates
 
     public var autoCheckAppUpdates: Bool {
         get {
-            defaults.object(forKey: "mg.autoCheckAppUpdates") == nil
+            saved.object(forKey: "mg.autoCheckAppUpdates") == nil
                 ? true
-                : defaults.bool(forKey: "mg.autoCheckAppUpdates")
+                : saved.bool(forKey: "mg.autoCheckAppUpdates")
         }
-        set { defaults.set(newValue, forKey: "mg.autoCheckAppUpdates") }
+        set { store(newValue, forKey: "mg.autoCheckAppUpdates") }
     }
 
     public var autoCheckYtDlpUpdates: Bool {
         get {
-            defaults.object(forKey: "mg.autoCheckYtDlpUpdates") == nil
+            saved.object(forKey: "mg.autoCheckYtDlpUpdates") == nil
                 ? true
-                : defaults.bool(forKey: "mg.autoCheckYtDlpUpdates")
+                : saved.bool(forKey: "mg.autoCheckYtDlpUpdates")
         }
-        set { defaults.set(newValue, forKey: "mg.autoCheckYtDlpUpdates") }
+        set { store(newValue, forKey: "mg.autoCheckYtDlpUpdates") }
     }
 
     // MARK: - Network
 
     public var proxyURL: String? {
-        get { defaults.string(forKey: "mg.proxyURL") }
+        get { saved.string(forKey: "mg.proxyURL") }
         set {
             let trimmed = newValue?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             if trimmed.isEmpty {
-                defaults.removeObject(forKey: "mg.proxyURL")
+                store(nil, forKey: "mg.proxyURL")
             } else {
-                defaults.set(trimmed, forKey: "mg.proxyURL")
+                store(trimmed, forKey: "mg.proxyURL")
             }
         }
     }
 
     public var forceIPv4: Bool {
-        get { defaults.bool(forKey: "mg.forceIPv4") }
-        set { defaults.set(newValue, forKey: "mg.forceIPv4") }
+        get { saved.bool(forKey: "mg.forceIPv4") }
+        set { store(newValue, forKey: "mg.forceIPv4") }
     }
 
     public var speedLimitKBps: Int {
         get { intValue(forKey: "speedLimitKBps", default: 0) }
-        set { defaults.set(min(100_000, max(0, newValue)), forKey: "mg.speedLimitKBps") }
+        set { store(min(100_000, max(0, newValue)), forKey: "mg.speedLimitKBps") }
     }
 
     // MARK: - Cookies
 
     public var cookiesFromBrowser: CookieSource {
         get {
-            guard let data = defaults.data(forKey: "mg.cookiesFromBrowser"),
+            guard let data = saved.data(forKey: "mg.cookiesFromBrowser"),
                   let decoded = try? JSONDecoder().decode(CookieSource.self, from: data)
             else {
                 return .none
@@ -159,28 +159,28 @@ public final class Preferences: @unchecked Sendable {
         }
         set {
             guard let data = try? JSONEncoder().encode(newValue) else {
-                defaults.removeObject(forKey: "mg.cookiesFromBrowser")
+                store(nil, forKey: "mg.cookiesFromBrowser")
                 return
             }
-            defaults.set(data, forKey: "mg.cookiesFromBrowser")
+            store(data, forKey: "mg.cookiesFromBrowser")
         }
     }
 
     public var signInScope: SignInScope {
         get {
-            guard let raw = defaults.string(forKey: "mg.signInScope"),
+            guard let raw = saved.string(forKey: "mg.signInScope"),
                   let scope = SignInScope(rawValue: raw)
             else {
                 return .allSites
             }
             return scope
         }
-        set { defaults.set(newValue.rawValue, forKey: "mg.signInScope") }
+        set { store(newValue.rawValue, forKey: "mg.signInScope") }
     }
 
     public var signInSites: [String] {
         get {
-            guard let data = defaults.data(forKey: "mg.signInSites"),
+            guard let data = saved.data(forKey: "mg.signInSites"),
                   let sites = try? JSONDecoder().decode([String].self, from: data)
             else {
                 return []
@@ -189,7 +189,7 @@ public final class Preferences: @unchecked Sendable {
         }
         set {
             guard let data = try? JSONEncoder().encode(newValue) else { return }
-            defaults.set(data, forKey: "mg.signInSites")
+            store(data, forKey: "mg.signInSites")
         }
     }
 
@@ -197,52 +197,52 @@ public final class Preferences: @unchecked Sendable {
 
     public var lastVideoHeight: Int? {
         get {
-            defaults.object(forKey: "mg.lastVideoHeight") == nil
+            saved.object(forKey: "mg.lastVideoHeight") == nil
                 ? nil
-                : defaults.integer(forKey: "mg.lastVideoHeight")
+                : saved.integer(forKey: "mg.lastVideoHeight")
         }
         set {
             guard let value = newValue else {
-                defaults.removeObject(forKey: "mg.lastVideoHeight")
+                store(nil, forKey: "mg.lastVideoHeight")
                 return
             }
-            defaults.set(value, forKey: "mg.lastVideoHeight")
+            store(value, forKey: "mg.lastVideoHeight")
         }
     }
 
     public var lastMediaType: MediaType? {
-        get { defaults.string(forKey: "mg.lastMediaType").flatMap(MediaType.init) }
+        get { saved.string(forKey: "mg.lastMediaType").flatMap(MediaType.init) }
         set {
             guard let value = newValue else {
-                defaults.removeObject(forKey: "mg.lastMediaType")
+                store(nil, forKey: "mg.lastMediaType")
                 return
             }
-            defaults.set(value.rawValue, forKey: "mg.lastMediaType")
+            store(value.rawValue, forKey: "mg.lastMediaType")
         }
     }
 
     public var lastAudioFormat: AudioFormat? {
-        get { defaults.string(forKey: "mg.lastAudioFormat").flatMap(AudioFormat.init) }
+        get { saved.string(forKey: "mg.lastAudioFormat").flatMap(AudioFormat.init) }
         set {
             guard let value = newValue else {
-                defaults.removeObject(forKey: "mg.lastAudioFormat")
+                store(nil, forKey: "mg.lastAudioFormat")
                 return
             }
-            defaults.set(value.rawValue, forKey: "mg.lastAudioFormat")
+            store(value.rawValue, forKey: "mg.lastAudioFormat")
         }
     }
 
     public var defaultAudioLanguagePolicy: AudioLanguagePolicy {
         get {
-            (defaults.string(forKey: "mg.defaultAudioLanguagePolicy"))
+            (saved.string(forKey: "mg.defaultAudioLanguagePolicy"))
                 .flatMap(AudioLanguagePolicy.init) ?? .youtubeDefault
         }
-        set { defaults.set(newValue.rawValue, forKey: "mg.defaultAudioLanguagePolicy") }
+        set { store(newValue.rawValue, forKey: "mg.defaultAudioLanguagePolicy") }
     }
 
     public var lastAudioLanguage: LastAudioLanguage? {
         get {
-            guard let data = defaults.data(forKey: "mg.lastAudioLanguage"),
+            guard let data = saved.data(forKey: "mg.lastAudioLanguage"),
                   let decoded = try? JSONDecoder().decode(LastAudioLanguage.self, from: data)
             else {
                 return nil
@@ -253,10 +253,10 @@ public final class Preferences: @unchecked Sendable {
             guard let value = newValue,
                   let data = try? JSONEncoder().encode(value)
             else {
-                defaults.removeObject(forKey: "mg.lastAudioLanguage")
+                store(nil, forKey: "mg.lastAudioLanguage")
                 return
             }
-            defaults.set(data, forKey: "mg.lastAudioLanguage")
+            store(data, forKey: "mg.lastAudioLanguage")
         }
     }
 
@@ -264,24 +264,24 @@ public final class Preferences: @unchecked Sendable {
 
     public var theme: ThemeKind {
         get {
-            (defaults.string(forKey: "mg.theme")).flatMap(ThemeKind.init) ?? .aurora
+            (saved.string(forKey: "mg.theme")).flatMap(ThemeKind.init) ?? .aurora
         }
-        set { defaults.set(newValue.rawValue, forKey: "mg.theme") }
+        set { store(newValue.rawValue, forKey: "mg.theme") }
     }
 
     public var palette: PaletteKind {
         get {
-            (defaults.string(forKey: "mg.palette"))
+            (saved.string(forKey: "mg.palette"))
                 .flatMap(PaletteKind.init) ?? .auroraMintIris
         }
-        set { defaults.set(newValue.rawValue, forKey: "mg.palette") }
+        set { store(newValue.rawValue, forKey: "mg.palette") }
     }
 
     // MARK: - Reset
 
     public func resetToDefaults() {
         for key in Self.ownedKeys {
-            defaults.removeObject(forKey: key)
+            store(nil, forKey: key)
         }
     }
 
@@ -296,21 +296,39 @@ public final class Preferences: @unchecked Sendable {
         "mg.defaultAudioLanguagePolicy", "mg.lastAudioLanguage",
         "mg.autoCheckAppUpdates", "mg.autoCheckYtDlpUpdates"
     ]
+}
 
-    // MARK: - Helpers
+// MARK: - Storage
 
+extension Preferences {
     private func intValue(forKey name: String, default fallback: Int) -> Int {
-        defaults.object(forKey: "mg.\(name)") == nil
+        saved.object(forKey: "mg.\(name)") == nil
             ? fallback
-            : defaults.integer(forKey: "mg.\(name)")
+            : saved.integer(forKey: "mg.\(name)")
     }
 
     private func url(forKey name: String, default fallback: URL) -> URL {
-        guard let path = defaults.string(forKey: "mg.\(name)") else { return fallback }
+        guard let path = saved.string(forKey: "mg.\(name)") else { return fallback }
         return URL(fileURLWithPath: path)
     }
 
     private func setURL(_ value: URL, forKey name: String) {
-        defaults.set(value.path, forKey: "mg.\(name)")
+        store(value.path, forKey: "mg.\(name)")
+    }
+
+    // Every setting shares one observed key, so a new setting or a reset cannot be left out.
+    private var anySetting: Void {
+        ()
+    }
+
+    private var saved: UserDefaults {
+        access(keyPath: \.anySetting)
+        return defaults
+    }
+
+    private func store(_ value: Any?, forKey key: String) {
+        withMutation(keyPath: \.anySetting) {
+            defaults.set(value, forKey: key)
+        }
     }
 }

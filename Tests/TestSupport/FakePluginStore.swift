@@ -3,7 +3,6 @@ import GrabberKit
 
 public final class FakePluginStore: PluginStoring, @unchecked Sendable {
     public var files: Set<String> = []
-    public var listings: [String: [URL]] = [:]
     public var copies: [(from: URL, to: URL)] = []
     public var created: [URL] = []
 
@@ -21,9 +20,5 @@ public final class FakePluginStore: PluginStoring, @unchecked Sendable {
     public func createDirectory(at url: URL) throws {
         created.append(url)
         files.insert(url.path)
-    }
-
-    public func contentsOfDirectory(at url: URL) -> [URL] {
-        listings[url.path] ?? []
     }
 }

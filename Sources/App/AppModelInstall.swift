@@ -44,12 +44,7 @@ extension AppModel {
     func offerToMoveIntoApplicationsIfNeeded() async {
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         guard bundleURL.lastPathComponent == "MediaGrabber.app", !canReplaceItself else { return }
-        let confirmed = await confirm(ConfirmationRequest(
-            title: InstallLocation.moveTitle,
-            message: InstallLocation.moveMessage,
-            confirmTitle: "Move",
-            cancelTitle: "Not now"
-        ))
+        let confirmed = await confirm(AppModelDialogs.moveToApplicationsConfirmation())
         guard confirmed else { return }
         let destination = InstallLocation.destination(
             bundleURL: bundleURL,
@@ -73,13 +68,7 @@ extension AppModel {
         let titles = UninstallCopy.activeTitles(jobs: snapshot.jobs.map {
             UninstallJob(title: $0.title, url: $0.url, state: $0.state)
         })
-        let confirmed = await confirm(ConfirmationRequest(
-            title: UninstallCopy.confirmTitle,
-            message: UninstallCopy.message(activeTitles: titles),
-            confirmTitle: UninstallCopy.confirmButton,
-            cancelTitle: "Cancel",
-            isDestructive: true
-        ))
+        let confirmed = await confirm(AppModelDialogs.uninstallConfirmation(activeTitles: titles))
         guard confirmed else { return }
         stopConsumer()
         let effects = LiveUninstallEffects(
@@ -102,12 +91,7 @@ extension AppModel {
     }
 
     private func notice(title: String, message: String) async -> Bool {
-        await confirm(ConfirmationRequest(
-            title: title,
-            message: message,
-            confirmTitle: "OK",
-            cancelTitle: nil
-        ))
+        await confirm(AppModelDialogs.okNotice(title: title, message: message))
     }
 }
 

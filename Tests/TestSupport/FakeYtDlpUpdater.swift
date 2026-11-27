@@ -2,17 +2,13 @@ import Foundation
 @testable import GrabberKit
 
 public final class FakeYtDlpUpdater: YtDlpUpdating, @unchecked Sendable {
-    private let box: LockedBox<YtDlpUpdateResult>
+    private let result: YtDlpUpdateResult
 
     public init(result: YtDlpUpdateResult = .success(newVersion: "2026.08.19")) {
-        box = LockedBox(result)
-    }
-
-    public func setResult(_ result: YtDlpUpdateResult) {
-        box.mutate { $0 = result }
+        self.result = result
     }
 
     public func updateToLatest() async -> YtDlpUpdateResult {
-        box.read { $0 }
+        result
     }
 }

@@ -38,7 +38,7 @@ final class PasscodePromptTests: XCTestCase {
     private func addFailedRow(_ model: AppModel, id: UUID, errorClass: ErrorClass) {
         let snapshot = QueueSnapshot(
             jobs: [AppModelTestHelpers.jobSnapshot(id: id, state: .failed(errorClass))],
-            revision: 1, queueHalt: nil, generatedAt: .init(), hostRateSummary: [:], isOnline: true
+            revision: 1, queueHalt: nil, hostRateSummary: [:], isOnline: true
         )
         model.rowStore.apply(.snapshot(snapshot))
     }
@@ -47,14 +47,14 @@ final class PasscodePromptTests: XCTestCase {
         let (model, _) = makeModel(preview: .failure(.passcodeRequired))
         await model.resolvePasted(url)
         XCTAssertTrue(model.isPasscodeSheetShown)
-        XCTAssertEqual(model.passcodeNeeded, PasscodePrompt(target: .link(url), url: url, wasRejected: false))
+        XCTAssertEqual(model.passcodeNeeded, PasscodePrompt(target: .link(url), wasRejected: false))
         XCTAssertEqual(model.probeError, "This recording needs a passcode.")
     }
 
     func test_probePasscodeRejected_setsWasRejected() async {
         let (model, _) = makeModel(preview: .failure(.passcodeRejected))
         await model.resolvePasted(url)
-        XCTAssertEqual(model.passcodeNeeded, PasscodePrompt(target: .link(url), url: url, wasRejected: true))
+        XCTAssertEqual(model.passcodeNeeded, PasscodePrompt(target: .link(url), wasRejected: true))
         XCTAssertEqual(model.probeError, "That passcode didn't work.")
     }
 
@@ -105,7 +105,7 @@ final class PasscodePromptTests: XCTestCase {
         XCTAssertTrue(model.isPasscodeSheetShown)
         XCTAssertEqual(
             model.passcodeNeeded,
-            PasscodePrompt(target: .job(id), url: "https://example.com/v", wasRejected: true)
+            PasscodePrompt(target: .job(id), wasRejected: true)
         )
     }
 

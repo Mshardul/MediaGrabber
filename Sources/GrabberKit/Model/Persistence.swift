@@ -1,11 +1,11 @@
 import Foundation
 
-public struct QueueFile: Codable, Sendable {
-    public var schemaVersion: Int
-    public var jobs: [PersistedJob]
-    public var groups: [PersistedPlaylistGroup]
+struct QueueFile: Codable, Sendable {
+    var schemaVersion: Int
+    var jobs: [PersistedJob]
+    var groups: [PersistedPlaylistGroup]
 
-    public init(
+    init(
         schemaVersion: Int,
         jobs: [PersistedJob],
         groups: [PersistedPlaylistGroup] = []
@@ -21,7 +21,7 @@ public struct QueueFile: Codable, Sendable {
         case groups
     }
 
-    public init(from decoder: Decoder) throws {
+    init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
         jobs = try container.decode([PersistedJob].self, forKey: .jobs)
@@ -43,14 +43,14 @@ public struct PersistedPlaylistGroup: Codable, Sendable, Equatable {
     }
 }
 
-public struct HistoryFile: Codable, Sendable {
-    public var schemaVersion: Int
-    public var jobs: [PersistedJob]
+struct HistoryFile: Codable, Sendable {
+    var schemaVersion: Int
+    var jobs: [PersistedJob]
 }
 
-public struct ColumnsFile: Codable, Sendable {
-    public var schemaVersion: Int
-    public var config: ColumnConfig
+struct ColumnsFile: Codable, Sendable {
+    var schemaVersion: Int
+    var config: ColumnConfig
 }
 
 public struct PersistenceDebug: Sendable {
@@ -70,7 +70,6 @@ public protocol QueuePersisting: Sendable {
     func disableWrites()
     func loadQueue() -> [PersistedJob]
     func loadHistory() -> [PersistedJob]
-    func loadColumns() -> ColumnConfig?
     func loadPlaylistGroups() -> [PersistedPlaylistGroup]
 }
 

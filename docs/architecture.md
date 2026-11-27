@@ -188,7 +188,7 @@ classDiagram
     EngineDependencies --> NetworkPathMonitoring
 ```
 
-`MediaGrabberApp.init()` builds the whole graph in dependency order: `Preferences` → `OnboardingInstaller` → resolve `ytDlpURL` → `LogWriter` → `Persistence` (needs `log`) → `EngineDependencies.live(...)` (needs `ytDlpURL`, `log`, `persistence`) → `DownloadEngine(dependencies:preferences:)` → `AppModel(engine:installer:prefs:log:persistence:columnConfig:)`. The `IncomingLinkController` is built last, holding `AppModel` strongly as its `IncomingLinkHome`; `AppModel` holds it back only as `@ObservationIgnored weak var` — the one deliberate weak edge, breaking what would otherwise be a retain cycle.
+`MediaGrabberApp.init()` builds the whole graph in dependency order: `Preferences` → `OnboardingInstaller` → resolve `ytDlpURL` → `LogWriter` → `Persistence` (needs `log`) → `EngineDependencies.live(...)` (needs `ytDlpURL`, `log`, `persistence`) → `DownloadEngine(dependencies:preferences:)` → `AppModel(engine:prefs:log:persistence:columnConfig:)`. The `IncomingLinkController` is built last, holding `AppModel` strongly as its `IncomingLinkHome`; `AppModel` holds it back only as `@ObservationIgnored weak var` — the one deliberate weak edge, breaking what would otherwise be a retain cycle.
 
 `AppModelConfirmer` (the `Confirming` seam `QuitCoordinator` uses) is constructed inside `AppModel.init` holding `weak var model: AppModel?`, set to `self` only after `AppModel` finishes initializing — a two-step construction to avoid capturing a not-yet-valid `self`.
 

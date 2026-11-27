@@ -7,7 +7,7 @@ public enum LogLevel: String, Sendable {
     case error
 }
 
-public enum LogCategory: String, Sendable {
+enum LogCategory: String, Sendable {
     case engine
     case scheduler
     case deps

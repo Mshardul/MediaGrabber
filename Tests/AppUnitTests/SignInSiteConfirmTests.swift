@@ -38,7 +38,7 @@ final class SignInSiteConfirmTests: XCTestCase {
         let job = AppModelTestHelpers.jobSnapshot(id: id, url: "https://vimeo.com/1", state: .failed(.ageRestricted))
         model.startConsumerForTesting()
         engine.emit(.snapshot(QueueSnapshot(
-            jobs: [job], revision: 1, queueHalt: nil, generatedAt: .now,
+            jobs: [job], revision: 1, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )))
         try await pollUntil { model.rowStore.rows.contains { $0.id == id } }
@@ -62,7 +62,7 @@ final class SignInSiteConfirmTests: XCTestCase {
         let job = AppModelTestHelpers.jobSnapshot(id: id, url: "https://vimeo.com/1", state: .failed(.ageRestricted))
         model.startConsumerForTesting()
         engine.emit(.snapshot(QueueSnapshot(
-            jobs: [job], revision: 1, queueHalt: nil, generatedAt: .now,
+            jobs: [job], revision: 1, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )))
         try await pollUntil { model.rowStore.rows.contains { $0.id == id } }
@@ -106,7 +106,7 @@ final class SignInSiteConfirmTests: XCTestCase {
         let job = AppModelTestHelpers.jobSnapshot(id: id, url: "https://vimeo.com/1", state: .failed(.ageRestricted))
         model.startConsumerForTesting()
         engine.emit(.snapshot(QueueSnapshot(
-            jobs: [job], revision: 1, queueHalt: nil, generatedAt: .now,
+            jobs: [job], revision: 1, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )))
         try await pollUntil { model.rowStore.rows.contains { $0.id == id } }

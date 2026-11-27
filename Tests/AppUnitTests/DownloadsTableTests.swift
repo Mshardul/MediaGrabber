@@ -38,7 +38,7 @@ final class DownloadsTableTests: XCTestCase {
 
     private func queueSnapshot(_ jobs: [JobSnapshot]) -> QueueSnapshot {
         QueueSnapshot(
-            jobs: jobs, revision: 1, queueHalt: nil, generatedAt: .init(),
+            jobs: jobs, revision: 1, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )
     }
@@ -174,11 +174,6 @@ final class DownloadsTableTests: XCTestCase {
 
         let appModel = AppModel(
             engine: FakeEngine(),
-            installer: OnboardingInstaller(
-                locations: TestLocations.make(),
-                probe: FakeEnvironmentProbe(ready: true),
-                runner: NullRunner()
-            ),
             prefs: Preferences(defaults: TestLocations.settings(), downloadsFolder: TestLocations.make().downloads),
             log: log,
             locations: TestLocations.make(),

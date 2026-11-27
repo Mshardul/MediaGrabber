@@ -3,12 +3,6 @@ import GrabberKit
 
 @MainActor
 extension RowStore {
-    func clearManualOrder() {
-        guard manualOrder != nil else { return }
-        manualOrder = nil
-        recomputeVisible()
-    }
-
     func setManualOrder(_ ids: [UUID]) {
         manualOrder = ids
         recomputeVisible()

@@ -6,9 +6,6 @@ public enum ShieldInstallOutcome: Sendable, Equatable {
 }
 
 public struct ShieldInstaller: Sendable {
-    // The bundled helper is GPL-3.0; future-ideas.md tracks a permissively licensed replacement.
-    public static let version = "2.0.2"
-
     private let tools: ManagedTools
     private let fileExists: @Sendable (String) -> Bool
 

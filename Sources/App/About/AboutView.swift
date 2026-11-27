@@ -44,7 +44,6 @@ struct AboutView: View {
     static let downloaderTitle = "Downloader"
     static let mediaToolsTitle = "Media tools"
     @Environment(AppModel.self) private var appModel
-    @Environment(\.theme) private var theme
 
     let selectedTab: AboutTab
     @State private var model: AboutViewModel?

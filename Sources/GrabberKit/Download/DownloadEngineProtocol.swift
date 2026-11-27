@@ -190,10 +190,6 @@ public struct NoopPersisting: QueuePersisting {
         []
     }
 
-    public func loadColumns() -> ColumnConfig? {
-        nil
-    }
-
     public func loadPlaylistGroups() -> [PersistedPlaylistGroup] {
         []
     }

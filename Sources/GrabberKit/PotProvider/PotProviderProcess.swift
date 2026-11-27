@@ -1,6 +1,6 @@
 import Foundation
 
-public actor PotProviderProcess: PotProviding {
+actor PotProviderProcess: PotProviding {
     private let installer: PotPluginInstaller
     private let runner: ProcessRunning
     private let pinger: any ShieldPinging
@@ -17,7 +17,7 @@ public actor PotProviderProcess: PotProviding {
     // Actors are reentrant across `await`, so start, restart, stop and crash recovery are chained through this.
     private var tail: Task<Void, Never> = Task {}
 
-    public init(
+    init(
         installer: PotPluginInstaller,
         runner: ProcessRunning,
         pinger: any ShieldPinging,
@@ -33,30 +33,30 @@ public actor PotProviderProcess: PotProviding {
         self.portChecker = portChecker
     }
 
-    public var status: ShieldStatus {
+    var status: ShieldStatus {
         statusValue
     }
 
-    public var baseURL: URL? {
+    var baseURL: URL? {
         guard case let .running(port) = statusValue else {
             return nil
         }
         return URL(string: "http://127.0.0.1:\(port)")
     }
 
-    public var pluginDirs: [URL] {
+    var pluginDirs: [URL] {
         installer.pluginDirs()
     }
 
-    public func ensure() async {
+    func ensure() async {
         await enqueue { await self.ensureSerialized() }
     }
 
-    public func restart() async {
+    func restart() async {
         await enqueue { await self.restartSerialized() }
     }
 
-    public func stop() async {
+    func stop() async {
         await enqueue { await self.stopSerialized() }
     }
 

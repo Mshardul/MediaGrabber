@@ -8,7 +8,6 @@ struct ColumnFilterPopover: View {
     let values: [String]
     let selectedValues: Set<String>
     let onToggle: (String) -> Void
-    let onDismiss: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

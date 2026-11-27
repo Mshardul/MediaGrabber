@@ -49,7 +49,7 @@ final class RowStoreTests: XCTestCase {
     ) -> QueueSnapshot {
         revision += 1
         return QueueSnapshot(
-            jobs: jobs, revision: revision, queueHalt: nil, generatedAt: .init(),
+            jobs: jobs, revision: revision, queueHalt: nil,
             hostRateSummary: hostRateSummary, isOnline: true
         )
     }

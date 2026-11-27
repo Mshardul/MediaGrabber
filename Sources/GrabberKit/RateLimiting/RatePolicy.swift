@@ -1,13 +1,13 @@
 import Foundation
 
-public enum RatePolicyEvent: Sendable, Equatable {
+enum RatePolicyEvent: Sendable, Equatable {
     case strike(retryAfter: Int?)
     case cleanSuccess
     case userReset
 }
 
-public enum RatePolicy {
-    public static func next(
+enum RatePolicy {
+    static func next(
         state: RateState,
         event: RatePolicyEvent,
         now: Date,

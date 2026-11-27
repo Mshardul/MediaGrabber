@@ -13,7 +13,6 @@ final class HealthControllerTests: XCTestCase {
             jobs: [],
             revision: 1,
             queueHalt: nil,
-            generatedAt: .now,
             hostRateSummary: summary,
             isOnline: online,
             shieldStatus: shield

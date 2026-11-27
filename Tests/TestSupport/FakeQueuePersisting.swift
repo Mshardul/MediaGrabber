@@ -8,24 +8,12 @@ public final class FakeQueuePersisting: QueuePersisting, @unchecked Sendable {
         var columnSaves: [ColumnConfig] = []
         var playlistGroupSaves: [[PersistedPlaylistGroup]] = []
         var flushes = 0
-        var writesDisabled = false
-        var cannedQueue: [PersistedJob] = []
-        var cannedHistory: [PersistedJob] = []
-        var cannedColumns: ColumnConfig?
         var cannedPlaylistGroups: [PersistedPlaylistGroup] = []
     }
 
     private let box = LockedBox(State())
 
     public init() {}
-
-    public var queueSaves: [[PersistedJob]] {
-        box.read { $0.queueSaves }
-    }
-
-    public var historySaves: [[PersistedJob]] {
-        box.read { $0.historySaves }
-    }
 
     public var columnSaves: [ColumnConfig] {
         box.read { $0.columnSaves }
@@ -45,18 +33,6 @@ public final class FakeQueuePersisting: QueuePersisting, @unchecked Sendable {
 
     public var lastHistorySave: [PersistedJob]? {
         box.read { $0.historySaves.last }
-    }
-
-    public func stubQueue(_ jobs: [PersistedJob]) {
-        box.mutate { $0.cannedQueue = jobs }
-    }
-
-    public func stubHistory(_ jobs: [PersistedJob]) {
-        box.mutate { $0.cannedHistory = jobs }
-    }
-
-    public func stubColumns(_ config: ColumnConfig?) {
-        box.mutate { $0.cannedColumns = config }
     }
 
     public func stubPlaylistGroups(_ groups: [PersistedPlaylistGroup]) {
@@ -83,24 +59,14 @@ public final class FakeQueuePersisting: QueuePersisting, @unchecked Sendable {
         box.mutate { $0.flushes += 1 }
     }
 
-    public var writesDisabled: Bool {
-        box.read { $0.writesDisabled }
-    }
-
-    public func disableWrites() {
-        box.mutate { $0.writesDisabled = true }
-    }
+    public func disableWrites() {}
 
     public func loadQueue() -> [PersistedJob] {
-        box.read { $0.cannedQueue }
+        []
     }
 
     public func loadHistory() -> [PersistedJob] {
-        box.read { $0.cannedHistory }
-    }
-
-    public func loadColumns() -> ColumnConfig? {
-        box.read { $0.cannedColumns }
+        []
     }
 
     public func loadPlaylistGroups() -> [PersistedPlaylistGroup] {

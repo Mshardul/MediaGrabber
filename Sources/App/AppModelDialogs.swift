@@ -113,6 +113,46 @@ enum AppModelDialogs {
         )
     }
 
+    static func moveToApplicationsConfirmation() -> ConfirmationRequest {
+        ConfirmationRequest(
+            title: InstallLocation.moveTitle,
+            message: InstallLocation.moveMessage,
+            confirmTitle: "Move",
+            cancelTitle: "Not now"
+        )
+    }
+
+    static func okNotice(title: String, message: String) -> ConfirmationRequest {
+        ConfirmationRequest(
+            title: title,
+            message: message,
+            confirmTitle: "OK",
+            cancelTitle: nil
+        )
+    }
+
+    static func uninstallConfirmation(activeTitles: [String]) -> ConfirmationRequest {
+        ConfirmationRequest(
+            title: UninstallCopy.confirmTitle,
+            message: UninstallCopy.message(activeTitles: activeTitles),
+            confirmTitle: UninstallCopy.confirmButton,
+            cancelTitle: "Cancel",
+            isDestructive: true
+        )
+    }
+
+    static func resetSettingsConfirmation() -> ConfirmationRequest {
+        ConfirmationRequest(
+            title: "Reset settings?",
+            message: "All preferences go back to their defaults. "
+                + "Your downloads and table columns aren't affected.",
+            confirmTitle: "Reset",
+            cancelTitle: "Cancel",
+            isDestructive: true,
+            suppressionKey: nil
+        )
+    }
+
     private static func signInMessage(for error: MetadataError, advice: SignInAdvice) -> String {
         if error == .ageRestricted {
             return SignInCopy.sentence(for: .ageRestricted, advice: advice)

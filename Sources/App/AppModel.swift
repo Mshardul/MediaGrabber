@@ -59,13 +59,8 @@ final class AppModel {
     let shieldSetup: ShieldSetupController
     let notificationRouter: any NotificationRouting
     var isAppActive: @Sendable () -> Bool = { NSApp?.isActive ?? true }
-    let installer: OnboardingInstaller
     let prefs: Preferences
     let quitCoordinator: QuitCoordinator
-
-    var rows: [RowModel] {
-        rowStore.rows
-    }
 
     let healthController = HealthController()
     private(set) var hostRateSummary: [RateHost: HostRateDisplayState] = [:]
@@ -93,8 +88,9 @@ final class AppModel {
     let revealSink: RevealSink
     let openURLSink: OpenURLSink
     let appUpdating: any AppUpdating
-    let appVersion: String
     let bundleURL: URL
+    let makeCanaryProbe: @MainActor (URL) -> any MetadataProbing
+    let sharePresenter: any SharePresenting
     let locations: AppLocations
     private let suppression: SuppressionStore
     private var confirmationContinuation: CheckedContinuation<Bool, Never>?
@@ -102,7 +98,6 @@ final class AppModel {
 
     init(
         engine: DownloadEngineProtocol,
-        installer: OnboardingInstaller,
         prefs: Preferences,
         log: LogWriter,
         locations: AppLocations,
@@ -117,15 +112,19 @@ final class AppModel {
         openURLSink: OpenURLSink = WorkspaceOpenURLSink(),
         appUpdating: any AppUpdating = IdleAppUpdating(),
         shieldInstaller: ShieldInstaller? = nil,
-        appVersion: String = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0",
         bundleURL: URL = Bundle.main.bundleURL,
         persistence: (any QueuePersisting)? = nil,
         columnConfig: ColumnConfig = .default,
-        vpnDetector: any VPNDetecting = InterfaceVPNDetector()
+        vpnDetector: any VPNDetecting = InterfaceVPNDetector(),
+        makeCanaryProbe: @escaping @MainActor (URL) -> any MetadataProbing = {
+            CanaryProbe.makeProbe(ytDlpURL: $0, runner: ProcessRunner())
+        },
+        sharePresenter: any SharePresenting = SharePresenter()
     ) {
         self.engine = engine
         self.vpnDetector = vpnDetector
-        self.installer = installer
+        self.makeCanaryProbe = makeCanaryProbe
+        self.sharePresenter = sharePresenter
         self.prefs = prefs
         self.log = log
         self.envProbe = envProbe ?? EnvironmentProbe(tools: .live(locations: locations))
@@ -141,10 +140,8 @@ final class AppModel {
         self.appUpdating = appUpdating
         shieldSetup = ShieldSetupController(
             installer: shieldInstaller ?? ShieldInstaller(tools: .live(locations: locations)),
-            restart: { await engine.restartShield() },
-            openURL: openURLSink
+            restart: { await engine.restartShield() }
         )
-        self.appVersion = appVersion
         self.bundleURL = bundleURL
         self.locations = locations
         self.suppression = suppression

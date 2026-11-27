@@ -1,16 +1,16 @@
 import Foundation
 
 // A struct so scheduling inputs can grow without touching either function signature.
-public struct SchedulerInput: Sendable {
-    public var queued: [JobSnapshot]
-    public var running: [JobSnapshot]
-    public var cap: Int
-    public var deferredIDs: Set<UUID>
-    public var blockedHostIDs: Set<UUID>
-    public var blockedProbeHostIDs: Set<UUID>
-    public var probeIdle: Bool
+struct SchedulerInput: Sendable {
+    var queued: [JobSnapshot]
+    var running: [JobSnapshot]
+    var cap: Int
+    var deferredIDs: Set<UUID>
+    var blockedHostIDs: Set<UUID>
+    var blockedProbeHostIDs: Set<UUID>
+    var probeIdle: Bool
 
-    public init(
+    init(
         queued: [JobSnapshot],
         running: [JobSnapshot],
         cap: Int,
@@ -29,8 +29,8 @@ public struct SchedulerInput: Sendable {
     }
 }
 
-public enum Scheduler {
-    public static func nextDownloads(_ input: SchedulerInput) -> [UUID] {
+enum Scheduler {
+    static func nextDownloads(_ input: SchedulerInput) -> [UUID] {
         let slots = max(0, input.cap - input.running.count)
         guard slots > 0 else { return [] }
         return input.queued
@@ -39,7 +39,7 @@ public enum Scheduler {
             .map(\.id)
     }
 
-    public static func nextProbe(_ input: SchedulerInput) -> UUID? {
+    static func nextProbe(_ input: SchedulerInput) -> UUID? {
         guard input.probeIdle else { return nil }
         return input.queued.first { needsMetadata($0) && !input.blockedProbeHostIDs.contains($0.id) }?.id
     }

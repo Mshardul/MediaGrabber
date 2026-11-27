@@ -4,7 +4,7 @@ import XCTest
 
 final class NetworkPathMonitorTests: XCTestCase {
     func testFakeEmitsTransitions() async {
-        let fake = FakeNetworkMonitor(startOnline: true)
+        let fake = FakeNetworkMonitor()
         let received = LockedBox<[Bool]>([])
         let task = Task {
             for await value in fake.stream {

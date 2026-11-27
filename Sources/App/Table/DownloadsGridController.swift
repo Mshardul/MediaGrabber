@@ -10,7 +10,7 @@ struct DownloadsGridSyncState {
     var selectionAnchorID: UUID?
     var visibleChildOrder: [UUID]
     var scrollToRowID: UUID?
-    var tokens: DownloadsGridTokens
+    var theme: Theme
     var filterValueProvider: ((ColumnID) -> [String])?
 }
 
@@ -28,6 +28,7 @@ final class DownloadsGridController: NSObject, NSTableViewDataSource, NSTableVie
     var applyingSelection = false
     var applyingColumnWidths = false
     var applyingColumnOrder = false
+    var theme = Theme(themeKind: .aurora, paletteKind: .auroraMintIris)
     var tokens = DownloadsGridTokens.aurora
     var filterValueProvider: ((ColumnID) -> [String])?
 
@@ -76,7 +77,8 @@ final class DownloadsGridController: NSObject, NSTableViewDataSource, NSTableVie
         selectedJobIDs = state.selectedJobIDs
         selectionAnchorID = state.selectionAnchorID
         visibleChildOrder = state.visibleChildOrder
-        tokens = state.tokens
+        theme = state.theme
+        tokens = DownloadsGridTokens.make(theme: theme)
         filterValueProvider = state.filterValueProvider
 
         if columnsChanged || tableView.tableColumns.isEmpty {

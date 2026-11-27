@@ -110,11 +110,6 @@ extension AppModelTests {
 
         let model = AppModel(
             engine: engine,
-            installer: OnboardingInstaller(
-                locations: TestLocations.make(),
-                probe: FakeEnvironmentProbe(ready: true),
-                runner: NullRunner()
-            ),
             prefs: prefs,
             log: LogWriter(directory: logDirectory),
             locations: TestLocations.make(),
@@ -230,7 +225,6 @@ extension AppModelTests {
             jobs: [AppModelTestHelpers.jobSnapshot(id: jobID, outputFiles: [missingFile])],
             revision: 1,
             queueHalt: nil,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         )))
@@ -257,7 +251,6 @@ extension AppModelTests {
             jobs: [AppModelTestHelpers.jobSnapshot()],
             revision: 1,
             queueHalt: nil,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         ))
@@ -282,7 +275,6 @@ extension AppModelTests {
             jobs: [job],
             revision: 1,
             queueHalt: nil,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         ))
@@ -310,7 +302,6 @@ extension AppModelTests {
                 jobs: [AppModelTestHelpers.jobSnapshot()],
                 revision: 1,
                 queueHalt: nil,
-                generatedAt: .init(),
                 hostRateSummary: [:],
                 isOnline: true
             )
@@ -378,7 +369,6 @@ extension AppModelTests {
             jobs: [AppModelTestHelpers.jobSnapshot()],
             revision: 1,
             queueHalt: nil,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         ))

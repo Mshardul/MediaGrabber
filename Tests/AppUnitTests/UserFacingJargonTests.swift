@@ -47,7 +47,6 @@ final class UserFacingJargonTests: XCTestCase {
                 jobs: [],
                 revision: 1,
                 queueHalt: nil,
-                generatedAt: .now,
                 hostRateSummary: [:],
                 isOnline: true,
                 shieldStatus: status

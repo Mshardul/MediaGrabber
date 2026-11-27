@@ -42,7 +42,6 @@ struct MediaGrabberApp: App {
             .default : (persistence.loadColumns() ?? .default)
         let model = AppModel(
             engine: engine,
-            installer: installer,
             prefs: prefs,
             log: log,
             locations: locations,

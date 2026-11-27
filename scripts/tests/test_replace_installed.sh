@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Tests for replace-installed.sh — run: scripts/tests/test_replace_installed.sh
 
-# shellcheck disable=SC2153
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,8 +9,7 @@ SANDBOX_LIB="$SCRIPT_DIR/lib/sandbox.sh"
 
 work="$(mktemp -d)"
 
-# shellcheck source=lib/sandbox.sh
-# shellcheck disable=SC1091,SC2153
+# shellcheck source=scripts/tests/lib/sandbox.sh
 source "$SANDBOX_LIB"
 trap 'sandbox_cleanup; /bin/rm -rf "$work"' EXIT
 
@@ -35,10 +33,14 @@ calls_log="$work/calls.log"
 
 sandbox_fake "osascript" $'#!/usr/bin/env bash\necho "osascript called" >>"'"$calls_log"'"\necho "12345, 67890"\nexit 0'
 sandbox_fake "killall" $'#!/usr/bin/env bash\necho "killall called" >>"'"$calls_log"'"\nexit 0'
-# shellcheck disable=SC2016
 sandbox_fake "pgrep" $'#!/usr/bin/env bash\necho "pgrep called" >>"'"$calls_log"'"\nexit 1'
-# shellcheck disable=SC2016
-sandbox_fake "ditto" $'#!/usr/bin/env bash\necho "ditto called with $*" >>"'"$calls_log"'"\nmkdir -p "$2"\nexit 0'
+cat >"$SANDBOX_BIN/ditto" <<EOF
+#!/usr/bin/env bash
+echo "ditto called with \$*" >>"$calls_log"
+mkdir -p "\$2"
+exit 0
+EOF
+chmod +x "$SANDBOX_BIN/ditto"
 sandbox_fake "lsregister" $'#!/usr/bin/env bash\necho "lsregister called with $*" >>"'"$calls_log"'"\nexit 0'
 sandbox_fake "open" $'#!/usr/bin/env bash\necho "open called with $*" >>"'"$calls_log"'"\nexit 0'
 sandbox_fake "make" $'#!/usr/bin/env bash\necho "make called with $*" >>"'"$calls_log"'"\nexit 0'

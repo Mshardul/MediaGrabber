@@ -2,12 +2,11 @@ import Foundation
 import Network
 
 public protocol NetworkPathMonitoring: Sendable {
-    var isOnline: Bool { get async }
     var stream: AsyncStream<Bool> { get }
 }
 
-public final class NWPathNetworkMonitor: NetworkPathMonitoring, @unchecked Sendable {
-    public typealias Sleeper = @Sendable (TimeInterval) async -> Void
+final class NWPathNetworkMonitor: NetworkPathMonitoring, @unchecked Sendable {
+    typealias Sleeper = @Sendable (TimeInterval) async -> Void
 
     private let offlineGrace: TimeInterval
     private let onlineSettle: TimeInterval
@@ -17,9 +16,9 @@ public final class NWPathNetworkMonitor: NetworkPathMonitoring, @unchecked Senda
     private var lastPublished = true // touched only on `queue`
     private var pendingTask: Task<Void, Never>?
     private let continuation: AsyncStream<Bool>.Continuation
-    public let stream: AsyncStream<Bool>
+    let stream: AsyncStream<Bool>
 
-    public init(
+    init(
         offlineGrace: TimeInterval,
         onlineSettle: TimeInterval,
         sleep: @escaping Sleeper = { try? await Task.sleep(for: .seconds($0)) }
@@ -32,10 +31,6 @@ public final class NWPathNetworkMonitor: NetworkPathMonitoring, @unchecked Senda
             self?.handleRaw(satisfied: path.status == .satisfied)
         }
         monitor.start(queue: queue)
-    }
-
-    public var isOnline: Bool {
-        get async { queue.sync { lastPublished } }
     }
 
     func pushRawPathForTesting(satisfied: Bool) {

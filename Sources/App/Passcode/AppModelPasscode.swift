@@ -24,14 +24,13 @@ extension AppModel {
         let snapshot = rowStore.rows.first { $0.id == id }?.snapshot
         passcodeNeeded = PasscodePrompt(
             target: .job(id),
-            url: snapshot?.url ?? "",
             wasRejected: snapshot?.state == .failed(.passcodeRejected)
         )
         isPasscodeSheetShown = true
     }
 
     func presentPasscodePrompt(forLink url: String, wasRejected: Bool) {
-        passcodeNeeded = PasscodePrompt(target: .link(url), url: url, wasRejected: wasRejected)
+        passcodeNeeded = PasscodePrompt(target: .link(url), wasRejected: wasRejected)
         isPasscodeSheetShown = true
     }
 

@@ -4,7 +4,7 @@ import GrabberKit
 extension AppModel {
     func makeSignInTestProbe() -> (any MetadataProbing)? {
         guard let path = latestEnvironmentReport?.ytDlp?.path else { return nil }
-        return CanaryProbe.makeProbe(ytDlpURL: path, runner: ProcessRunner())
+        return makeCanaryProbe(path)
     }
 
     func restartShield() async {

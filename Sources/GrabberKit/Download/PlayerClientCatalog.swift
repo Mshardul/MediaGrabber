@@ -12,14 +12,14 @@ public struct BundledPlayerClientOrder: PlayerClientOrdering {
     }
 }
 
-public struct LivePlayerClientOrder: PlayerClientOrdering {
+struct LivePlayerClientOrder: PlayerClientOrdering {
     private let store: PlayerClientCatalogStore
 
-    public init(directory: URL, now: @escaping @Sendable () -> Date = { Date() }, log: LogWriter? = nil) {
+    init(directory: URL, now: @escaping @Sendable () -> Date = { Date() }, log: LogWriter? = nil) {
         store = PlayerClientCatalogStore(directory: directory, now: now, log: log)
     }
 
-    public func order() async -> [String] {
+    func order() async -> [String] {
         await store.order {
             let (data, _) = try await URLSession.shared.data(for: PlayerClientCatalog.request())
             return data
@@ -27,18 +27,18 @@ public struct LivePlayerClientOrder: PlayerClientOrdering {
     }
 }
 
-public enum PlayerClientCatalog {
-    public static let remoteURL = URL(
+enum PlayerClientCatalog {
+    static let remoteURL = URL(
         string: "https://raw.githubusercontent.com/Mshardul/MediaGrabber/main/config/player-clients.json"
     )!
 
-    public static func request() -> URLRequest {
+    static func request() -> URLRequest {
         var request = URLRequest(url: remoteURL)
         request.timeoutInterval = 5
         return request
     }
 
-    public static func clients(from data: Data) -> [String]? {
+    static func clients(from data: Data) -> [String]? {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let clients = object["playerClients"] as? [String],
               !clients.isEmpty,
@@ -54,14 +54,14 @@ public enum PlayerClientCatalog {
     }
 }
 
-public struct PlayerClientCatalogStore: Sendable {
+struct PlayerClientCatalogStore: Sendable {
     private let directory: URL
     private let now: @Sendable () -> Date
     private let maxAge: TimeInterval
     private let failureBackoff: TimeInterval
     private let log: LogWriter?
 
-    public init(
+    init(
         directory: URL,
         now: @escaping @Sendable () -> Date,
         maxAge: TimeInterval = 86400,
@@ -75,7 +75,7 @@ public struct PlayerClientCatalogStore: Sendable {
         self.log = log
     }
 
-    public func order(fetch: @Sendable () async throws -> Data) async -> [String] {
+    func order(fetch: @Sendable () async throws -> Data) async -> [String] {
         let saved = read()
         if let saved, !saved.clients.isEmpty, now().timeIntervalSince(saved.fetchedAt) < maxAge {
             return saved.clients

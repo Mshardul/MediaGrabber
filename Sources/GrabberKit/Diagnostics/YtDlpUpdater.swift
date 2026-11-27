@@ -10,11 +10,11 @@ public protocol YtDlpUpdating: Sendable {
     func updateToLatest() async -> YtDlpUpdateResult
 }
 
-public enum YtDlpUpdateCopy {
-    public static let offline = "Couldn't download the update. Check your connection and try again."
-    public static let damaged = "The update didn't download properly, so nothing was changed. Try again later."
+enum YtDlpUpdateCopy {
+    static let offline = "Couldn't download the update. Check your connection and try again."
+    static let damaged = "The update didn't download properly, so nothing was changed. Try again later."
 
-    public static func saveFailed(_ error: Error) -> String {
+    static func saveFailed(_ error: Error) -> String {
         switch SaveFailureNotice.cause(of: error as NSError) {
         case .diskFull:
             "The update couldn't be saved because the disk is full. Free some space, then try again."
@@ -175,14 +175,14 @@ public struct YtDlpUpdater: YtDlpUpdating {
     }
 }
 
-public struct GitHubYtDlpReleaseFetcher: YtDlpReleaseFetching {
+struct GitHubYtDlpReleaseFetcher: YtDlpReleaseFetching {
     private let session: URLSession
 
-    public init(session: URLSession = .shared) {
+    init(session: URLSession = .shared) {
         self.session = session
     }
 
-    public func latestVersion() async -> Result<String, YtDlpFetchError> {
+    func latestVersion() async -> Result<String, YtDlpFetchError> {
         do {
             return try await .success(Self.version(fromTag: releaseTag()))
         } catch {
@@ -194,7 +194,7 @@ public struct GitHubYtDlpReleaseFetcher: YtDlpReleaseFetching {
         tag.hasPrefix("v") ? String(tag.dropFirst()) : tag
     }
 
-    public func latest() async -> Result<YtDlpBinary, YtDlpFetchError> {
+    func latest() async -> Result<YtDlpBinary, YtDlpFetchError> {
         do {
             let tag = try await releaseTag()
             let binaryURL = URL(string: "https://github.com/yt-dlp/yt-dlp/releases/download/\(tag)/yt-dlp_macos")!

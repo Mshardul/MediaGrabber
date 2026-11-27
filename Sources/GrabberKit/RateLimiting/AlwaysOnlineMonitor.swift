@@ -1,13 +1,9 @@
 import Foundation
 
-public struct AlwaysOnlineMonitor: NetworkPathMonitoring {
-    public init() {}
+struct AlwaysOnlineMonitor: NetworkPathMonitoring {
+    init() {}
 
-    public var isOnline: Bool {
-        get async { true }
-    }
-
-    public var stream: AsyncStream<Bool> {
+    var stream: AsyncStream<Bool> {
         AsyncStream { $0.finish() } // never yields
     }
 }

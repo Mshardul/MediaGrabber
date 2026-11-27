@@ -1,23 +1,18 @@
 import Foundation
 
-public struct IntegrityResult: Sendable, Equatable {
-    public let verdict: IntegrityVerdict
+struct IntegrityResult: Sendable, Equatable {
+    let verdict: IntegrityVerdict
     // "720p" for video, nil for audio or an unreadable stream.
-    public let actualQuality: String?
-
-    public init(verdict: IntegrityVerdict, actualQuality: String?) {
-        self.verdict = verdict
-        self.actualQuality = actualQuality
-    }
+    let actualQuality: String?
 }
 
 // An ffprobe of the finalized file: a materially short duration fails the job; a broken or missing probe is .skipped.
-public struct IntegrityCheck: Sendable {
+struct IntegrityCheck: Sendable {
     private let runner: ProcessRunning
     private let ffprobeURL: URL?
     private let isExecutable: @Sendable (URL) -> Bool
 
-    public init(
+    init(
         runner: ProcessRunning,
         ffprobeURL: URL?,
         isExecutable: @escaping @Sendable (URL) -> Bool = { url in
@@ -29,7 +24,7 @@ public struct IntegrityCheck: Sendable {
         self.isExecutable = isExecutable
     }
 
-    public func verify(file: URL, expectedDurationSeconds: Int?) async -> IntegrityResult {
+    func verify(file: URL, expectedDurationSeconds: Int?) async -> IntegrityResult {
         guard let ffprobeURL, isExecutable(ffprobeURL) else {
             return IntegrityResult(
                 verdict: .skipped(reason: "ffprobe unavailable"),

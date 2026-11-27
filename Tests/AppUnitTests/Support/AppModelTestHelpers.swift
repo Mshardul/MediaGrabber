@@ -17,7 +17,6 @@ enum AppModelTestHelpers {
         notificationRouter: (any NotificationRouting)? = nil,
         ytDlpUpdater: YtDlpUpdating? = nil,
         appUpdating: (any AppUpdating)? = nil,
-        appVersion: String = "0.0.0",
         onboardingCompleted: Bool = true,
         bundleURL: URL = Bundle.main.bundleURL,
         locations: AppLocations = TestLocations.make()
@@ -28,11 +27,6 @@ enum AppModelTestHelpers {
         }
         return AppModel(
             engine: engine,
-            installer: OnboardingInstaller(
-                locations: TestLocations.make(),
-                probe: FakeEnvironmentProbe(ready: envReady),
-                runner: NullRunner()
-            ),
             prefs: Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads),
             log: LogWriter(directory: logDirectory),
             locations: locations,
@@ -45,7 +39,6 @@ enum AppModelTestHelpers {
             revealSink: revealSink,
             openURLSink: openURLSink,
             appUpdating: appUpdating ?? IdleAppUpdating(),
-            appVersion: appVersion,
             bundleURL: bundleURL,
             persistence: persistence
         )
@@ -101,13 +94,5 @@ final class FakeNotificationRouter: NotificationRouting {
 
     func notifyJobFailed(title: String, reason: String) async {
         notifiedFailures.append((title, reason))
-    }
-}
-
-struct NullRunner: ProcessRunning {
-    func run(_: ProcessLaunch) -> ProcessExecution {
-        let (stream, continuation) = AsyncStream<ProcessLine>.makeStream()
-        continuation.finish()
-        return ProcessExecution(lines: stream) { ProcessResult(exitCode: 0, wasCancelled: false) }
     }
 }

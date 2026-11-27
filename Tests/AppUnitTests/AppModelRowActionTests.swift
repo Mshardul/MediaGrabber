@@ -47,7 +47,6 @@ final class AppModelRowActionTests: XCTestCase {
             jobs: [job],
             revision: 1,
             queueHalt: nil,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         )))

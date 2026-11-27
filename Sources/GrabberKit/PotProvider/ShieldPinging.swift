@@ -4,24 +4,20 @@ public protocol ShieldPinging: Sendable {
     func ping(_ url: URL, timeout: TimeInterval, maxUptime: TimeInterval) async -> Bool
 }
 
-public protocol LoopbackPortChecking: Sendable {
+protocol LoopbackPortChecking: Sendable {
     func isFree(_ port: Int) -> Bool
 }
 
-public struct AlwaysFreePortChecker: LoopbackPortChecking {
-    public init() {}
-
-    public func isFree(_: Int) -> Bool {
+struct AlwaysFreePortChecker: LoopbackPortChecking {
+    func isFree(_: Int) -> Bool {
         true
     }
 }
 
 // A port is free only when nothing is listening on it, so the app can bind it for its own child.
-public struct LoopbackPortChecker: LoopbackPortChecking {
-    public init() {}
-
+struct LoopbackPortChecker: LoopbackPortChecking {
     // Both are tried: BSD lets a loopback bind succeed beside an all-interfaces listener, and the reverse.
-    public func isFree(_ port: Int) -> Bool {
+    func isFree(_ port: Int) -> Bool {
         canBind("127.0.0.1", port: port) && canBind("0.0.0.0", port: port)
     }
 
@@ -46,10 +42,8 @@ public struct LoopbackPortChecker: LoopbackPortChecking {
     }
 }
 
-public struct URLSessionShieldPinger: ShieldPinging {
-    public init() {}
-
-    public func ping(_ url: URL, timeout: TimeInterval, maxUptime: TimeInterval) async -> Bool {
+struct URLSessionShieldPinger: ShieldPinging {
+    func ping(_ url: URL, timeout: TimeInterval, maxUptime: TimeInterval) async -> Bool {
         var request = URLRequest(url: url, timeoutInterval: timeout)
         request.httpMethod = "GET"
         guard let (data, response) = try? await URLSession.shared.data(for: request) else {
@@ -62,7 +56,7 @@ public struct URLSessionShieldPinger: ShieldPinging {
     }
 
     // A server that has been up longer than our child has lived belongs to someone else.
-    public static func isOwnChildReply(statusCode: Int, body: Data, maxUptime: TimeInterval) -> Bool {
+    static func isOwnChildReply(statusCode: Int, body: Data, maxUptime: TimeInterval) -> Bool {
         guard (200 ..< 300).contains(statusCode),
               let object = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
               object["version"] is String,

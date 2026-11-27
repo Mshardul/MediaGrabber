@@ -105,6 +105,13 @@ extension XCTestCase {
         XCTAssertTrue(reached, "job never reached expected state", file: file, line: line)
     }
 
+    // Returns after a time limit either way, so the caller asserts on the count.
+    func waitForLaunches(_ runner: FakeProcessRunner, _ count: Int) async {
+        for _ in 0 ..< 200 where runner.launches.count < count {
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
+    }
+
     func isOrderedSubsequence(_ needle: [JobState], of haystack: [JobState]) -> Bool {
         var index = haystack.startIndex
         for target in needle {

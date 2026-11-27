@@ -2,25 +2,16 @@ import Foundation
 @testable import GrabberKit
 
 public final class FakeEnvironmentProbe: EnvironmentProbing, @unchecked Sendable {
-    private let reports: LockedBox<[EnvironmentReport]>
+    private let reports: [EnvironmentReport]
     private let callCount = LockedBox(0)
 
     public init(_ reports: EnvironmentReport...) {
         precondition(!reports.isEmpty)
-        self.reports = LockedBox(reports)
+        self.reports = reports
     }
 
     public convenience init(ready: Bool) {
         self.init(.with(ytDlp: ready, ffmpeg: ready))
-    }
-
-    public var probeCount: Int {
-        callCount.read { $0 }
-    }
-
-    public func setReports(_ next: EnvironmentReport...) {
-        reports.mutate { $0 = next }
-        callCount.mutate { $0 = 0 }
     }
 
     public func probe() async -> EnvironmentReport {
@@ -29,9 +20,7 @@ public final class FakeEnvironmentProbe: EnvironmentProbing, @unchecked Sendable
             count += 1
             return current
         }
-        return reports.read { list in
-            list[min(index, list.count - 1)]
-        }
+        return reports[min(index, reports.count - 1)]
     }
 }
 

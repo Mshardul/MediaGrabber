@@ -21,7 +21,6 @@ public actor DownloadEngine: DownloadEngineProtocol {
     var passcodes: [String: String] = [:]
     var playlistGroupRegistry: [UUID: PersistedPlaylistGroup] = [:]
 
-    let eventStream: AsyncStream<QueueEvent>
     let eventContinuation: AsyncStream<QueueEvent>.Continuation
 
     public nonisolated let events: AsyncStream<QueueEvent>
@@ -30,7 +29,6 @@ public actor DownloadEngine: DownloadEngineProtocol {
         self.dependencies = dependencies
         self.preferences = preferences
         let (stream, continuation) = AsyncStream<QueueEvent>.makeStream()
-        eventStream = stream
         eventContinuation = continuation
         events = stream
         let seedCap = dependencies.debugFlags.concurrencyCapOverride ?? preferences.maxConcurrentDownloads

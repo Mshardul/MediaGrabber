@@ -1,7 +1,7 @@
 import Foundation
 
-public enum SaveFailureNotice {
-    public static func sentence(file: String, error: Error) -> String {
+enum SaveFailureNotice {
+    static func sentence(file: String, error: Error) -> String {
         let subject = subject(for: file)
         switch cause(of: error as NSError) {
         case .diskFull:

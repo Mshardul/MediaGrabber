@@ -31,7 +31,6 @@ extension DownloadEngine {
             jobs: jobSnapshots,
             revision: revision,
             queueHalt: effectiveQueueHalt(),
-            generatedAt: .now,
             hostRateSummary: rateLimiter.displaySummary(now: dependencies.clock.now),
             isOnline: isOnline,
             shieldStatus: shieldStatus,
@@ -199,11 +198,6 @@ extension DownloadEngine {
     }
 
     // MARK: - Job-list helpers
-
-    func queuedJob(_ id: UUID) -> DownloadJob? {
-        guard let job = jobs.first(where: { $0.id == id }) else { return nil }
-        return job.state == .queued ? job : nil
-    }
 
     func runningJobs() -> [DownloadJob] {
         jobs.filter { $0.state == .running }

@@ -19,8 +19,6 @@ public struct LicenseEntry: Sendable, Equatable {
 
 /// Every name in `scripts/tools.lock` maps through `componentID(forLockName:)`, or a unit test fails.
 public enum LicenseCatalog {
-    public static let appLicense = "MIT"
-
     public static let appLicenseLine = "MediaGrabber is MIT-licensed. Each bundled tool keeps "
         + "its own license; FFmpeg build steps are in the public repository."
 

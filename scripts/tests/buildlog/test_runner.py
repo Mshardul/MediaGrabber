@@ -202,6 +202,40 @@ class StopTests(RunnerTestCase):
                 self.assertEqual(gone_at_cleanup, [True])
                 self.assertIn("stage 'hung' printed nothing for 1.5 seconds", self.out.getvalue())
 
+    def test_a_child_that_exits_while_its_group_is_checked_is_collected(self):
+        process = subprocess.Popen(
+            python("import sys; sys.stdin.read()"), stdin=subprocess.PIPE, start_new_session=True
+        )
+        self.addCleanup(process.wait)
+        self.addCleanup(process.stdin.close)
+        group_alive = runner._group_alive
+
+        def exit_then_check(group):
+            process.stdin.close()
+            # WNOWAIT sees the exit and leaves the child for the runner to collect.
+            os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOWAIT)
+            return group_alive(group)
+
+        with mock.patch.object(runner, "_group_alive", exit_then_check):
+            self.assertTrue(runner._group_ends(process))
+        self.assertEqual(process.returncode, 0)
+
+    def test_a_group_reported_gone_before_the_child_can_be_collected_is_waited_for(self):
+        process = subprocess.Popen(
+            python("import sys; sys.stdin.read()"), stdin=subprocess.PIPE, start_new_session=True
+        )
+        self.addCleanup(process.wait)
+        self.addCleanup(process.stdin.close)
+
+        # macOS can answer "gone" while the child is still on its way out.
+        def gone_while_exiting(group):
+            process.stdin.close()
+            return False
+
+        with mock.patch.object(runner, "_group_alive", gone_while_exiting):
+            self.assertTrue(runner._group_ends(process))
+        self.assertEqual(process.returncode, 0)
+
     def start_cli(self, record_argv, cleanup_code, *cleanup_args):
         environment = {**os.environ, "MG_STAGE_IDLE_TIMEOUT": "60", "PYTHONDONTWRITEBYTECODE": "1"}
         process = subprocess.Popen(

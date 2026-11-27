@@ -6,7 +6,6 @@ import SwiftUI
 @MainActor
 final class ColumnFilterPopoverController {
     private var popover: NSPopover?
-    private weak var anchorView: NSView?
     private var onDismiss: (() -> Void)?
     private var delegate: PopoverDelegate?
 
@@ -14,6 +13,7 @@ final class ColumnFilterPopoverController {
         let column: ColumnID
         let values: [String]
         let selectedValues: Set<String>
+        let theme: Theme
     }
 
     func present(
@@ -25,9 +25,9 @@ final class ColumnFilterPopoverController {
     ) {
         dismiss()
 
-        self.anchorView = anchorView
         self.onDismiss = onDismiss
 
+        // A separately hosted view does not inherit the theme from the window.
         let hostingView = NSHostingView(
             rootView: ColumnFilterPopover(
                 column: choices.column,
@@ -35,17 +35,17 @@ final class ColumnFilterPopoverController {
                 selectedValues: choices.selectedValues,
                 onToggle: { value in
                     onToggle(value)
-                },
-                onDismiss: { [weak self] in
-                    self?.dismiss()
                 }
             )
+            .theme(choices.theme)
         )
         hostingView.translatesAutoresizingMaskIntoConstraints = false
 
         let popover = NSPopover()
         popover.contentViewController = NSViewController()
         popover.contentViewController?.view = hostingView
+        // Without a size up front, the popover is placed before the list is measured and ends up detached.
+        popover.contentSize = hostingView.fittingSize
         popover.behavior = .transient
         popover.animates = true
         let delegate = PopoverDelegate(onDismiss: { [weak self] in
@@ -55,7 +55,8 @@ final class ColumnFilterPopoverController {
         popover.delegate = delegate
 
         self.popover = popover
-        popover.show(relativeTo: anchorRect, of: anchorView, preferredEdge: .minY)
+        // The header view is flipped, so its lower edge is maxY.
+        popover.show(relativeTo: anchorRect, of: anchorView, preferredEdge: .maxY)
     }
 
     func dismiss() {
@@ -63,7 +64,6 @@ final class ColumnFilterPopoverController {
         popover = nil
         onDismiss?()
         onDismiss = nil
-        anchorView = nil
     }
 
     private class PopoverDelegate: NSObject, NSPopoverDelegate {

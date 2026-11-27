@@ -9,7 +9,6 @@ final class EnginePlaylistSubmitTests: XCTestCase {
         PlaylistDump(
             title: "Playlist",
             uploader: "Uploader",
-            extractor: "youtube:tab",
             sourceURL: "https://youtube.com/playlist?list=abc",
             entries: [
                 PlaylistEntry(
@@ -73,7 +72,7 @@ final class EnginePlaylistSubmitTests: XCTestCase {
     }
 
     func test_previewPlaylistNetworkDownReturnsNetworkError() async {
-        let net = FakeNetworkMonitor(startOnline: true)
+        let net = FakeNetworkMonitor()
         let engine = Fix.engine(
             runner: FakeProcessRunner(),
             probe: playlistProbe(.success(playlistDump())),

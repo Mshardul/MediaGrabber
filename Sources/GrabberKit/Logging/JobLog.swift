@@ -1,29 +1,27 @@
 import Foundation
 
 // One redacted stdout/stderr transcript per job at <dir>/<id>.log, owned by a single launcher task.
-public final class JobLog: @unchecked Sendable {
-    private let id: UUID
+final class JobLog: @unchecked Sendable {
     private let request: DownloadRequest
     private let ytDlpVersion: String
     private let playerClient: String?
     private let fileURL: URL
     private var handle: FileHandle?
 
-    public init(
+    init(
         id: UUID,
         request: DownloadRequest,
         ytDlpVersion: String,
         playerClient: String? = nil,
         dir: URL
     ) {
-        self.id = id
         self.request = request
         self.ytDlpVersion = ytDlpVersion
         self.playerClient = playerClient
         fileURL = dir.appendingPathComponent("\(id.uuidString).log")
     }
 
-    public func writeHeader() throws {
+    func writeHeader() throws {
         try FileManager.default.createDirectory(
             at: fileURL.deletingLastPathComponent(),
             withIntermediateDirectories: true
@@ -42,7 +40,7 @@ public final class JobLog: @unchecked Sendable {
         self.handle = handle
     }
 
-    public func append(_ line: ProcessLine) {
+    func append(_ line: ProcessLine) {
         let text: String = switch line {
         case let .stdout(value): LogRedaction.redact(value)
         case let .stderr(value): "[stderr] " + LogRedaction.redact(value)
@@ -51,19 +49,19 @@ public final class JobLog: @unchecked Sendable {
         try? handle?.write(contentsOf: data)
     }
 
-    public func close() {
+    func close() {
         try? handle?.close()
         handle = nil
     }
 
     // MARK: - Statics
 
-    public static func delete(id: UUID, dir: URL) {
+    static func delete(id: UUID, dir: URL) {
         try? FileManager.default.removeItem(at: dir.appendingPathComponent("\(id.uuidString).log"))
     }
 
     // Keeps the newest `limit` by the job's finishedAt, not file mtime — a restored job's file is old, the job fresh.
-    public static func evict(
+    static func evict(
         keepingNewestByFinishedAt jobs: [(id: UUID, finishedAt: Date?)],
         limit: Int = 200,
         dir: URL

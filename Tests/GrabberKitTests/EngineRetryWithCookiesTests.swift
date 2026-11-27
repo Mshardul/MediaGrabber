@@ -16,7 +16,6 @@ final class EngineRetryWithCookiesTests: XCTestCase {
         let engine: DownloadEngine
         let id: UUID
         let runner: FakeProcessRunner
-        let collector: EventCollector
     }
 
     private func failedEngine(
@@ -38,7 +37,7 @@ final class EngineRetryWithCookiesTests: XCTestCase {
             }
             return false
         }
-        return FailedJob(engine: engine, id: id, runner: runner, collector: collector)
+        return FailedJob(engine: engine, id: id, runner: runner)
     }
 
     func test_ageRestricted_job_restartsFromScratch_attemptZero() async {
@@ -46,9 +45,7 @@ final class EngineRetryWithCookiesTests: XCTestCase {
             script: FakeProcessRunner.Script(lines: [.stderr("ERROR: Sign in to confirm your age")], exitCode: 1)
         )
         await fixture.engine.retryWithCookies(fixture.id)
-        for _ in 0 ..< 100 where fixture.runner.launches.count < 2 {
-            try? await Task.sleep(nanoseconds: 20_000_000)
-        }
+        await waitForLaunches(fixture.runner, 2)
         XCTAssertGreaterThanOrEqual(fixture.runner.launches.count, 2)
         let job = await fixture.engine.currentSnapshot().jobs.first { $0.id == fixture.id }
         XCTAssertEqual(job?.attempt, 0)
@@ -120,7 +117,8 @@ final class EngineRetryWithCookiesTests: XCTestCase {
 
         prefs.cookiesFromBrowser = .safari
         await engine.retryWithCookies(id)
-        await expectState(collector, id) { $0 == .failed(.ageRestricted) }
+        // The job is already failed before the retry, so only the second launch shows that it restarted.
+        await waitForLaunches(runner, 2)
         XCTAssertGreaterThanOrEqual(runner.launches.count, 2)
         XCTAssertTrue((runner.launches.last?.arguments ?? []).contains("--cookies-from-browser"))
     }

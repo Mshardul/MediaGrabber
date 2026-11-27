@@ -57,7 +57,7 @@ final class BannerResolverTests: XCTestCase {
 
         func snapshot(_ shield: ShieldStatus) -> QueueSnapshot {
             QueueSnapshot(
-                jobs: [], revision: 1, queueHalt: nil, generatedAt: .init(),
+                jobs: [], revision: 1, queueHalt: nil,
                 hostRateSummary: [:], isOnline: true, shieldStatus: shield
             )
         }

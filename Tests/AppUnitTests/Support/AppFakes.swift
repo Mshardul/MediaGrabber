@@ -12,23 +12,20 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
     private struct State {
         var submitted: [(DownloadRequest, Bool)] = []
         var paused: [UUID] = []
-        var resumed: [UUID] = []
         var cancelled: [UUID] = []
         var removed: [UUID] = []
         var retried: [UUID] = []
         var retriedWithCookies: [UUID] = []
         var forceStarted: [UUID] = []
         var submitResults: [SubmitResult] = []
-        var hasActive = false
         var snapshot = QueueSnapshot(
-            jobs: [], revision: 0, queueHalt: nil, generatedAt: .init(),
+            jobs: [], revision: 0, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )
         var restoreSnapshot: QueueSnapshot?
         var restoreCalled = false
         var restoreCount = 0
         var revalidateCalled = false
-        var shutdownCalled = false
         var previewResult: Result<MediaMetadata, MetadataError> = .failure(.malformedOutput)
         var previewPlaylistResult: Result<PlaylistDump, MetadataError> = .failure(.malformedOutput)
         var previewed: [String] = []
@@ -36,11 +33,8 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
         var submittedPlaylistItems: [PlaylistSubmitItem] = []
         var stubPlaylistSubmitIDs: [UUID]?
         var ensureCount = 0
-        var restartCount = 0
         var restartShieldResult = true
-        var forceStartEvictsFor: Set<UUID> = []
         var playlistGroups: [PersistedPlaylistGroup] = []
-        var playlistGroupSaves: [[PersistedPlaylistGroup]] = []
         var persistence: FakeQueuePersisting?
     }
 
@@ -60,10 +54,6 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
 
     var pausedIDs: [UUID] {
         box.read { $0.paused }
-    }
-
-    var resumedIDs: [UUID] {
-        box.read { $0.resumed }
     }
 
     var cancelledIDs: [UUID] {
@@ -100,10 +90,6 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
         box.read { $0.revalidateCalled }
     }
 
-    var shutdownCalled: Bool {
-        box.read { $0.shutdownCalled }
-    }
-
     var previewedURLs: [String] {
         box.read { $0.previewed }
     }
@@ -118,14 +104,6 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
 
     var ensureCount: Int {
         box.read { $0.ensureCount }
-    }
-
-    var restartCount: Int {
-        box.read { $0.restartCount }
-    }
-
-    var playlistGroupSaves: [[PersistedPlaylistGroup]] {
-        box.read { $0.playlistGroupSaves }
     }
 
     func attachPersistence(_ persistence: FakeQueuePersisting) {
@@ -152,10 +130,6 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
         box.mutate { $0.stubPlaylistSubmitIDs = ids }
     }
 
-    func setHasActiveJobs(_ value: Bool) {
-        box.mutate { $0.hasActive = value }
-    }
-
     func setSnapshot(_ snapshot: QueueSnapshot) {
         box.mutate { $0.snapshot = snapshot }
     }
@@ -173,7 +147,7 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
     }
 
     func hasActiveJobs() async -> Bool {
-        box.read { $0.hasActive }
+        false
     }
 
     func submit(
@@ -207,9 +181,7 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
         box.mutate { $0.paused.append(jobID) }
     }
 
-    func resume(_ jobID: UUID) async {
-        box.mutate { $0.resumed.append(jobID) }
-    }
+    func resume(_: UUID) async {}
 
     func retry(_ jobID: UUID) async {
         box.mutate { $0.retried.append(jobID) }
@@ -237,13 +209,11 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
             let jobs = state.snapshot.jobs.filter { $0.id != jobID }
             let live = Set(jobs.compactMap(\.playlistGroupID))
             state.playlistGroups.removeAll { !live.contains($0.id) }
-            state.playlistGroupSaves.append(state.playlistGroups)
             state.persistence?.savePlaylistGroups(state.playlistGroups)
             state.snapshot = QueueSnapshot(
                 jobs: jobs,
                 revision: state.snapshot.revision + 1,
                 queueHalt: state.snapshot.queueHalt,
-                generatedAt: .init(),
                 hostRateSummary: state.snapshot.hostRateSummary,
                 isOnline: state.snapshot.isOnline,
                 shieldStatus: state.snapshot.shieldStatus,
@@ -260,12 +230,8 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
         box.mutate { $0.forceStarted.append(jobID) }
     }
 
-    func willForceStartEvict(_ id: UUID) async -> Bool {
-        box.read { $0.forceStartEvictsFor.contains(id) }
-    }
-
-    func stubForceStartEvicts(_ id: UUID) {
-        box.mutate { $0.forceStartEvictsFor.insert(id) }
+    func willForceStartEvict(_: UUID) async -> Bool {
+        false
     }
 
     func resetCircuit(_: RateHost) async {}
@@ -290,17 +256,14 @@ final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
     }
 
     func restartShield() async -> Bool {
-        box.mutate { $0.restartCount += 1 }
-        return box.read { $0.restartShieldResult }
+        box.read { $0.restartShieldResult }
     }
 
     func setRestartShieldResult(_ result: Bool) {
         box.mutate { $0.restartShieldResult = result }
     }
 
-    func shutdown() async {
-        box.mutate { $0.shutdownCalled = true }
-    }
+    func shutdown() async {}
 }
 
 extension FakeEngine {
@@ -326,7 +289,6 @@ extension FakeEngine {
             } else {
                 state.playlistGroups.append(group)
             }
-            state.playlistGroupSaves.append(state.playlistGroups)
             state.persistence?.savePlaylistGroups(state.playlistGroups)
             state.snapshot = withGroups(state.snapshot, groups: state.playlistGroups)
             return state.snapshot
@@ -340,7 +302,6 @@ extension FakeEngine {
                 return state.snapshot
             }
             state.playlistGroups[index].isCollapsed = collapsed
-            state.playlistGroupSaves.append(state.playlistGroups)
             state.persistence?.savePlaylistGroups(state.playlistGroups)
             state.snapshot = withGroups(state.snapshot, groups: state.playlistGroups)
             return state.snapshot
@@ -367,7 +328,6 @@ extension FakeEngine {
             jobs: snapshot.jobs,
             revision: snapshot.revision + 1,
             queueHalt: snapshot.queueHalt,
-            generatedAt: .init(),
             hostRateSummary: snapshot.hostRateSummary,
             isOnline: snapshot.isOnline,
             shieldStatus: snapshot.shieldStatus,

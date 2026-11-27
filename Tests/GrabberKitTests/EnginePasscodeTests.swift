@@ -19,12 +19,6 @@ final class EnginePasscodeTests: XCTestCase {
         Fix.request(url: url)
     }
 
-    private func waitForLaunches(_ runner: FakeProcessRunner, _ count: Int) async {
-        for _ in 0 ..< 200 where runner.launches.count < count {
-            try? await Task.sleep(nanoseconds: 20_000_000)
-        }
-    }
-
     private func passcodeArguments(_ launch: ProcessLaunch?) -> [String] {
         (launch?.arguments ?? []).filter { $0.hasPrefix("--video-password") }
     }

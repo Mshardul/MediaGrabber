@@ -318,7 +318,7 @@ struct DiagnosticsPane: View {
     private func makeModel() -> DiagnosticsPaneModel {
         let ytDlpURL = appModel.latestEnvironmentReport?.ytDlp?.path
         let probe: MetadataProbing = if let ytDlpURL {
-            CanaryProbe.makeProbe(ytDlpURL: ytDlpURL, runner: ProcessRunner())
+            appModel.makeCanaryProbe(ytDlpURL)
         } else {
             UnavailableMetadataProbe()
         }
@@ -326,7 +326,7 @@ struct DiagnosticsPane: View {
             metadataProbe: probe,
             environmentProbe: appModel.envProbe,
             ytDlpUpdater: appModel.ytDlpUpdater,
-            sharePresenter: SharePresenter(),
+            sharePresenter: appModel.sharePresenter,
             logReader: AppLogReader(locations: appModel.locations),
             pasteboardMarker: { [weak appModel] text in appModel?.incomingLinkController?.markAppPasteboardWrite(text) }
         )

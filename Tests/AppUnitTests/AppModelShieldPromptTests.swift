@@ -30,7 +30,7 @@ final class AppModelShieldPromptTests: XCTestCase {
         let engine = FakeEngine()
         engine.stubPreview(.failure(error))
         engine.setSnapshot(QueueSnapshot(
-            jobs: [], revision: 1, queueHalt: nil, generatedAt: .init(),
+            jobs: [], revision: 1, queueHalt: nil,
             hostRateSummary: [:], isOnline: true, shieldStatus: shield
         ))
         let model = AppModelTestHelpers.makeModel(defaults: defaults, logDirectory: logDirectory, engine: engine)

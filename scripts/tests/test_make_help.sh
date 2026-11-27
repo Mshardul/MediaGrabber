@@ -9,8 +9,7 @@ MAKEFILE="$SCRIPT_DIR/../../Makefile"
 SANDBOX_LIB="$SCRIPT_DIR/lib/sandbox.sh"
 
 work="$(mktemp -d)"
-# shellcheck source=lib/sandbox.sh
-# shellcheck disable=SC1091,SC2153
+# shellcheck source=scripts/tests/lib/sandbox.sh
 source "$SANDBOX_LIB"
 trap 'sandbox_cleanup; /bin/rm -rf "$work"' EXIT
 

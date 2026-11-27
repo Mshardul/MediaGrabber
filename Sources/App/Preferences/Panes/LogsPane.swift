@@ -3,7 +3,6 @@ import SwiftUI
 
 struct LogsPane: View {
     @Environment(AppModel.self) private var appModel
-    @Environment(\.theme) private var theme
 
     private var logFolderURL: URL {
         appModel.locations.logs

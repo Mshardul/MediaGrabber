@@ -92,7 +92,6 @@ final class PlaylistPickerModelTests: XCTestCase {
         PlaylistDump(
             title: "Playlist",
             uploader: "Uploader",
-            extractor: "Example",
             sourceURL: "https://example.com/playlist",
             entries: [
                 entry(index: 1, title: "Still Water", durationSeconds: 3600),

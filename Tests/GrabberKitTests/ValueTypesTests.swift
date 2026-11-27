@@ -76,7 +76,7 @@ final class ValueTypesTests: XCTestCase {
 
     func testQueueSnapshotNewFields() {
         let snap = QueueSnapshot(
-            jobs: [], revision: 0, queueHalt: nil, generatedAt: .now,
+            jobs: [], revision: 0, queueHalt: nil,
             hostRateSummary: [:], isOnline: false
         )
         XCTAssertFalse(snap.isOnline)

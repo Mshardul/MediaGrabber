@@ -29,7 +29,7 @@ final class EngineNetworkTests: XCTestCase {
     }
 
     func testOfflineHaltsAndParksRunningJobs() async {
-        let net = FakeNetworkMonitor(startOnline: true)
+        let net = FakeNetworkMonitor()
         let engine = Fix.engine(
             runner: longRunner(), probe: successProbe(), cap: 2, networkMonitor: net
         )
@@ -46,7 +46,7 @@ final class EngineNetworkTests: XCTestCase {
     }
 
     func testOnlineResumesWithoutBurningAttempt() async {
-        let net = FakeNetworkMonitor(startOnline: true)
+        let net = FakeNetworkMonitor()
         let runner = FakeProcessRunner()
         runner.perLineDelay = .milliseconds(300)
         let firstScript = FakeProcessRunner.Script(
@@ -71,7 +71,7 @@ final class EngineNetworkTests: XCTestCase {
     }
 
     func testQueuedJobsStayQueuedOnOffline() async {
-        let net = FakeNetworkMonitor(startOnline: true)
+        let net = FakeNetworkMonitor()
         let engine = Fix.engine(
             runner: longRunner(), probe: successProbe(), cap: 1, networkMonitor: net
         )
@@ -94,7 +94,7 @@ final class EngineNetworkTests: XCTestCase {
     }
 
     func testParkedJobsKeepTheQuitPromptAlive() async {
-        let net = FakeNetworkMonitor(startOnline: true)
+        let net = FakeNetworkMonitor()
         let engine = Fix.engine(
             runner: longRunner(), probe: successProbe(), cap: 2, networkMonitor: net
         )

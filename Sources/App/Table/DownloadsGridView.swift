@@ -34,7 +34,7 @@ struct DownloadsGridView: NSViewRepresentable {
             selectionAnchorID: store.selectionAnchorID,
             visibleChildOrder: store.visibleChildOrder(),
             scrollToRowID: scrollToRowID,
-            tokens: DownloadsGridTokens.make(theme: theme),
+            theme: theme,
             filterValueProvider: { column in
                 let values = store.rows.map { TablePresentation.cellText(for: $0, column: column) }
                 return Array(Set(values)).sorted()

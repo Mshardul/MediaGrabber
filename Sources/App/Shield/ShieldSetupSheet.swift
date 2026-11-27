@@ -50,9 +50,6 @@ struct ShieldSetupSheet: View {
         case .failed:
             SkinnedPrimaryButton("Try again") { Task { await controller.run() } }
                 .keyboardShortcut(.defaultAction)
-        case .needsHomebrew:
-            SkinnedPrimaryButton("Install Homebrew") { controller.openHomebrew() }
-                .keyboardShortcut(.defaultAction)
         }
     }
 
@@ -74,8 +71,6 @@ struct ShieldSetupSheet: View {
             "All set. Try your download again."
         case .failed:
             "Setup didn't finish. Check your internet connection and try again."
-        case .needsHomebrew:
-            "The YouTube check needs Homebrew to be installed before it can be set up."
         }
     }
 }

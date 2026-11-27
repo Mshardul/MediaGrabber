@@ -43,7 +43,6 @@ final class QuitCoordinatorTests: XCTestCase {
             jobs: [],
             revision: 1,
             queueHalt: .depMissing,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         ))
@@ -110,22 +109,15 @@ final class QuitCoordinatorTests: XCTestCase {
 
 private final class FakeEngine: DownloadEngineProtocol, @unchecked Sendable {
     private let box = LockedBox(State())
-    private let continuation: AsyncStream<QueueEvent>.Continuation
-    let events: AsyncStream<QueueEvent>
+    let events = AsyncStream<QueueEvent> { $0.finish() }
 
     private struct State {
         var hasActive = false
         var snapshot = QueueSnapshot(
-            jobs: [], revision: 0, queueHalt: nil, generatedAt: .init(),
+            jobs: [], revision: 0, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )
         var shutdownCalled = false
-    }
-
-    init() {
-        let (stream, continuation) = AsyncStream<QueueEvent>.makeStream()
-        events = stream
-        self.continuation = continuation
     }
 
     var shutdownCalled: Bool {

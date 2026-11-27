@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Tests for release.sh and release-dispatch.sh — run: scripts/tests/test_release_make.sh
 
-# shellcheck disable=SC2153
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -11,8 +10,7 @@ SANDBOX_LIB="$SCRIPT_DIR/lib/sandbox.sh"
 
 work="$(mktemp -d)"
 
-# shellcheck source=lib/sandbox.sh
-# shellcheck disable=SC1091
+# shellcheck source=scripts/tests/lib/sandbox.sh
 source "$SANDBOX_LIB"
 trap 'sandbox_cleanup; /bin/rm -rf "$work"' EXIT
 

@@ -1,11 +1,11 @@
 import Foundation
 
-public enum YtDlpArguments {
+enum YtDlpArguments {
     static let progressTemplate = "download:MG|%(progress._percent_str)s|"
         + "%(progress._speed_str)s|%(progress._eta_str)s|"
         + "%(progress.downloaded_bytes)s|%(progress.total_bytes)s"
 
-    public static func extractorFlags(context: ExtractorContext, redact: Bool = false) -> [String] {
+    static func extractorFlags(context: ExtractorContext, redact: Bool = false) -> [String] {
         var flags: [String] = []
         // One token, so a passcode that starts with "-" is read as the flag's value, never as a flag.
         if let passcode = context.videoPassword, !passcode.isEmpty {
@@ -24,7 +24,7 @@ public enum YtDlpArguments {
         return flags
     }
 
-    public static func build(
+    static func build(
         for request: DownloadRequest,
         options: GlobalDownloadOptions = .none,
         tuning: YtDlpTuning = .default,
@@ -56,7 +56,7 @@ public enum YtDlpArguments {
     }
 
     // Proxy userinfo is masked in the returned proxy URL; the cookie spec is masked too.
-    public static func redacted(
+    static func redacted(
         for request: DownloadRequest,
         options: GlobalDownloadOptions = .none,
         tuning: YtDlpTuning = .default,

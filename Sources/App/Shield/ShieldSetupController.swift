@@ -10,7 +10,6 @@ final class ShieldSetupController {
         case working(String)
         case done
         case failed(detail: String)
-        case needsHomebrew
     }
 
     enum ProbePrompt: Equatable {
@@ -26,12 +25,10 @@ final class ShieldSetupController {
 
     private let installer: ShieldInstaller
     private let restart: () async -> Bool
-    private let openURL: OpenURLSink
 
-    init(installer: ShieldInstaller, restart: @escaping () async -> Bool, openURL: OpenURLSink) {
+    init(installer: ShieldInstaller, restart: @escaping () async -> Bool) {
         self.installer = installer
         self.restart = restart
-        self.openURL = openURL
     }
 
     var isWorking: Bool {
@@ -50,10 +47,6 @@ final class ShieldSetupController {
 
     func dismiss() {
         isPresented = false
-    }
-
-    func openHomebrew() {
-        openURL.open(URL(string: "https://brew.sh")!)
     }
 
     func run() async {

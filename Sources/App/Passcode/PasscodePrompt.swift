@@ -7,6 +7,5 @@ struct PasscodePrompt: Equatable {
     }
 
     let target: Target
-    let url: String
     let wasRejected: Bool
 }

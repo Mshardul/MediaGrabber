@@ -71,31 +71,6 @@
             return scenes
         }
 
-        static func validateCoverage() {
-            let names = Set(all.map(\.name))
-            var missing: [String] = []
-
-            for pane in PreferencesPane.allCases where !names.contains("prefs-\(pane.rawValue)") {
-                missing.append("prefs-\(pane.rawValue)")
-            }
-
-            for tab in AboutTab.allCases where !names.contains(tab.rawValue) {
-                missing.append(tab.rawValue)
-            }
-
-            let requiredScenes = [
-                "dialog-confirm", "banner-warning", "picker-playlist",
-                "onboarding", "home-empty", "home-with-input", "home-probing"
-            ]
-            for scene in requiredScenes where !names.contains(scene) {
-                missing.append(scene)
-            }
-
-            if !missing.isEmpty {
-                fatalError("Missing screenshot scenes: \(missing.sorted().joined(separator: ", "))")
-            }
-        }
-
         static func selected(_ options: ScreenshotOptions) -> [SceneSpec] {
             guard let sceneName = options.scene else {
                 return all

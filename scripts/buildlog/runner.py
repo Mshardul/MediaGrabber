@@ -83,9 +83,9 @@ def _signal_group(group: int, number: int) -> None:
 def _group_ends(process: subprocess.Popen) -> bool:
     deadline = time.monotonic() + STOP_GRACE
     while time.monotonic() < deadline:
-        # An exited child stays in its group until it is collected.
-        process.poll()
-        if not _group_alive(process.pid):
+        # macOS can call a group gone before its exited child is able to be collected.
+        gone = not _group_alive(process.pid)
+        if process.poll() is not None and gone:
             return True
         time.sleep(_POLL)
     return False

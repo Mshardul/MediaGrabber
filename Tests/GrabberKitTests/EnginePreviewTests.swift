@@ -27,7 +27,7 @@ final class EnginePreviewTests: XCTestCase {
     }
 
     func testPreviewNetworkDown() async {
-        let net = FakeNetworkMonitor(startOnline: true)
+        let net = FakeNetworkMonitor()
         let engine = Fix.engine(
             runner: FakeProcessRunner(),
             probe: successProbe(),

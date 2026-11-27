@@ -54,15 +54,7 @@ struct AdvancedPane: View {
 
     private func confirmReset() {
         Task {
-            let confirmed = await appModel.confirm(ConfirmationRequest(
-                title: "Reset settings?",
-                message: "All preferences go back to their defaults. "
-                    + "Your downloads and table columns aren't affected.",
-                confirmTitle: "Reset",
-                cancelTitle: "Cancel",
-                isDestructive: true,
-                suppressionKey: nil
-            ))
+            let confirmed = await appModel.confirm(AppModelDialogs.resetSettingsConfirmation())
             if confirmed {
                 appModel.resetAllSettings()
             }

@@ -1,7 +1,7 @@
 import Foundation
 
 // The substring -> ErrorClass table shared by the download and probe classifiers so they agree by construction.
-public enum ErrorSignatures {
+enum ErrorSignatures {
     // Ordered, first case-insensitive substring match wins; networkDown is caught by ProgressParser before this table.
     static let table: [(errorClass: ErrorClass, substrings: [String])] = [
         (.diskFull, [

@@ -87,7 +87,7 @@ The app ships every tool it runs. A user installs nothing else: no Homebrew, no 
 | `yt-dlp` | the official standalone macOS binary from the yt-dlp release, checked against that release's `SHA2-256SUMS` | `scripts/tools.lock` |
 | `ffmpeg`, `ffprobe` | built in CI from a pinned source tarball, arm64, static, configured `--disable-gpl --disable-nonfree` with `libmp3lame` and the native AAC encoder (m4a and mp3 extraction, mp4/mkv merging) | `scripts/tools.lock` |
 | `node` | the official Node 22 `darwin-arm64` release, the `node` executable only, checked against `SHASUMS256.txt` | `scripts/tools.lock` |
-| sign-in helper server and plugin | the bgutil release already pinned by the app, built in CI (`npm ci`, `tsc`, production dependencies) | `ShieldInstaller.version` |
+| sign-in helper server and plugin | the bgutil release already pinned by the app, built in CI (`npm ci`, `tsc`, production dependencies) | `scripts/tools.lock` |
 
 - **Location.** `Contents/Resources/Tools/` holds the executables and `Contents/Resources/Shield/` holds the built server and the plugin archive. CI signs each executable ad-hoc, then the app, inside-out, before the existing verify step.
 - **Resolution.** One type, `ManagedTools`, answers "where is this tool". `ffmpeg`, `ffprobe` and `node` always resolve to the bundled copy. `yt-dlp` resolves to the higher version of the bundled copy and the updated copy at `~/Library/Application Support/MediaGrabber/bin/yt-dlp`. No `PATH` search and no Homebrew paths exist anywhere in the app.

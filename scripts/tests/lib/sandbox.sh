@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Sandbox for script tests: temporary HOME, apps folder, and failing stubs for risky commands.
-# shellcheck disable=SC2329
 
 set -euo pipefail
 
@@ -38,11 +37,7 @@ EOF
         chmod +x "$SANDBOX_BIN/$cmd"
     done
 
-    kill() {
-        echo "FAIL: kill not faked" >&2
-        return 1
-    }
-    export -f kill
+    sandbox_fake_function kill 'echo "FAIL: kill not faked" >&2; return 1'
 
     export PATH="$SANDBOX_BIN:$PATH"
 }
@@ -81,8 +76,7 @@ sandbox_fake_function() {
     local name="$1"
     local body="$2"
     eval "$name() { $body; }"
-    # shellcheck disable=SC2163
-    export -f "$name"
+    export -f "${name?}"
 }
 
 sandbox_allow_real() {

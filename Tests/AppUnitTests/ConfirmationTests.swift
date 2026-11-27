@@ -21,11 +21,6 @@ final class ConfirmationTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "mg.confirm.\(UUID().uuidString)")!
         return AppModel(
             engine: FakeEngine(),
-            installer: OnboardingInstaller(
-                locations: TestLocations.make(),
-                probe: FakeEnvironmentProbe(ready: true),
-                runner: NullRunner()
-            ),
             prefs: Preferences(defaults: defaults, downloadsFolder: TestLocations.make().downloads),
             log: LogWriter(directory: URL(fileURLWithPath: NSTemporaryDirectory())
                 .appendingPathComponent("mg-confirm-\(UUID().uuidString)")),
@@ -104,6 +99,34 @@ final class ConfirmationTests: XCTestCase {
             let dialog = ConfirmationDialog(request: request(destructive: true)) { _, _ in }
             _ = dialog.body
         }
+    }
+
+    func test_resetSettingsConfirmation() {
+        let built = AppModelDialogs.resetSettingsConfirmation()
+        XCTAssertEqual(built.title, "Reset settings?")
+        XCTAssertEqual(built.confirmTitle, "Reset")
+        XCTAssertTrue(built.isDestructive)
+        XCTAssertNil(built.suppressionKey)
+    }
+
+    func test_moveToApplicationsConfirmation() {
+        let built = AppModelDialogs.moveToApplicationsConfirmation()
+        XCTAssertEqual(built.title, InstallLocation.moveTitle)
+        XCTAssertEqual(built.confirmTitle, "Move")
+        XCTAssertEqual(built.cancelTitle, "Not now")
+    }
+
+    func test_uninstallConfirmation() {
+        let built = AppModelDialogs.uninstallConfirmation(activeTitles: ["A"])
+        XCTAssertEqual(built.title, UninstallCopy.confirmTitle)
+        XCTAssertEqual(built.message, UninstallCopy.message(activeTitles: ["A"]))
+        XCTAssertTrue(built.isDestructive)
+    }
+
+    func test_okNotice() {
+        let built = AppModelDialogs.okNotice(title: "Title", message: "Message")
+        XCTAssertEqual(built.confirmTitle, "OK")
+        XCTAssertNil(built.cancelTitle)
     }
 
     func test_hostReportsNoticeMode() {

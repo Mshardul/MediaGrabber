@@ -189,7 +189,12 @@ extension DownloadsGridController {
         let rect = headerView.headerRect(ofColumn: index)
 
         filterPopoverController.present(
-            ColumnFilterPopoverController.Choices(column: column, values: values, selectedValues: selectedValues),
+            ColumnFilterPopoverController.Choices(
+                column: column,
+                values: values,
+                selectedValues: selectedValues,
+                theme: theme
+            ),
             anchorView: headerView,
             anchorRect: rect,
             onToggle: { [weak self] value in
@@ -199,21 +204,5 @@ extension DownloadsGridController {
                 self?.refreshHeaderCells()
             }
         )
-    }
-
-    @objc
-    func filterMenuItemChosen(_ sender: NSMenuItem) {
-        guard let choice = sender.representedObject as? FilterChoice else { return }
-        onToggleFilter?(choice.column, choice.value)
-    }
-}
-
-final class FilterChoice: NSObject {
-    let column: ColumnID
-    let value: String
-
-    init(column: ColumnID, value: String) {
-        self.column = column
-        self.value = value
     }
 }

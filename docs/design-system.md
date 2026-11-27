@@ -305,7 +305,6 @@ Opens automatically when a resolved link is a playlist, **before** any rows are 
   - **YouTube:** Sign-in & cookies
   - **System:** Updates · Logs · Privacy · Licenses · Advanced · Diagnostics
 - **Right pane** — the selected pane. Two-column rows: `label` (13, `--text`, semibold) + optional `helper` (11.5, `--dim`) stacked on the left; control right-aligned; a `--hair` divider between rows. A row with no helper renders label-only. Pane title 20 / heavy in `--headline` with a rule under it, a one-line `--dim` sub above the rule.
-- **Stepless panes** (Sign-in & cookies) render title + sub + one plain-language "coming in a later update" line — no rows, no controls.
 - Diagnostics is a rail item here, not a top-level nav destination (§4.1) — it is a status/support tool a small share of users open, not a page most users need regularly.
 
 Rows per pane (control → backing field on `Preferences`, unless noted):
@@ -343,7 +342,23 @@ Changing Theme resets `palette` to that theme's default. Both controls apply liv
 | Force IPv4 | Can help when connections stall. | toggle | `forceIPv4` |
 | Speed limit | Applies to each download separately. | stepper KB/s, "Off" at 0 | `speedLimitKBps` |
 
-**Sign-in & cookies** — stepless. Sub _"Sign in to reach private or age-restricted videos."_ Body: _"Cookie sign-in is coming in a later update."_
+**Sign-in & cookies** — sub _"Sign in to reach private or age-restricted videos on sites that need it."_ "A browser is chosen" below means **Browser** is not None.
+
+| Label | Helper | Control | Backs |
+| --- | --- | --- | --- |
+| Browser | Use your browser's sign-in for videos that need an account. | `SkinnedPicker` — None / Safari / Chrome / Brave / Microsoft Edge / Firefox | `cookiesFromBrowser` |
+| Use sign-in for | — | `SkinnedSegment` — All sites / Only these sites. Shown when a browser is chosen. | `signInScope` |
+| Firefox profile | — | `SkinnedPicker`, caption "Profile". Shown for Firefox with two or more profiles. With no profile, the row shows _"No Firefox profiles found."_ instead of the picker; with exactly one, there is no row. | `cookiesFromBrowser` |
+| _browser name_ | — | warn glyph (§3.4) + _"<browser> isn't installed, so there's no sign-in to use."_ Shown when Chrome, Brave or Microsoft Edge is chosen and not found. | — |
+| Full Disk Access | When denied: MediaGrabber needs Full Disk Access to read Safari's sign-in. | Shown for Safari when its data container exists. Granted: `--accent` dot + _"Full Disk Access granted."_, no helper. Denied: warn glyph + skinned button **Open System Settings**. | — |
+| Test sign-in | Checks that MediaGrabber can read your browser's sign-in. | skinned button **Test sign-in**, reading **Testing…** and disabled while it runs; the result line sits under it, `--accent` check on success, `--warn` triangle on failure. Shown when a browser is chosen. | — |
+| Cookie access for _browser name_ | — | skinned button **Learn more ↗**. Shown when a browser is chosen. | — |
+
+With **Only these sites** selected, the listed sites appear under the segment, each with a skinned **Remove** button (`signInSites`). An empty list shows _"Cookies go nowhere until you add a site."_
+
+When a download is waiting for a sign-in retry, a warn glyph + _"Pick a browser to retry "<title>" with your sign-in."_ sits above the rows; "this download" stands in for a missing title.
+
+When a browser is chosen, a `--dim` tip sits under the rows: _"For the most reliable results, use a browser profile that's signed in to the site and keep it closed while downloading."_
 
 **Updates** — sub _"Check for new versions of the app and the downloader."_ Settings only — no version number, no action button anywhere in this pane. Every version and every action (`Check for updates`, `Update`, `↻ Update`) lives on About (§4.8), never duplicated here.
 
@@ -607,62 +622,62 @@ Shared: `--panel` = `rgba(255,255,255,.05)`, `--panel-hi` = `rgba(255,255,255,.0
 
 **Aurora / Mint & Iris** _(app default)_
 
-| token | value |
-| --- | --- |
-| --ground | `#0C1013` |
-| --panel-solid | `#0E1117` |
-| --stroke | `rgba(255,255,255,.12)` |
-| --text | `#EDF0F5` |
-| --dim | `#9AA3B2` |
-| --faint | `#6B7480` |
-| --headline | `#F4F6FA` |
-| --accent | `#5EF2C8` |
-| --accent-2 | `#8B7BFF` |
-| --warn | `#FFC24B` |
-| --danger | `#FF7A6B` |
-| --go-fill | `linear-gradient(135deg,#5EF2C8,#8B7BFF)` |
-| --bar-fill | `linear-gradient(90deg,#5EF2C8,#8B7BFF)` |
-| --banner-fill | `linear-gradient(90deg,#FF7A6B,#FFC24B)` |
+| token               | value                                            |
+| ------------------- | ------------------------------------------------ |
+| --ground            | `#0C1013`                                        |
+| --panel-solid       | `#0E1117`                                        |
+| --stroke            | `rgba(255,255,255,.12)`                          |
+| --text              | `#EDF0F5`                                        |
+| --dim               | `#9AA3B2`                                        |
+| --faint             | `#6B7480`                                        |
+| --headline          | `#F4F6FA`                                        |
+| --accent            | `#5EF2C8`                                        |
+| --accent-2          | `#8B7BFF`                                        |
+| --warn              | `#FFC24B`                                        |
+| --danger            | `#FF7A6B`                                        |
+| --go-fill           | `linear-gradient(135deg,#5EF2C8,#8B7BFF)`        |
+| --bar-fill          | `linear-gradient(90deg,#5EF2C8,#8B7BFF)`         |
+| --banner-fill       | `linear-gradient(90deg,#FF7A6B,#FFC24B)`         |
 | --glow-a / --glow-b | `rgba(94,242,200,.14)` / `rgba(139,123,255,.16)` |
 
 **Aurora / Lime & Forest**
 
-| token | value |
-| --- | --- |
-| --ground | `#0A0F0C` |
-| --panel-solid | `#0C1210` |
-| --stroke | `rgba(190,255,210,.13)` |
-| --text | `#E9F2EC` |
-| --dim | `#93A99C` |
-| --faint | `#5F7268` |
-| --headline | `#F2F8F3` |
-| --accent | `#B6F04A` |
-| --accent-2 | `#4ED6A0` |
-| --warn | `#F2C14E` |
-| --danger | `#FF6F6F` |
-| --go-fill | `linear-gradient(135deg,#B6F04A,#4ED6A0)` |
-| --bar-fill | `linear-gradient(90deg,#B6F04A,#4ED6A0)` |
-| --banner-fill | `linear-gradient(90deg,#FF6F6F,#F2C14E)` |
+| token               | value                                           |
+| ------------------- | ----------------------------------------------- |
+| --ground            | `#0A0F0C`                                       |
+| --panel-solid       | `#0C1210`                                       |
+| --stroke            | `rgba(190,255,210,.13)`                         |
+| --text              | `#E9F2EC`                                       |
+| --dim               | `#93A99C`                                       |
+| --faint             | `#5F7268`                                       |
+| --headline          | `#F2F8F3`                                       |
+| --accent            | `#B6F04A`                                       |
+| --accent-2          | `#4ED6A0`                                       |
+| --warn              | `#F2C14E`                                       |
+| --danger            | `#FF6F6F`                                       |
+| --go-fill           | `linear-gradient(135deg,#B6F04A,#4ED6A0)`       |
+| --bar-fill          | `linear-gradient(90deg,#B6F04A,#4ED6A0)`        |
+| --banner-fill       | `linear-gradient(90deg,#FF6F6F,#F2C14E)`        |
 | --glow-a / --glow-b | `rgba(182,240,74,.16)` / `rgba(78,214,160,.14)` |
 
 **Aurora / Magenta & Violet**
 
-| token | value |
-| --- | --- |
-| --ground | `#100C14` |
-| --panel-solid | `#120E16` |
-| --stroke | `rgba(230,190,255,.14)` |
-| --text | `#F1EAF5` |
-| --dim | `#A996B5` |
-| --faint | `#7A6B85` |
-| --headline | `#F7F2FA` |
-| --accent | `#F25C9E` |
-| --accent-2 | `#9B6BFF` |
-| --warn | `#FFC24B` |
-| --danger | `#FF6B6B` |
-| --go-fill | `linear-gradient(135deg,#F25C9E,#9B6BFF)` |
-| --bar-fill | `linear-gradient(90deg,#F25C9E,#9B6BFF)` |
-| --banner-fill | `linear-gradient(90deg,#FF6B6B,#FFC24B)` |
+| token               | value                                            |
+| ------------------- | ------------------------------------------------ |
+| --ground            | `#100C14`                                        |
+| --panel-solid       | `#120E16`                                        |
+| --stroke            | `rgba(230,190,255,.14)`                          |
+| --text              | `#F1EAF5`                                        |
+| --dim               | `#A996B5`                                        |
+| --faint             | `#7A6B85`                                        |
+| --headline          | `#F7F2FA`                                        |
+| --accent            | `#F25C9E`                                        |
+| --accent-2          | `#9B6BFF`                                        |
+| --warn              | `#FFC24B`                                        |
+| --danger            | `#FF6B6B`                                        |
+| --go-fill           | `linear-gradient(135deg,#F25C9E,#9B6BFF)`        |
+| --bar-fill          | `linear-gradient(90deg,#F25C9E,#9B6BFF)`         |
+| --banner-fill       | `linear-gradient(90deg,#FF6B6B,#FFC24B)`         |
 | --glow-a / --glow-b | `rgba(242,92,158,.16)` / `rgba(155,107,255,.16)` |
 
 ---

@@ -35,7 +35,6 @@ final class RowStoreSelectionTests: XCTestCase {
             jobs: jobs,
             revision: 1,
             queueHalt: nil,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         )

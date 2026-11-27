@@ -47,10 +47,6 @@ public final class OnboardingInstaller {
         canProceedToHome = false
     }
 
-    public func start() async {
-        await runFlow()
-    }
-
     // Reports what is already in place without installing anything.
     public func check() async {
         let report = await probe.probe()
@@ -63,23 +59,6 @@ public final class OnboardingInstaller {
 
     public func installShieldOnly() async {
         steps[.botCheckShield] = await installShield()
-    }
-
-    public func recheck() async {
-        await runFlow()
-    }
-
-    private func runFlow() async {
-        let report = await probe.probe()
-        guard report.isReadyForDownloads else {
-            canProceedToHome = false
-            steps[.botCheckShield] = .pending
-            steps[.testRun] = .failed(reason: "This copy of the app is missing its downloader.")
-            return
-        }
-        canProceedToHome = true
-        steps[.botCheckShield] = await installShield()
-        steps[.testRun] = await runCanaryProbe(ytDlpPath: report.ytDlp?.path)
     }
 
     private func runCanaryProbe(ytDlpPath: URL?) async -> OnboardingStepState {

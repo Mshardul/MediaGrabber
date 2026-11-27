@@ -29,7 +29,7 @@ final class RateLimiterWiringTests: XCTestCase {
     }
 
     func testEngineTracksOnlineFromMonitor() async {
-        let net = FakeNetworkMonitor(startOnline: true)
+        let net = FakeNetworkMonitor()
         let engine = EngineFixture.engine(
             runner: FakeProcessRunner(), probe: FakeMetadataProbe(), networkMonitor: net
         )

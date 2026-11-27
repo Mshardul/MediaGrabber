@@ -92,7 +92,7 @@ public extension MetadataProbing {
     }
 }
 
-public actor MetadataProbe: MetadataProbing {
+actor MetadataProbe: MetadataProbing {
     private let ytDlp: YtDlpLocator
     private let runner: ProcessRunning
     private let bucket: any MetadataTokenBucketing
@@ -100,7 +100,7 @@ public actor MetadataProbe: MetadataProbing {
     // Actors are reentrant across `await`, so chain probes explicitly to serialize.
     private var tail: Task<Void, Never> = Task {}
 
-    public init(
+    init(
         ytDlp: YtDlpLocator,
         runner: ProcessRunning = ProcessRunner(),
         bucket: any MetadataTokenBucketing = UnlimitedMetadataTokenBucket()
@@ -110,7 +110,7 @@ public actor MetadataProbe: MetadataProbing {
         self.bucket = bucket
     }
 
-    public init(
+    init(
         ytDlpURL: URL,
         runner: ProcessRunning = ProcessRunner(),
         bucket: any MetadataTokenBucketing = UnlimitedMetadataTokenBucket()
@@ -118,7 +118,7 @@ public actor MetadataProbe: MetadataProbing {
         self.init(ytDlp: .fixed(ytDlpURL), runner: runner, bucket: bucket)
     }
 
-    public func probe(
+    func probe(
         _ url: String,
         context: ExtractorContext = .none,
         onWait: (@Sendable (Date?) -> Void)? = nil
@@ -128,7 +128,7 @@ public actor MetadataProbe: MetadataProbing {
         }
     }
 
-    public func probePlaylist(
+    func probePlaylist(
         _ url: String,
         context: ExtractorContext = .none
     ) async -> Result<PlaylistDump, MetadataError> {

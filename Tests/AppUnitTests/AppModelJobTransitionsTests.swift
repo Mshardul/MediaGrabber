@@ -43,7 +43,7 @@ final class AppModelJobTransitionsTests: XCTestCase {
         let jobID = UUID()
         let running = AppModelTestHelpers.jobSnapshot(id: jobID, state: .running)
         engine.emit(.snapshot(QueueSnapshot(
-            jobs: [running], revision: 1, queueHalt: nil, generatedAt: .now,
+            jobs: [running], revision: 1, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )))
         model.startConsumerForTesting()
@@ -51,7 +51,7 @@ final class AppModelJobTransitionsTests: XCTestCase {
 
         let completed = AppModelTestHelpers.jobSnapshot(id: jobID, state: .completed)
         engine.emit(.snapshot(QueueSnapshot(
-            jobs: [completed], revision: 2, queueHalt: nil, generatedAt: .now,
+            jobs: [completed], revision: 2, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )))
         try await Task.sleep(for: .milliseconds(50))
@@ -69,7 +69,7 @@ final class AppModelJobTransitionsTests: XCTestCase {
         let jobID = UUID()
         let running = AppModelTestHelpers.jobSnapshot(id: jobID, state: .running)
         engine.emit(.snapshot(QueueSnapshot(
-            jobs: [running], revision: 1, queueHalt: nil, generatedAt: .now,
+            jobs: [running], revision: 1, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )))
         model.startConsumerForTesting()
@@ -77,7 +77,7 @@ final class AppModelJobTransitionsTests: XCTestCase {
 
         let failed = AppModelTestHelpers.jobSnapshot(id: jobID, state: .failed(.networkDown))
         engine.emit(.snapshot(QueueSnapshot(
-            jobs: [failed], revision: 2, queueHalt: nil, generatedAt: .now,
+            jobs: [failed], revision: 2, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )))
         try await Task.sleep(for: .milliseconds(50))
@@ -95,7 +95,7 @@ final class AppModelJobTransitionsTests: XCTestCase {
         let jobID = UUID()
         let running = AppModelTestHelpers.jobSnapshot(id: jobID, state: .running)
         engine.emit(.snapshot(QueueSnapshot(
-            jobs: [running], revision: 1, queueHalt: nil, generatedAt: .now,
+            jobs: [running], revision: 1, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )))
         model.startConsumerForTesting()
@@ -103,7 +103,7 @@ final class AppModelJobTransitionsTests: XCTestCase {
 
         let failed = AppModelTestHelpers.jobSnapshot(id: jobID, state: .failed(.networkDown))
         engine.emit(.snapshot(QueueSnapshot(
-            jobs: [failed], revision: 2, queueHalt: nil, generatedAt: .now,
+            jobs: [failed], revision: 2, queueHalt: nil,
             hostRateSummary: [:], isOnline: true
         )))
         try await Task.sleep(for: .milliseconds(50))

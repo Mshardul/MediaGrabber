@@ -224,7 +224,7 @@ _SHELLCHECK = _Tool(
     "shellcheck",
     Language.SHELL,
     # A settings file, personal or committed, could silence a finding.
-    check=_Step(("--norc", "--format=json1"), _shellcheck_reports),
+    check=_Step(("--norc", "-x", "--format=json1"), _shellcheck_reports),
 )
 
 _FIX_ORDER = (_RUFF, _SWIFTFORMAT, _SHFMT, _RUFF_FORMAT)

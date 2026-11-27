@@ -9,12 +9,8 @@ final class ShieldSetupControllerTests: XCTestCase {
         ShieldInstaller(tools: ManagedTools.live(locations: TestLocations.make()), fileExists: { _ in alreadyBuilt })
     }
 
-    private func controller(
-        installer: ShieldInstaller? = nil,
-        restartResult: Bool = true,
-        opener: FakeOpenURLSink = FakeOpenURLSink()
-    ) -> ShieldSetupController {
-        ShieldSetupController(installer: installer ?? self.installer(), restart: { restartResult }, openURL: opener)
+    private func controller(installer: ShieldInstaller? = nil, restartResult: Bool = true) -> ShieldSetupController {
+        ShieldSetupController(installer: installer ?? self.installer()) { restartResult }
     }
 
     func test_success_startsShieldClearsPromptAndNotifies() async {
@@ -56,7 +52,7 @@ final class ShieldSetupControllerTests: XCTestCase {
 
     func test_copyNeverContainsCommandsOrJargon() {
         let states: [ShieldSetupController.State] = [
-            .idle, .working(""), .done, .failed(detail: "x"), .needsHomebrew
+            .idle, .working(""), .done, .failed(detail: "x")
         ]
         for state in states {
             let text = ShieldSetupSheet.explanation(for: state).lowercased()

@@ -74,11 +74,6 @@ final class PasscodeFlowIntegrationTests: XCTestCase {
         )
         return AppModel(
             engine: engine,
-            installer: OnboardingInstaller(
-                locations: TestLocations.make(),
-                probe: FakeEnvironmentProbe(ready: true),
-                runner: NullRunner()
-            ),
             prefs: prefs,
             log: LogWriter(directory: logDir),
             locations: TestLocations.make(),
@@ -90,7 +85,6 @@ final class PasscodeFlowIntegrationTests: XCTestCase {
             notificationRouter: FakeNotificationRouter(),
             revealSink: FakeRevealSink(),
             openURLSink: FakeOpenURLSink(),
-            appVersion: "0.0.0",
             persistence: nil
         )
     }
@@ -111,7 +105,7 @@ final class PasscodeFlowIntegrationTests: XCTestCase {
         let model = try makeModel(runner: FakeProcessRunner(), probe: probe)
         let stale = Task { await model.resolvePasted(url) }
         try? await Task.sleep(nanoseconds: 50_000_000)
-        model.passcodeNeeded = PasscodePrompt(target: .link(url), url: url, wasRejected: false)
+        model.passcodeNeeded = PasscodePrompt(target: .link(url), wasRejected: false)
         await model.submitPasscode("p")
         await stale.value
         XCTAssertNil(model.passcodeNeeded)

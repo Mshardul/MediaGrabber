@@ -6,13 +6,10 @@ public final class FakeMetadataProbe: MetadataProbing, @unchecked Sendable {
     public typealias PlaylistOutcome = Result<PlaylistDump, MetadataError>
 
     private struct State {
-        var results: [String: Outcome] = [:]
         var fallback: Outcome
-        var playlistResults: [String: PlaylistOutcome] = [:]
         var playlistFallback: PlaylistOutcome = .failure(.malformedOutput)
         var probedURLs: [String] = []
         var probedContexts: [ExtractorContext] = []
-        var probedPlaylistURLs: [String] = []
         var perProbeDelay: Duration = .zero
     }
 
@@ -30,29 +27,13 @@ public final class FakeMetadataProbe: MetadataProbing, @unchecked Sendable {
         box.read { $0.probedContexts }
     }
 
-    public var wasProbed: Bool {
-        box.read { !$0.probedURLs.isEmpty }
-    }
-
-    public var probedPlaylistURLs: [String] {
-        box.read { $0.probedPlaylistURLs }
-    }
-
     public var perProbeDelay: Duration {
         get { box.read { $0.perProbeDelay } }
         set { box.mutate { $0.perProbeDelay = newValue } }
     }
 
-    public func result(_ result: Outcome, forURL url: String) {
-        box.mutate { $0.results[url] = result }
-    }
-
     public func result(_ result: Outcome) {
         box.mutate { $0.fallback = result }
-    }
-
-    public func playlistResult(_ result: PlaylistOutcome, forURL url: String) {
-        box.mutate { $0.playlistResults[url] = result }
     }
 
     public func playlistResult(_ result: PlaylistOutcome) {
@@ -83,7 +64,7 @@ public final class FakeMetadataProbe: MetadataProbing, @unchecked Sendable {
         let (result, delay) = box.mutate { state -> (Outcome, Duration) in
             state.probedURLs.append(url)
             state.probedContexts.append(context)
-            return (state.results[url] ?? state.fallback, state.perProbeDelay)
+            return (state.fallback, state.perProbeDelay)
         }
         if delay != .zero {
             try? await Task.sleep(for: delay)
@@ -91,10 +72,9 @@ public final class FakeMetadataProbe: MetadataProbing, @unchecked Sendable {
         return result
     }
 
-    public func probePlaylist(_ url: String, context _: ExtractorContext) async -> PlaylistOutcome {
+    public func probePlaylist(_: String, context _: ExtractorContext) async -> PlaylistOutcome {
         let (result, delay) = box.mutate { state -> (PlaylistOutcome, Duration) in
-            state.probedPlaylistURLs.append(url)
-            return (state.playlistResults[url] ?? state.playlistFallback, state.perProbeDelay)
+            (state.playlistFallback, state.perProbeDelay)
         }
         if delay != .zero {
             try? await Task.sleep(for: delay)

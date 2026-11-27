@@ -113,7 +113,6 @@ final class AppModelRowReorderTests: XCTestCase {
             jobs: jobs,
             revision: revision,
             queueHalt: nil,
-            generatedAt: .init(),
             hostRateSummary: [:],
             isOnline: true
         )

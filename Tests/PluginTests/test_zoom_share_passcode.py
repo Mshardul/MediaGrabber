@@ -4,6 +4,7 @@ import json
 import os
 import socket
 import tempfile
+import time
 import unittest
 from unittest import mock
 from urllib.parse import parse_qs
@@ -90,11 +91,13 @@ class PacingTests(unittest.TestCase):
 
     def test_real_clock_calls_are_never_closer_than_the_gap(self):
         stamps = []
-        import time as real_time
 
         for _ in range(3):
             self.plugin._pace(path=self.state.name, gap=0.2)
-            stamps.append(real_time.time())
+            # A late reading here would shorten the next gap, so read the time the pacing kept.
+            with open(self.state.name) as handle:
+                stamps.append(float(handle.read()))
+            time.sleep(0.02)
         gaps = [later - earlier for earlier, later in zip(stamps, stamps[1:])]
         self.assertTrue(all(gap >= 0.19 for gap in gaps), gaps)
 

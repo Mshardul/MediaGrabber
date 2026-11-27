@@ -3,7 +3,6 @@ import Foundation
 public struct PlaylistDump: Sendable, Equatable {
     public var title: String
     public var uploader: String?
-    public var extractor: String?
     public var sourceURL: String
     public var entries: [PlaylistEntry]
 }
@@ -40,7 +39,6 @@ public extension PlaylistDump {
         return .success(PlaylistDump(
             title: title,
             uploader: object["uploader"] as? String,
-            extractor: extractor,
             sourceURL: (object["webpage_url"] as? String) ?? pasteURL,
             entries: entries
         ))

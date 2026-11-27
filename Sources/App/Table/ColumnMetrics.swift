@@ -1,6 +1,5 @@
 import AppKit
 import GrabberKit
-import SwiftUI
 
 enum ColumnMetrics {
     private static let widths: [ColumnID: CGFloat] = [
@@ -74,10 +73,6 @@ enum ColumnMetrics {
         return max(minWidth, ceil(widest) + 16)
     }
 
-    static func totalWidth(for columns: [ColumnID]) -> CGFloat {
-        columns.reduce(0) { $0 + width(for: $1) + Spacing.s4 }
-    }
-
     static func totalWidth(for columns: [ColumnID], config: ColumnConfig) -> CGFloat {
         columns.reduce(0) { $0 + resolvedWidth(for: $1, config: config) + Spacing.s4 }
     }
@@ -92,26 +87,5 @@ enum ColumnMetrics {
 
     static func supportsSort(_ column: ColumnID) -> Bool {
         column != .actions
-    }
-}
-
-enum RowStatusStyle {
-    static func dotColor(for state: JobState, palette: PaletteTokens) -> Color {
-        switch state {
-        case .queued: palette.accent2
-        case .probing, .running: palette.accent
-        case .paused, .waitingForNetwork: palette.dim
-        case .cooldown: palette.warn
-        case .failed: palette.danger
-        case .completed, .cancelled: palette.dim
-        }
-    }
-
-    static func textColor(for state: JobState, palette: PaletteTokens) -> Color {
-        switch state {
-        case .failed: palette.danger
-        case .completed, .cancelled: palette.dim
-        default: palette.text
-        }
     }
 }

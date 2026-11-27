@@ -1,13 +1,13 @@
 import Foundation
 
-public enum ProgressEvent: Sendable, Equatable {
+enum ProgressEvent: Sendable, Equatable {
     case progress(Progress)
     case postProcessing
     case ignored
 }
 
-public enum ProgressParser {
-    public static func parseStdout(_ line: String) -> ProgressEvent {
+enum ProgressParser {
+    static func parseStdout(_ line: String) -> ProgressEvent {
         if line.hasPrefix("MG|") {
             return parseProgress(line) ?? .ignored
         }
@@ -23,7 +23,7 @@ public enum ProgressParser {
             || line.hasPrefix("Deleting original file")
     }
 
-    public static func classifyStderr(_ line: String) -> ErrorClass? {
+    static func classifyStderr(_ line: String) -> ErrorClass? {
         if line.contains("Unable to download"), containsNetworkSignature(line) {
             return .networkDown
         }
@@ -42,8 +42,8 @@ public enum ProgressParser {
         return nil
     }
 
-    /// Paths yt-dlp prints while downloading — used instead of guessing from the title.
-    public static func captureOutputPath(from line: String) -> URL? {
+    // Paths yt-dlp prints while downloading — used instead of guessing from the title.
+    static func captureOutputPath(from line: String) -> URL? {
         if line.hasPrefix("[download] Destination: ") {
             return urlFromPath(String(line.dropFirst("[download] Destination: ".count)))
         }

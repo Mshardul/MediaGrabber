@@ -56,24 +56,3 @@ struct PrefPaneHeader: View {
         .padding(.bottom, Spacing.s2)
     }
 }
-
-struct PrefSteplessPane: View {
-    @Environment(\.theme) private var theme
-    private let pane: PreferencesPane
-    private let line: String
-
-    init(_ pane: PreferencesPane, line: String) {
-        self.pane = pane
-        self.line = line
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.s3) {
-            PrefPaneHeader(pane)
-            Text(line)
-                .font(theme.bodyFont(12, .regular))
-                .foregroundStyle(theme.palette.faint)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
