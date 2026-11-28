@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import table_body %}
+{% set screen_id = "table-selected" %}
+{% set title = "Rows selected" %}
+{% set caption = "The actions sit in the Columns row, so no row moves; Esc clears the selection." %}
+{% set tickets = ["mg-069", "mg-234"] %}
+{% call window(progress=62) %}
+{{ table_body("All", data.TABLE_ALL, selected=(0, 4, 11)) }}
+{% endcall %}

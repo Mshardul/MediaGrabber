@@ -53,7 +53,7 @@
 {%- endmacro %}
 
 {% macro grab_view(mood="waiting", orb=true, first_run=false) -%}
-<div class="grab-view">
+<div class="grab-view page-column">
   {% if orb %}<div class="orb" data-mood="{{ mood }}" aria-hidden="true"></div>{% endif %}
   <h2 class="hero-title">One link in. One file out.</h2>
   <div class="grab-cards">{{ caller() }}</div>

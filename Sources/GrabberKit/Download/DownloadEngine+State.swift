@@ -124,7 +124,13 @@ extension DownloadEngine {
             downloadedBytes: persistedProgress(for: job)?.downloadedBytes,
             totalBytes: persistedProgress(for: job)?.totalBytes ?? job.sizeBytes,
             outputFiles: job.outputFiles,
-            playerClientUsed: job.playerClientUsed
+            playerClientUsed: job.playerClientUsed,
+            failureClass: {
+                if case let .failed(ec) = job.state {
+                    return ec
+                }
+                return nil
+            }()
         )
     }
 
@@ -139,6 +145,9 @@ extension DownloadEngine {
         job.durationSeconds = persisted.durationSeconds
         job.attempt = persisted.attempt
         job.state = persisted.state.restoredJobState
+        if case .failed = job.state, let fc = persisted.failureClass {
+            job.state = .failed(fc)
+        }
         job.finishedAt = persisted.finishedAt
         job.playlistGroupID = persisted.playlistGroupID
         job.playlistIndex = persisted.playlistIndex

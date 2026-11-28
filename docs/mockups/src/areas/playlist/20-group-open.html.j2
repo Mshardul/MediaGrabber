@@ -1,0 +1,20 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import toolbar, heading, row, group %}
+{% set screen_id = "playlist-group" %}
+{% set title = "Group, expanded" %}
+{% set caption = "Videos hang off one unbroken spine; the header counts each state and hides zeros." %}
+{% set tickets = ["mg-019", "mg-146", "mg-213", "mg-233", "mg-087", "mg-083"] %}
+{% call window(progress=62) %}
+<div class="window-body">
+  {{ rail("All", data.HOME_RAIL) }}
+  <div class="content table-view">
+    {{ toolbar() }}
+    <div class="table" role="table">
+      {{ heading() }}
+      {{ row(data.DOWNLOADS[7]) }}
+      {{ group(data.PLAYLIST_NAME, data.GROUP_ACTIVE) }}
+      {{ row(data.DOWNLOADS[6]) }}
+    </div>
+  </div>
+</div>
+{% endcall %}

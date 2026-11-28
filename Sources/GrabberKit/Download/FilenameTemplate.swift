@@ -1,7 +1,7 @@
 import Foundation
 
-enum FilenameTemplate {
-    static func apply(
+public enum FilenameTemplate {
+    public static func apply(
         _ template: String,
         metadata: MediaMetadata,
         kind: DownloadKind,

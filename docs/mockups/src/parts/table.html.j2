@@ -1,0 +1,145 @@
+{# The downloads table: toolbar, headings, video rows and playlist groups. #}
+{% from "parts/controls.html.j2" import icon, button, icon_button, check %}
+{% from "parts/window.html.j2" import rail %}
+{% from "parts/orb.html.j2" import orb_state %}
+
+{# Key, heading, whether it has a filter. #}
+{% set columns = (("title", "Title", true), ("progress", "Progress", false), ("speed", "Speed", false), ("eta", "ETA", false), ("quality", "Quality", true), ("size", "Size", false)) %}
+
+{% macro action_button(name, label, offered, hover=false) -%}
+<button type="button" class="btn btn-standard btn-icon size-compact" title="{{ label }}" aria-label="{{ label }}"{% if not offered %} disabled{% endif %}>{{ icon(name) }}{% if hover %}<span class="hover-label" role="tooltip">{{ label }}</span>{% endif %}</button>
+{%- endmacro %}
+
+{% macro toolbar(selected=(), shown=none) -%}
+<div class="table-tools">
+  {% if shown %}
+  <span class="filtered-count">{{ shown[0] }} of {{ shown[1] }} shown</span>{{ button("Clear filters", size="compact") }}
+  {% endif %}
+  {% if selected %}
+  <div class="selection" role="toolbar" aria-label="Selected downloads">
+    <b>{{ selected|length }} selected</b>
+    {% for name, label, states in data.VIDEO_ACTIONS %}
+      {% set found = namespace(any=false) %}
+      {% for download in selected %}{% if data.offers(download, label, states) %}{% set found.any = true %}{% endif %}{% endfor %}
+    {{ action_button(name, label, found.any) }}
+    {% endfor %}
+    {{ button("Clear", "plain", "compact") }}
+  </div>
+  {% endif %}
+  <span class="table-columns">{{ icon_button("columns", "Columns", style="standard") }}</span>
+</div>
+{%- endmacro %}
+
+{% macro row_actions(download, hover=none) -%}
+<div class="row-actions" role="toolbar" aria-label="Actions">
+  {% for name, label, states in data.VIDEO_ACTIONS %}
+  {{ action_button(name, label, data.offers(download, label, states), label == hover) }}
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{# sort is (column, "up" or "down"); hover names another column showing its faint arrow. #}
+{% macro heading(select="false", sort=none, hover=none, filtering=none, active=()) -%}
+<div class="tr thead" role="row">
+  <span class="td td-check">{{ check(select, "Select all shown downloads") }}</span>
+  {% for key, name, filtered in columns %}
+    {% set sorted = sort and sort[0] == key %}
+    {% set narrowed = filtering == key or key in active %}
+  <span class="td td-{{ key }}{% if sorted %} sorted{% endif %}{% if narrowed %} filtered{% endif %}" role="columnheader"{% if sorted %} aria-sort="{{ 'ascending' if sort[1] == 'up' else 'descending' }}"{% endif %}>{{ icon("grip") }}<span class="th-name">{{ name }}</span>{% if sorted %}{{ icon("chevron-" ~ sort[1]) }}{% elif hover == key %}<span class="sort-hint">{{ icon("chevron-up") }}</span>{% endif %}{% if filtered %}<span class="th-filter" title="Filter {{ name }}{% if narrowed %}, on{% endif %}">{{ icon("filter") }}</span>{% endif %}{% if filtering == key %}{{ caller() }}{% endif %}</span>
+  {% endfor %}
+  <span class="td td-menu" role="columnheader"><span class="sr-only">Actions</span></span>
+</div>
+{%- endmacro %}
+
+{% macro quality_filter() -%}
+<div class="popover filter-pop" role="dialog" aria-label="Filter Quality">
+  <p class="popover-caption">Quality</p>
+  <ul class="popover-list">
+    {% for value in data.QUALITY_CHOICES %}
+    <li role="option" aria-selected="{{ 'true' if value in data.QUALITY_CHECKED else 'false' }}"><span>{{ value }}</span>{% if value in data.QUALITY_CHECKED %}{{ icon("check") }}{% endif %}</li>
+    {% endfor %}
+  </ul>
+  <div class="filter-foot">{{ button("Clear filter", size="compact") }}</div>
+</div>
+{%- endmacro %}
+
+{% macro title_filter() -%}
+<div class="popover filter-pop" role="dialog" aria-label="Filter Title">
+  <p class="popover-caption">Title</p>
+  <div class="filter-search">{{ icon("search") }}<span>{{ data.TITLE_QUERY }}</span></div>
+  <div class="filter-foot">{{ button("Clear filter", size="compact") }}</div>
+</div>
+{%- endmacro %}
+
+{% macro status(state) -%}
+<span class="status st-{{ state }}" role="img" title="{{ data.STATE_LABELS[state] }}" aria-label="{{ data.STATE_LABELS[state] }}">{% if state == "running" %}<span class="logo downloading"><span class="logo-ball"></span><span class="logo-shine"></span></span>{% else %}{{ icon("state-" ~ state) }}{% endif %}</span>
+{%- endmacro %}
+
+{% macro row(download, child=false, selected=false, actions=false, hover=none, remark=false) -%}
+{% set name = download.title or download.link %}
+<div class="tr{% if child %} child{% endif %}{% if selected %} selected{% endif %}" role="row">
+  <span class="td td-check">{{ check("true" if selected else "false", "Select " ~ name) }}</span>
+  <span class="td td-title">{{ status(download.state) }}<span class="thumb thumb-row">{{ icon("picture") }}</span><span class="row-name{% if not download.title %} row-link{% endif %}" title="{{ name }}">{{ name }}</span><span class="kind" title="{{ download.kind }}">{{ icon(download.kind|lower) }}</span>{% if remark %}<span class="remark" role="tooltip">{{ download.remark }}</span>{% endif %}</span>
+  <span class="td td-progress">{% if download.progress and download.state in data.IN_PROGRESS %}<span class="bar progress-{{ download.progress }}{% if download.state != "running" %} still{% endif %}" role="progressbar" aria-valuenow="{{ download.progress }}"><i></i></span>{% endif %}</span>
+  <span class="td td-speed">{{ download.speed or "" }}</span>
+  <span class="td td-eta">{{ download.eta or "" }}</span>
+  <span class="td td-quality">{{ download.quality or "—" }}</span>
+  <span class="td td-size">{{ download.size or "—" }}</span>
+  <span class="td td-menu">{{ icon_button("more", "Actions") }}{% if actions %}{{ row_actions(download, hover) }}{% endif %}</span>
+</div>
+{%- endmacro %}
+
+{% macro group_menu(children) -%}
+<ul class="popover menu" role="menu" aria-label="Playlist actions">
+  {% for name, label, states in data.GROUP_ACTIONS %}
+  <li role="menuitem"{% if not children|selectattr("state", "in", states)|list %} aria-disabled="true"{% endif %}>{{ icon(name) }}<span>{{ label }}</span></li>
+  {% endfor %}
+</ul>
+{%- endmacro %}
+
+{% macro group(name, children, open=true, selected=(), menu=false) -%}
+{% set picked = selected|length %}
+<div class="tr group" role="row" aria-expanded="{{ 'true' if open else 'false' }}">
+  <span class="td td-check">{{ check("false" if not picked else ("true" if picked == children|length else "mixed"), "Select every video in " ~ name) }}</span>
+  <span class="td td-group">
+    <span class="caret" title="{{ 'Collapse' if open else 'Expand' }}">{{ icon("chevron-down" if open else "chevron-right") }}</span>
+    <span class="group-text">
+      <b title="{{ name }}">{{ name }}</b>
+      <span class="group-rollup">{{ data.rollup(children) }}<span class="bar progress-{{ data.rollup_tenths(children) }}"><i></i></span></span>
+    </span>
+  </span>
+  <span class="td td-menu">{{ icon_button("more", "Playlist actions") }}{% if menu %}{{ group_menu(children) }}{% endif %}</span>
+</div>
+{% if open %}
+<div class="group-children">
+  {% for download in children %}
+  {{ row(download, child=true, selected=loop.index0 in selected) }}
+  {% endfor %}
+</div>
+{% endif %}
+{%- endmacro %}
+
+{% macro empty_body(view, mood) -%}
+<div class="window-body">
+  {{ rail(view, data.table_rail(0)) }}
+  <div class="content empty-view">{{ orb_state(mood, view) }}</div>
+</div>
+{%- endmacro %}
+
+{# A table view: rail, Columns row, headings and rows. #}
+{% macro table_body(view, rows, inactive=2, selected=(), actions=none, hover=none, remark=none) -%}
+<div class="window-body">
+  {{ rail(view, data.table_rail(inactive)) }}
+  <div class="content table-view">
+    {% set picked = [] %}
+    {% for index in selected %}{% if picked.append(rows[index]) %}{% endif %}{% endfor %}
+    {{ toolbar(picked) }}
+    <div class="table" role="table">
+      {{ heading("mixed" if selected else "false") }}
+      {% for download in rows %}
+      {{ row(download, selected=loop.index0 in selected, actions=actions == loop.index0, hover=hover, remark=remark == loop.index0) }}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{%- endmacro %}

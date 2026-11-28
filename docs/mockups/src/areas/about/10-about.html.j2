@@ -1,0 +1,8 @@
+{% from "parts/about.html.j2" import about_window, product_page %}
+{% set screen_id = "about-app" %}
+{% set title = "The Product" %}
+{% set caption = "A short product page: the orb, what the app does, and where to read more or report a problem." %}
+{% set tickets = ["mg-220", "mg-271"] %}
+{% call about_window("The Product") %}
+{{ product_page() }}
+{% endcall %}

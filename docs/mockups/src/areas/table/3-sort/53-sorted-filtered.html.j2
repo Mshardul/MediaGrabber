@@ -1,0 +1,20 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import toolbar, heading, row %}
+{% set screen_id = "table-sorted-filtered" %}
+{% set title = "Sorted and filtered" %}
+{% set caption = "Size is sorted and Quality is filtered: the same bright name, each with its own icon on." %}
+{% set tickets = ["mg-017", "mg-280", "mg-283"] %}
+{% call window(progress=62) %}
+<div class="window-body">
+  {{ rail("All", data.table_rail(2)) }}
+  <div class="content table-view">
+    {{ toolbar(shown=(data.TABLE_BY_QUALITY|length, data.TABLE_ALL|length)) }}
+    <div class="table" role="table">
+      {{ heading(sort=("size", "up"), active=("quality",)) }}
+      {% for download in data.TABLE_BY_SIZE if download in data.TABLE_BY_QUALITY %}
+      {{ row(download) }}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endcall %}

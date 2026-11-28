@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import table_body %}
+{% set screen_id = "table-remark-failed" %}
+{% set title = "Why a download failed" %}
+{% set caption = "Hover or keyboard focus on a failed row shows its reason." %}
+{% set tickets = ["mg-018"] %}
+{% call window() %}
+{{ table_body("Inactive", data.TABLE_INACTIVE, inactive=data.TABLE_INACTIVE|length, remark=2) }}
+{% endcall %}

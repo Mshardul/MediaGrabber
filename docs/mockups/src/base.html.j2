@@ -11,6 +11,7 @@
 <script src="{{ root }}orb-shaders.js"></script>
 <script src="{{ root }}orb-symbols.js"></script>
 <script src="{{ root }}orb.js"></script>
+<script src="{{ root }}portrait.js"></script>
 </head>
 <body>
 <svg class="sprite" aria-hidden="true">
@@ -29,6 +30,13 @@
       {% endif %}
     {% endfor %}
   </nav>
+  {% if parts is defined and parts|length > 1 %}
+  <nav class="doc-submenu" aria-label="Topics">
+    {% for item in parts %}
+    <a href="{{ root }}screens/{{ item.file }}"{% if item.file == part.file %} aria-current="page"{% endif %}>{{ item.name }}</a>
+    {% endfor %}
+  </nav>
+  {% endif %}
   <div class="doc-switch" role="group" aria-label="Theme and palette">
     {% for theme, theme_name, palettes in themes %}
     <div class="doc-group">

@@ -5,11 +5,14 @@
   <section>
     <h2>{{ name }}</h2>
     {% if slug in built %}
+    {% for part in built[slug] %}
+    {% if built[slug]|length > 1 %}<h3>{{ part.name }}</h3>{% endif %}
     <ul>
-      {% for screen in built[slug] %}
-      <li><a href="screens/{{ slug }}.html#{{ screen.id }}">{{ screen.title }}</a></li>
+      {% for screen in part.screens %}
+      <li><a href="screens/{{ part.file }}#{{ screen.id }}">{{ screen.title }}</a></li>
       {% endfor %}
     </ul>
+    {% endfor %}
     {% else %}
     <p class="doc-empty">Not built yet.</p>
     {% endif %}

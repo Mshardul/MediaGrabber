@@ -1,0 +1,52 @@
+{# The playlist picker and the Home screen it opens over. #}
+{% from "parts/controls.html.j2" import icon, button, check %}
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, choices_card, grab_view %}
+
+{% macro playlist_home(count=data.PLAYLIST_ITEMS|length) -%}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view(orb=false) %}
+{{ link_card(data.PLAYLIST_LINK, result=data.playlist_result(count)) }}
+{{ choices_card(data.VIDEO_CHOICE, "Grab all " ~ count) }}
+{% endcall %}
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro picker_window(state) -%}
+{% call window() %}
+{{ playlist_home(state.rows|length) }}
+<div class="scrim">
+  <div class="playlist-picker" role="dialog" aria-modal="true" aria-label="Choose videos to download">
+    <header>
+      <h3>Choose videos to download</h3>
+      <p title="{{ state.subtitle }}">{{ state.subtitle }}</p>
+    </header>
+    {% if state.queued %}<p class="picker-banner">This playlist is already in your queue.</p>{% endif %}
+    <div class="picker-tools">
+      {% set suffix = " shown" if state.query else "" %}
+      {{ button("Select all" ~ suffix) }}{{ button("Select none" ~ suffix) }}
+      <span class="picker-filter{% if not state.query %} placeholder{% endif %}">{{ state.query or "filter…" }}</span>
+    </div>
+    <ul class="picker-rows">
+      {% for row in state.shown %}
+      <li>
+        {{ check("true" if row.checked else "false", row.title) }}
+        <span class="thumb">{{ icon("picture") }}</span>
+        <span class="picker-name" title="{{ row.title }}">{{ row.title }}</span>
+        {% if row.note %}<span class="picker-note">{{ row.note }}</span>{% endif %}
+        <span class="picker-data">{{ row.duration }}</span>
+        <span class="picker-data picker-size">≈ {{ row.size }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <footer>
+      <p>{{ state.summary }}</p>
+      <div>{{ button("Cancel") }}{{ button("Add " ~ state.selected, "main", disabled=state.selected == 0) }}</div>
+    </footer>
+  </div>
+</div>
+{% endcall %}
+{%- endmacro %}

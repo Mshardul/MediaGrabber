@@ -6,8 +6,8 @@ struct FilenameConflictResult {
     let conflictingURL: URL?
 }
 
-enum FilenameConflictChecker {
-    static func checkConflict(
+public enum FilenameConflictChecker {
+    public static func checkConflict(
         filename: String,
         in folder: URL
     ) -> (exists: Bool, conflictingURL: URL?) {

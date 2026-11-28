@@ -1,0 +1,17 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import toolbar, heading %}
+{% from "parts/orb.html.j2" import orb_state %}
+{% set screen_id = "table-filtered-empty" %}
+{% set title = "Filters match nothing" %}
+{% set caption = "The headings stay, because these downloads still exist." %}
+{% set tickets = ["mg-020", "mg-237", "mg-283"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("All", data.table_rail(2)) }}
+  <div class="content table-view">
+    {{ toolbar(shown=(0, data.TABLE_ALL|length)) }}
+    <div class="table-head" role="table">{{ heading(active=("quality",)) }}</div>
+    {{ orb_state("clouded", "Filtered") }}
+  </div>
+</div>
+{% endcall %}

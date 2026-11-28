@@ -1,0 +1,20 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import toolbar, heading, row, quality_filter %}
+{% set screen_id = "table-filter-quality" %}
+{% set title = "Filtering by quality" %}
+{% set caption = "The list opens under its heading, ticks update while it stays open, and the Columns row counts what is shown." %}
+{% set tickets = ["mg-198", "mg-205", "mg-283"] %}
+{% call window(progress=62) %}
+<div class="window-body">
+  {{ rail("All", data.table_rail(2)) }}
+  <div class="content table-view">
+    {{ toolbar(shown=(data.TABLE_BY_QUALITY|length, data.TABLE_ALL|length)) }}
+    <div class="table" role="table">
+      {% call heading(filtering="quality") %}{{ quality_filter() }}{% endcall %}
+      {% for download in data.TABLE_BY_QUALITY %}
+      {{ row(download) }}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endcall %}

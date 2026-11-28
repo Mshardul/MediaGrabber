@@ -1,0 +1,13 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/orb.html.j2" import orb_state %}
+{% set screen_id = "table-empty-drag" %}
+{% set title = "Link dragged over an empty view" %}
+{% set caption = "The orb is ready to catch it; dropping opens the Grab view." %}
+{% set tickets = ["mg-023", "mg-237", "mg-279"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("All", data.table_rail(0)) }}
+  <div class="content empty-view">{{ orb_state("drag") }}</div>
+</div>
+<div class="drop-highlight" aria-hidden="true"></div>
+{% endcall %}

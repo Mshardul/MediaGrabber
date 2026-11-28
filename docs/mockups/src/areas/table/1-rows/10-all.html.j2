@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import table_body %}
+{% set screen_id = "table-all" %}
+{% set title = "Every state" %}
+{% set caption = "One row per status, each with its own icon; a bar stays on rows that can continue, greyed when they are not moving." %}
+{% set tickets = ["mg-083", "mg-087", "mg-213", "mg-214", "mg-232", "mg-233"] %}
+{% call window(progress=62) %}
+{{ table_body("All", data.TABLE_ALL) }}
+{% endcall %}

@@ -266,7 +266,7 @@ actor MetadataProbe: MetadataProbing {
             durationSeconds: durationSeconds(object),
             isPlaylist: (object["_type"] as? String) == "playlist",
             sourceURL: sourceURL,
-            thumbnailURL: object["thumbnail"] as? String,
+            thumbnailURL: ThumbnailURL.from(object),
             extractor: extractor,
             formatAvailability: parsed.availability,
             videoHeights: parsed.videoHeights,

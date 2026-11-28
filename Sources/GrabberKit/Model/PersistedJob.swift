@@ -20,6 +20,7 @@ public struct PersistedJob: Codable, Sendable, Equatable {
     public var totalBytes: Int64?
     public var outputFiles: [URL]
     public var playerClientUsed: String?
+    public var failureClass: ErrorClass?
 
     public init(
         id: UUID,
@@ -39,7 +40,8 @@ public struct PersistedJob: Codable, Sendable, Equatable {
         downloadedBytes: Int64? = nil,
         totalBytes: Int64? = nil,
         outputFiles: [URL] = [],
-        playerClientUsed: String? = nil
+        playerClientUsed: String? = nil,
+        failureClass: ErrorClass? = nil
     ) {
         self.id = id
         self.request = request
@@ -59,6 +61,7 @@ public struct PersistedJob: Codable, Sendable, Equatable {
         self.totalBytes = totalBytes
         self.outputFiles = outputFiles
         self.playerClientUsed = playerClientUsed
+        self.failureClass = failureClass
     }
 
     public init(from decoder: Decoder) throws {
@@ -81,6 +84,7 @@ public struct PersistedJob: Codable, Sendable, Equatable {
         totalBytes = try container.decodeIfPresent(Int64.self, forKey: .totalBytes)
         outputFiles = try container.decodeIfPresent([URL].self, forKey: .outputFiles) ?? []
         playerClientUsed = try container.decodeIfPresent(String.self, forKey: .playerClientUsed)
+        failureClass = try container.decodeIfPresent(ErrorClass.self, forKey: .failureClass)
     }
 }
 

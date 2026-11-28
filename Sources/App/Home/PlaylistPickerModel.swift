@@ -35,6 +35,13 @@ struct PlaylistPickerModel: Equatable {
         }
     }
 
+    var sizeSum: Int {
+        dump.entries.reduce(0) { sum, entry in
+            guard checked.contains(entry.playlistIndex) else { return sum }
+            return sum + (entry.fileSizeBytes ?? 0)
+        }
+    }
+
     var filteredEntries: [PlaylistEntry] {
         guard !filter.isEmpty else { return dump.entries }
         return dump.entries.filter { entry in
@@ -48,6 +55,9 @@ struct PlaylistPickerModel: Equatable {
             parts.append("\(overlapCount) already in queue")
         }
         parts.append("≈ \(Self.durationString(durationSum))")
+        if sizeSum > 0 {
+            parts.append(Self.sizeString(sizeSum))
+        }
         return parts.joined(separator: " · ")
     }
 
@@ -100,6 +110,13 @@ struct PlaylistPickerModel: Equatable {
 
     private static func padded(_ value: Int) -> String {
         String(format: "%02d", value)
+    }
+
+    private static func sizeString(_ bytes: Int) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: Int64(bytes))
     }
 }
 

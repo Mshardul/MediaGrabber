@@ -1,8 +1,7 @@
 import Foundation
-import GrabberKit
 
-enum FormatSizeEstimator {
-    static func estimateFileSize(
+public enum FormatSizeEstimator {
+    public static func estimateFileSize(
         for meta: MediaMetadata,
         kind: DownloadKind,
         audioLanguage: AudioLanguage

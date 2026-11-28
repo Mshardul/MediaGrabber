@@ -154,7 +154,7 @@ Within a theme every glyph comes from that one library — never mixed. Only the
 | nav-preferences      | `gear`               | `settings`         |
 | nav-diagnostics      | `stethoscope`        | `stethoscope`      |
 
-A logo design for both themes, in 2D and 3D forms, is still open; until it is decided, the following applies. The logo is **not** in this set — it is `MotifView`, a drawn SwiftUI shape: one conic-gradient orb (`#5EF2C8, #8B7BFF, #FF7A6B, #5EF2C8`), with the same colours under every theme and palette and a finish per theme. Aurora: a soft glassy highlight and shaded edge. Tape Deck: a thick ink outline, hard shadow and flat highlight. 24px in the title bar (6s spin while a download runs, inside the progress ring of §4.1), 14px on actively-downloading rows (2s spin).
+A logo design for both themes, in 2D and 3D forms, is still open; until it is decided, the following applies. The logo is **not** in this set — it is `MotifView`, a drawn SwiftUI shape: one conic-gradient orb (`#5EF2C8, #8B7BFF, #FF7A6B, #5EF2C8`), with the same colours under every theme and palette and a finish per theme. Aurora: a soft glassy highlight, shaded edge and soft outer glow in the logo's own colours, the same on the title bar and on rows. Tape Deck: a thick ink outline, hard shadow and flat highlight. 24px in the title bar (6s spin while a download runs, inside the progress ring of §4.1), 14px on actively-downloading rows (2s spin).
 
 The `warning` glyph is reused for the Preferences concurrency note (§4.6) — no new glyph is introduced for it.
 
@@ -162,7 +162,11 @@ The `warning` glyph is reused for the Preferences concurrency note (§4.6) — n
 
 - **Heights** — 44pt for a screen's main action, 34pt standard (matching pickers and segments), 28pt for rows, toolbars, dialogs' lists and alerts.
 - **Styles** — main (`--go-fill`), standard (`--panel` with a `--stroke` border), destructive (`--danger`) and text-only.
-- **Width** — every text button and picker is 184pt wide, never sized to its label. Icon-only buttons are square at the same heights.
+- **Width** — every text button and picker is 184pt wide, never sized to its label. Exceptions: the Home choices row (§4.2.2) and the Developer links (§4.8). Icon-only buttons are square at the same heights.
+
+### 3.6 Centred pages
+
+Every page laid out as one centred column (the Grab view, About, Developer, Help and later pages of the same kind) uses the same width: 760pt at most with 30pt padding each side, so 700pt of content in the default window. It narrows with the window. Cards in dialogs and the playlist picker keep their own widths.
 
 ---
 
@@ -173,12 +177,12 @@ The `warning` glyph is reused for the Preferences concurrency note (§4.6) — n
 ### 4.1 App chrome
 
 - **Title bar** — the app extends into the macOS title bar and keeps the system's close, minimise and zoom buttons; the system title is hidden. It holds the wordmark (logo + name) on the left and, on the right, the nav (`Home · Preferences · Help · About`) as in-app page links; the active page gets a filled background (Aurora: `--panel-hi`, on the tinted bar; Tape Deck: `--panel`). Diagnostics is not a nav item — it is a Preferences pane (§4.6); Help (§4.12) and About (§4.8) are also top-level destinations. The health strip sits on the row below. The title bar is the only chrome that stays fixed regardless of page. Dragging and double-clicking its empty areas behave as in any macOS window, and it dims when the window is inactive.
-- **Logo** — while anything is downloading, a ring around it shows overall progress, drawn in the chosen theme and palette gradient and never in an issue colour (Aurora: `--accent` to `--accent-2`; Tape Deck: `--go` to `--accent`, since its title bar is `--accent-2`). No ring when nothing is downloading. One click goes Home; a triple-click opens the hidden orb view.
+- **Logo** — while anything is downloading, a ring around it shows overall progress, drawn in the chosen theme and palette gradient and never in an issue colour (Aurora: `--accent` to `--accent-2`; Tape Deck: `--go` to `--accent`, since its title bar is `--accent-2`). Only unfinished downloads count. Each gets an equal share of the ring; one whose progress is unknown counts as zero. No ring when nothing is downloading. One click goes Home; a triple-click opens the hidden orb view.
 - **Left rail** — one persistent rail, same visual shell, sits below the health strip on every page; its _content_ changes with the active page while the rail's position, width, and row styling stay identical everywhere:
   - **Home** — **Grab** first, then a divider, then the status filters (§4.2.3: All · Downloading · Done · Inactive). Shown from first launch. **Grab** opens the Grab view (§4.2.1); each filter opens the table.
   - **Preferences** — the pane rail (§4.6).
   - **Help** — a section rail (§4.12); each row opens its own page.
-  - **About** — the tab rail (§4.8: About / Developer). Selecting a rail row updates the app's current page state directly (e.g. `.preferences(.diagnostics)`), so the rail's own selection and the page's content can never drift apart.
+  - **About** — the tab rail (§4.8: The Product / The Person). Selecting a rail row updates the app's current page state directly (e.g. `.preferences(.diagnostics)`), so the rail's own selection and the page's content can never drift apart.
 - **Health strip** — below the brand row. One small utility-face chip per **issue category**. Every category chip is always visible, healthy or not, and its dot shows the most severe thing it holds.
   - **Issues dialog** — clicking a chip opens a centred dialog listing everything in that category, warnings included. Each entry says in plain words what is wrong and has its action buttons under that text, aligned right. Order: severity first, then newest first.
   - **Healthy** — a healthy chip's dialog says everything in that category is working. Cooldown and site wording is plain, true for any mix of paused and cooling sites, and free of technical terms.
@@ -204,7 +208,7 @@ Each level differs in shape and colour. Its colours are their own tokens, apart 
 | YouTube & sign-in | YouTube check stopped | Problem | Restart |
 | YouTube & sign-in | Browser needs permission | Problem | Open System Settings |
 | YouTube & sign-in | Chosen browser has no usable profile | Problem | Choose browser |
-| YouTube & sign-in | YouTube check missing from this copy | Warning | Download again |
+| YouTube & sign-in | YouTube check missing from this copy | Problem | Download again |
 | YouTube & sign-in | YouTube check restarting | Warning | none |
 | Tools | Downloader or main media tool missing | Blocked | Fix setup |
 | Tools | Tool that checks finished files missing | Problem | Open Diagnostics |
@@ -223,7 +227,7 @@ Behavioural contract in spec §5.3. Home has two views, chosen on the rail: the 
 
 - **Grab view** — one centred column beside the rail: the orb (§4.2.5), the headline “One link in. One file out.” as its message, and the paste field. There is no line above the headline. While a link is checked the orb searches. After a successful check the orb is hidden and the runway appears under the field. After **Grab** the view stays, with the field cleared for the next link.
 - **First run, no download ever made:** the Grab view also shows a **horizontal numbered strip** (“Paste a link · Pick a format · Press Grab”) at the bottom of the column.
-- **First-run hint:** a short line says a link can also be dragged in or shared from another app.
+- **First-run hint:** “You can also drag a link in.” Sharing from other apps is left to the Share tip.
 - **After the first Grab:** the strip is gone permanently.
 - **Table views** — the Downloads table with its toolbar, using the full height. There is no paste field or runway.
 - **Adding from a table view** — ⌘V outside a text field, or dragging a link onto the window, opens the Grab view and checks the link. There is no separate add button.
@@ -240,7 +244,15 @@ The orb holds everything: "whatever you need". A large animated 3D orb appears o
 - **Pointer** — it turns and leans towards the pointer in true 3D, tracked across the whole surrounding area.
 - **Quiet** — still under Reduce Motion; hidden from VoiceOver, which reads the message; animation stops while the window is not visible.
 - **Table headings** show only when column filters cause the empty result.
-- **Empty rail views** each say what that view holds and offer a way on.
+- **Empty rail views** share one layout: orb, heading, message and one button, with no paste field or Columns button row. **Grab a link** opens the Grab view. A view emptied by column filters keeps the table headings and offers **Clear filters** instead.
+
+| View | Heading | Message | Button |
+| --- | --- | --- | --- |
+| All | No downloads yet | Everything you grab is listed here. | Grab a link |
+| Downloading | Nothing is downloading | Downloads in progress show up here. | Grab a link |
+| Done | Nothing saved yet | Finished downloads show up here. | Grab a link |
+| Inactive | Nothing needs attention | Failed and cancelled downloads show up here. | Grab a link |
+| Filtered | No downloads match | Your column filters hide every download here. | Clear filters |
 
 | Mood | Meaning | Shown on |
 | --- | --- | --- |
@@ -278,9 +290,10 @@ One table, newest at top. One **row per video** (a playlist contributes N rows, 
 **Layout:** the shared **left rail** (§4.1) + table body (not top filter chips), with no paste field above it.
 
 - **Rail** — `All · Downloading · Done · Inactive`. Inactive shows a count badge when > 0 (failed + cancelled). Mapping: Downloading = probing, running, queued, paused, waitingForNetwork, cooldown; Done = completed; Inactive = failed, cancelled.
-- **`⊞ Columns` button** — opens a dropdown of checkboxes to show/hide columns.
+- **`⊞ Columns` button** — opens a list of columns in the current order, each with a checkbox. Rows can be reordered there by dragging or by keyboard. **Reset columns** sits at the bottom (Preferences → Advanced keeps its own reset).
+- **Hidden rows** — while any column filter is active, the Columns-button row shows how many rows are shown (such as "2 of 40 shown") and **Clear filters**, beside any selection actions.
 
-**Columns:** one active sort at a time (`↕` cycles asc → desc → off). **Status** kept but **hidden by default** (rail is the everyday filter); labels are the nine `JobState`s 1:1 (plain aliases). Detail → Remark.
+**Columns:** one active sort at a time. Clicking a column's name cycles ascending → descending → off; there is no separate sort button. Only the sorted column shows an arrow (sort-asc or sort-desc, §3.4) beside a brighter name; any other sortable name shows a faint arrow on hover. The normal order is newest first (by **Added at**, hidden or not), and turning a sort off returns to it. **Status** kept but **hidden by default** (rail is the everyday filter); labels are the nine `JobState`s 1:1 (plain aliases). Detail → Remark.
 
 | Column | Default | Hideable | Reorderable | Sort | Filter |
 | --- | --- | --- | --- | --- | --- |
@@ -303,7 +316,11 @@ One table, newest at top. One **row per video** (a playlist contributes N rows, 
 | **Actions** | ✓ visible | **no** | **no (pinned last)** | — | — |
 
 - **Column headers are draggable** to reorder (except Actions, pinned last).
-- Column order, visibility, **widths**, the active sort column + direction, and active filters **persist** as a `ColumnConfig` in `columns.json` (separate from `Preferences`; see spec §4). Checkbox column is not a `ColumnID` — fixed width, not in `columnWidths`.
+- **Fixed while scrolling sideways:** the checkbox and Title at the left and Actions at the right; the other columns scroll between them. In a narrow window Title keeps a minimum width (260pt), so the table scrolls sideways instead of squeezing it.
+- **Hiding a column** clears its filter and any sort chosen on it. The default Added at order is not cleared.
+- **Dragging rows** changes only the view, until the app closes; it does not change download order. It asks to clear sorting only when a sort has been chosen.
+- Quality sorts by resolution, not as text.
+- Column order, visibility, **widths**, and the active sort column + direction **persist** as a `ColumnConfig`; filters are cleared when the app reopens. They are held in `columns.json` (separate from `Preferences`; see spec §4). Checkbox column is not a `ColumnID` — fixed width, not in `columnWidths`.
 - A column whose data source is not yet populated (`Attempt`, `Client used`) shows an em-dash and still sorts; a checklist filter with only a "(none)" option is allowed.
 - Nil values always sort **last**, regardless of direction.
 - There is **no "Playlist" column** — a playlist's membership is shown by the group header + indented child rows + spine (§4.2.4), not a column.
@@ -313,16 +330,16 @@ One table, newest at top. One **row per video** (a playlist contributes N rows, 
 - **Selection actions** use the Columns-button row, so table rows never move: `N selected`, every video-level action as an icon (enabled when any selected row offers it, per `job-status-and-actions.md` §8), and Clear. Shown only while rows are selected. Not a floating footer.
 - **Grid substrate:** AppKit draws headers and body cells with shared palette / type / spacing tokens (`DownloadsGridTokens`). SwiftUI owns shell outside the grid (rail, batch bar, Columns menu). Do not default to `NSHostingView` per cell.
 
-**Headers and filters:** header cells show a drag grip, sort and filter buttons and resize dividers. A filter popover opens against its own header, uses the theme, updates its checkmarks while open and has a clear action for that column. The Title filter is a search box. The Destination filter matches the folder name it lists. Esc clears the selection. **Restart** is offered on every failed row.
+**Headers and filters:** header cells show a drag grip, a filter button and resize dividers. A column with an active filter has the same bright name as a sorted one and its filter button filled with `--accent`; the two states differ only in which icon is on (sort arrow, filled filter button), and a column can show both. A filter popover opens against its own header, uses the theme, updates its checkmarks while open and has a clear action for that column, labelled **Clear filter**. The Title filter is a search box. The Destination filter matches the folder name it lists. Esc clears the selection. **Restart** is offered on every failed row.
 
-**Status and progress:** status labels and progress bars use the state colours; failure text is a plain sentence with a next step, shown on hover and keyboard focus; countdowns tick.
+**Status and progress:** status labels and progress bars use the state colours; failure text is a plain sentence with a next step, shown on hover and keyboard focus, with the downloader's raw text only in the row's Log action; countdowns tick.
 
 **Cell treatments:**
 
 - _Title_ — in order: status icon, page picture (on by default, hideable from Columns), title, and a Video or Audio icon. The status icon differs in shape and colour per status, names it on hover and to VoiceOver, and is the motif spinner on an actively-downloading row; a row with no title yet shows its link; playlist children indented with the spine connector (§4.2.4); full title as hover tooltip when truncated.
 - _Remark_ (optional column / hover+focus) — queue `#N`, backoff / host rate, failure reason sentence — never invents a second status vocabulary.
 - _Status_ (optional column) — plain 1:1 label only; never free text.
-- _Progress_ — thin bar (`--bar-fill`), only on active rows; blank otherwise.
+- _Progress_ — thin bar on every unfinished row that has made progress and can continue: `--bar-fill` while downloading, grey when not moving (paused, waiting for network, cooling down, queued again). Blank otherwise, failed and cancelled rows included.
 - _Speed_, _ETA_ — utility face, `--dim`; blank on non-running rows.
 - _Type_ — `Audio` / `Video`. _Quality_ — what was actually downloaded (`1080p` … or `m4a` / `mp3`), never the requested value or an arrow; a dash until it is known. Both `--dim`.
 - _Size_ — known total; `--dim`; em-dash until known.
@@ -331,7 +348,7 @@ One table, newest at top. One **row per video** (a playlist contributes N rows, 
 
 #### 4.2.4 Playlist group in the table
 
-- **Group header row** — spans the table above the playlist's videos. Contains: a disclosure caret (collapses/expands the whole group), the playlist name, a three-state checkbox, a rollup (item count, counts of done, failed, cancelled and in progress with zeros hidden, and a mini progress bar), and a three-dot menu holding the group-level actions (Pause all · Restart failed · Cancel all — see `job-status-and-actions.md` §3b), each enabled or disabled by what the group's videos allow. Video rows inside the group keep their own menu of video-level actions. Background `--accent-2` at low alpha. Show the group when any child matches the selected rail.
+- **Group header row** — spans the table above the playlist's videos. Contains, in order: a three-state checkbox in the table's checkbox column, a disclosure caret (collapses/expands the whole group), the playlist name, a rollup (item count, counts of done, failed, cancelled and in progress with zeros hidden, and a mini progress bar), and a three-dot menu that opens a dropdown list, each action with an icon and its name, holding the group-level actions (Pause all · Restart failed · Cancel all — see `job-status-and-actions.md` §3b), each enabled or disabled by what the group's videos allow. Video rows inside the group keep their own menu of video-level actions. Background `--accent-2` at low alpha. Show the group when any child matches the selected rail.
 - **Child rows** — the playlist's videos, indented. A single **continuous vertical spine** runs down the left at the indent position. Each child has a short horizontal connector from the spine to its content.
 - **Row divider lines between children start _after_ the spine** (indented to align with content) — they never cross it, so the spine reads as one unbroken line.
 - **Collapsed** — children hidden; the header row remains, showing the rollup only.
@@ -347,7 +364,7 @@ Opens from **Grab all N**, after the choices on Home are set, and **before** any
 - **List** — scrollable, one row per video: checkbox · thumbnail · title (truncates) · duration · approximate size when known · optional **In queue** / **Already saved**. Whole row toggles.
 - **Card** — 560pt wide; rows are flat, separated by hairlines.
 - **Defaults** — all checked except warned rows (those start unchecked). Select all can still check them. Checks are not remembered the next open.
-- **Footer** — live `M of N selected · K already in queue · ≈ H:MM:SS` (sum of known durations among checked; omit K when 0), plus the total approximate size of checked videos when known, and `S shown` while filtering · `Cancel` · `Add M` (primary; disabled at 0). Never an invented size.
+- **Footer** — the count line takes the full width, with `Cancel` · `Add M` right-aligned on the row below. The line is live: `M of N selected · K already in queue · ≈ H:MM:SS` (sum of known durations among checked; omit K when 0), plus the total approximate size of checked videos when known, and `S shown` while filtering. `Add M` is primary and disabled at 0. Never an invented size.
 - Only checked videos become table rows (as the group in §4.2.4). Unchecked are not added and not remembered.
 
 ### 4.4 Alerts
@@ -377,9 +394,19 @@ A full-window takeover with no navigation, health chips or rail. The downloader,
 | Testing | Searching | Status says the app is being checked. **Continue** is disabled. |
 | Passed | Waiting | Status says everything works. **Continue**. |
 | Test failed | Clouded | Plain reason. **Try again** and **Continue anyway**. A retry returns to Testing. |
-| Damaged copy | Clouded | Says this copy of the app is damaged and points to the download page. Shows the version installed before the current one, if there was one. **Download again** and **Check again**. No way into Home. |
+| Damaged copy | Clouded | Says this copy of the app is damaged and points to the download page. Shows the version installed before the current one, if there was one. **Download again** and **Check again**. First-time users have no way into Home. |
 
-**Returning users** (a required tool went missing after onboarding was finished) see repair wording, with no first-run label.
+**Returning users** (a required tool went missing after onboarding was finished) see repair wording, with no first-run label. With a damaged copy they can also open Home, where their list and history stay available, downloading is blocked and the Tools chip (§4.1) shows why.
+
+| State | Headline | Status line |
+| --- | --- | --- |
+| Testing | Welcome to MediaGrabber | Checking that the app works… |
+| Passed | You're all set | MediaGrabber is ready. |
+| Test failed | The check didn't pass | _the plain reason_ |
+| Damaged copy, first time | This copy is damaged | Download a fresh copy from the download page. |
+| Damaged copy, returning | MediaGrabber needs repair | Download a fresh copy. Your list is safe. |
+
+When an earlier version is known, a second line reads “You had version _X_ before this one.” The returning user's button into Home reads **Open Home**.
 
 Wording is plain: no tool names, commands or terminal output.
 
@@ -406,7 +433,7 @@ Rows per pane (control → backing field on `Preferences`, unless noted):
 | --- | --- | --- | --- |
 | Downloads folder | — | folder button `~/Downloads`, no chevron → `NSOpenPanel` | `defaultDownloadFolder` |
 | Simultaneous downloads | Automatically reduced if a site rate-limits you. | stepper 1–6 | `maxConcurrentDownloads` |
-| Automatic retries | Attempts before a download is marked failed. | stepper 1–5 | `maxAutoRetries` |
+| Automatic retries | Most times to retry a failed download. Some failures aren’t retried. | stepper 1–5 | `maxAutoRetries` |
 | Media type | — | `SkinnedSegment` — Video / Audio | `defaultMediaType` |
 | Video quality | Highest available if the exact height isn't offered. | `SkinnedPicker` — 2160p / 1440p / 1080p / 720p / 480p / Best available | `defaultVideoHeight` (`Int.max` = Best) |
 | Audio language | Used when this video has that kind of track. | `SkinnedSegment` — YouTube default / Original | `defaultAudioLanguagePolicy` |
@@ -416,7 +443,7 @@ Rows per pane (control → backing field on `Preferences`, unless noted):
 
 An **After downloading** group follows (planned): a double-click switch, off by default, and a video player and an audio player, each starting as the Mac's default app.
 
-**Filename format → Custom…** has buttons that insert title, channel and date, and shows an example filename. An invalid format shows an error and the last valid one is kept.
+**Filename format → Custom…** has buttons that insert title, channel and date, and shows an example filename. An invalid format shows an error and the last valid one is kept. A format is valid only if every field in it can be previewed accurately, it has the title or the video ID, it ends in `.%(ext)s`, and it has no leading `/` and no `..`. Subfolders are allowed. The example matches the name the file is saved with.
 
 The **concurrency note** renders in the "Simultaneous downloads" row's right column, under the stepper, when the new value is below the live running count: the warn glyph (§3.4) tinted `--warn` + a `--dim` line `"<count> still running — the new limit applies as they finish."` It clears when the running count drops to `≤` the new value, or on relaunch.
 
@@ -483,7 +510,7 @@ When a browser is chosen, a `--dim` tip sits under the rows: _"For the most reli
 
 | Label | Helper | Control | Action |
 | --- | --- | --- | --- |
-| MediaGrabber | MIT-licensed; each tool keeps its own license | — | — |
+| MediaGrabber | MIT-licensed; each tool keeps its own license | button "Read" | opens the app's own license, bundled |
 | yt-dlp | Unlicense | button "Read" | opens `yt-dlp.txt` |
 | FFmpeg | LGPL 2.1 or later | button "Read" | opens `ffmpeg.txt` |
 | LAME | LGPL 2.1 or later | button "Read" | opens `lame.txt` |
@@ -517,9 +544,7 @@ New `Preferences` fields this section introduces: `detectClipboardLinks: Bool` (
 
 ### 4.8 About
 
-About is to be redesigned as a visual page. Developer is to be a visual page with profile links, `https://mshardul.github.io`, the project's GitHub Pages page and a growable app list. Neither design is settled; the layout below is the current one.
-
-A top-level nav destination (§4.1). A two-tab page (About, Developer), selected via the app chrome's shared left rail (§4.1) over a scrolling pane — same shell as Preferences (§4.6). The health strip stays global chrome — present here exactly as on Home and Preferences.
+A top-level nav destination (§4.1), still named **About**. A two-tab page, **The Product** (the About page below) and **The Person** (the Developer page below), selected via the app chrome's shared left rail (§4.1) over a scrolling pane — same shell as Preferences (§4.6). The health strip stays global chrome — present here exactly as on Home and Preferences. **About MediaGrabber** in the menu bar opens this page. How to use the app is explained in Help (§4.12).
 
 **About** is a short in-app product page that must look good and read well for non-technical users. It has three blocks, in this order:
 
@@ -527,18 +552,17 @@ A top-level nav destination (§4.1). A two-tab page (About, Developer), selected
 2. **Free and open source** — one line with a **Licenses** link.
 3. **Links** — **Project page** and **Report a problem**, which opens Diagnostics with its button to the online report form (§4.7).
 
-There are no Included tools or Diagnostics rows. Versions and update actions live in Preferences → Updates (§4.6). **About MediaGrabber** in the menu bar opens this page. How to use the app is explained on a separate How-to page, not designed yet.
+There are no Included tools or Diagnostics rows. Versions and update actions live in Preferences → Updates (§4.6).
 
-**Developer** is a centred page. It opens with the same identity-block treatment — the developer's photo (included in the app), a name, a one-line headline. Profile links are GitHub, LinkedIn, the portfolio site and email. **Source code** and **License** stay here; **Report a problem** is on About. Support or donation links come later, and there is no other-apps section until there is an app to list. Current rows:
+**The Person** (the Developer page) is the developer's showcase: a visitor should leave knowing that this person builds good things. It is one centred column, in this order, and fits the default window without scrolling:
 
-| Label           | Control                                     |
-| --------------- | ------------------------------------------- |
-| Connect with me | a row of platform icon-links, right-aligned |
-| Source code     | button "GitHub"                             |
-| Report an issue | button "GitHub Issues"                      |
-| License         | button "Open"                               |
+1. **Identity** — the developer's photo (included in the app) in a circle, circled by the oracle orb's rings and lights (§4.2.5) as the page's signature feature: the far half passes behind the photo, the near half in front, and they lean towards the pointer. Then the name and a headline that differs by theme. Aurora: “Distributed systems by profession. Useful tools by choice.” Tape Deck: “Backend by trade, tinkerer by habit.” The headline and **About me** are the only text in the app that differs by theme. The rings are still under Reduce Motion. The near half may cross the lower part of the photo.
+2. **About me** — two paragraphs of up to about 60 words, neither mentioning availability. The first introduces the developer through work and education; the second covers MediaGrabber, other projects and interests. Aurora is professional, Tape Deck friendly and playful. The final text is in the mockup.
+3. **Links** — one row with no heading of four standard-height (34pt) buttons (§3.5), each only as wide as its icon and name, tinted with a faint wash and coloured icons (Aurora: `--accent`, with a border of the same tone; Tape Deck: `--accent-2`, with its usual ink border): GitHub (`https://github.com/Mshardul`), LinkedIn (`https://linkedin.com/in/mshardul`), Portfolio (`https://mshardul.github.io`) and Email (`shardullingwal94@gmail.com`).
 
-Shipped with GitHub only (real profile URL). LinkedIn, personal site, and X were designed but are commented out pending real URLs for those accounts — add them to `DeveloperLinks` in `DeveloperView.swift` and uncomment their `iconLink` rows when available. The mockup's own brand-mark treatment (`docs/mockups/screens/about.html` §7.2) uses plain text-glyph badges ("GH", "in") rather than real bundled images — the shipped app matches that, since no image-asset catalog exists elsewhere in the app and a two-letter glyph reads fine at this size; a personal site or X row would use a generic `globe` SF Symbol / text glyph the same way when added.
+There is no work-with-me block, and no **Source code** or **License** rows. All content is bundled with the app and changes with a release. **Report a problem** is on About. Support or donation links come later, once the accounts exist.
+
+About is locked, and both pages are drawn in `docs/mockups/screens/about.html`.
 
 ---
 
@@ -574,11 +598,12 @@ In a question, the title asks and the message gives only the consequence. A mess
 | --- | --- | --- | --- | --- |
 | Passcode | info | Enter passcode | Enter the passcode the owner gave you. | Cancel · Continue |
 | Download again | info | Download again? | You've already downloaded this. | Cancel · Download again |
-| Already queued | info | Already in your queue | This link is already waiting to download. | Download again · **Cancel** |
+| Already listed | info | Already in your list | This link hasn't finished downloading. | Download again · **Cancel** |
+| Try again | info | Try this one again? | It's in your list but didn't finish. | Cancel · Restart |
 | Incoming link | info | Grab this link? | _the link_ | Not now · Grab |
 | Force start | info | Start this now? | The oldest active download goes back to the queue. | Cancel · Start now |
 | Sign-in site | info | Use sign-in for this site? | MediaGrabber will use your browser sign-in for _site_. | Not now · Use sign-in |
-| Clear sorting | info | Clear sorting? | Moving rows turns off sorting for this session. | Cancel · Move rows |
+| Clear sorting | info | Clear sorting? | Moving rows turns off sorting. | Cancel · Move rows |
 | Move the app | info | Move MediaGrabber to Applications? | It can't update itself from where it is now. | Not now · Move |
 | Remove | error | Remove this download? / Remove _N_ downloads? | Saved files stay. Partial files and logs are deleted. | Cancel · Remove |
 | Cancel playlist | error | Cancel this playlist? | Unfinished videos stop. Saved files stay. | Keep downloading · Cancel downloads |
@@ -596,7 +621,8 @@ In a question, the title asks and the message gives only the consequence. A mess
 
 The uninstall message drops its last sentence when nothing is unfinished.
 
-- **Already queued** inverts the fill: **Cancel** is filled and rightmost, so Return does not download twice.
+- **Already listed** (the match is active, waiting or paused) inverts the fill: **Cancel** is filled and rightmost, so Return does not download twice.
+- **Try again** replaces it when the match is failed or cancelled; **Restart** restarts that row, adding no second one.
 - **Don't ask again** appears on removing a single row and on both cancel dialogs. Removing several rows always asks. **Reset settings** brings every suppressed question back.
 
 #### Windows the app does not draw
@@ -827,4 +853,4 @@ Shared: `--panel` = `rgba(255,255,255,.05)`, `--panel-hi` = `rgba(255,255,255,.0
 - SwiftUI: express palettes as a `Palette` struct of `Color`s selected by `@AppStorage` theme + palette keys; themes differ in more than colour (fonts, corner radii, elevation modifier) so model a `Theme` protocol/enum with those as properties, not just a colour set.
 - The logo (the orb) is one small reusable view driven by an `isActive` flag; honour `accessibilityReduceMotion`.
 - Quality floor: full keyboard navigation, visible focus rings, VoiceOver labels on every icon button, `prefers-reduced-motion` respected, window usable down to a narrow width (table scrolls horizontally inside its own container; the page never scrolls sideways).
-- Column state (order, visibility, sort, filters) persists as `ColumnConfig` in `columns.json` via `Persistence` (the same mechanism as queue/history), keyed independently of both `Preferences` and window state.
+- Column state (order, visibility, widths, sort) persists as `ColumnConfig` in `columns.json` via `Persistence` (the same mechanism as queue/history), keyed independently of both `Preferences` and window state.

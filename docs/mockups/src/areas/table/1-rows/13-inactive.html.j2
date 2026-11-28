@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import table_body %}
+{% set screen_id = "table-inactive" %}
+{% set title = "Inactive, with every failure" %}
+{% set caption = "A cancelled download and one row for each failure; the badge counts them all." %}
+{% set tickets = ["mg-067", "mg-233"] %}
+{% call window() %}
+{{ table_body("Inactive", data.TABLE_INACTIVE, inactive=data.TABLE_INACTIVE|length) }}
+{% endcall %}

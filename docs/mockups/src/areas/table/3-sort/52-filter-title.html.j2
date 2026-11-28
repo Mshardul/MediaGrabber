@@ -1,0 +1,20 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import toolbar, heading, row, title_filter %}
+{% set screen_id = "table-filter-title" %}
+{% set title = "Filtering by title" %}
+{% set caption = "The title filter is a search box." %}
+{% set tickets = ["mg-070", "mg-198", "mg-283"] %}
+{% call window(progress=62) %}
+<div class="window-body">
+  {{ rail("All", data.table_rail(2)) }}
+  <div class="content table-view">
+    {{ toolbar(shown=(data.TABLE_BY_TITLE|length, data.TABLE_ALL|length)) }}
+    <div class="table" role="table">
+      {% call heading(filtering="title") %}{{ title_filter() }}{% endcall %}
+      {% for download in data.TABLE_BY_TITLE %}
+      {{ row(download) }}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endcall %}

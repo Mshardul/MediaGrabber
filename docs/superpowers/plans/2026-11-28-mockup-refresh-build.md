@@ -26,13 +26,13 @@
 - [x] 2. Shared window: title bar, logo ring, chips, issues dialog, alerts, buttons, popups. Log: App-wide, Chrome. DS §4.1, §4.4. Reference: `titlebar.html` layout A, logo 4 (not B, C or logos 1–3).
 - [x] 3. Orb component, both themes, five moods. Log: Empty states and the oracle orb. DS §4.2.5. Reuse `orb.html`.
 - [x] 4. Home, including first launch. Log: Home. DS §4.2.1–4.2.2.
-- [ ] 5. Playlist picker and group. Log: Playlist. DS §4.2.4, §4.3.
-- [ ] 6. Table and its empty states. Log: Table. DS §4.2.3, §4.2.5.
+- [x] 5. Playlist picker and group. Log: Playlist. DS §4.2.4, §4.3.
+- [x] 6. Table and its empty states. Log: Table. DS §4.2.3, §4.2.5.
 - [ ] 7. Chrome states: each chip, level and issue; alerts; drop highlight; setup and passcode panels.
 - [ ] 8. Dialogs (design pending).
 - [ ] 9. Onboarding (design pending; orb and no Homebrew are locked).
 - [ ] 10. Preferences (design pending; log: Preferences is locked).
-- [ ] 11. About and Developer (design pending; log: About and Developer is locked).
+- [x] 11. About and Developer. Log: About and Developer. DS §4.8.
 - [ ] 12. Column interactions (design pending; mg-017 is locked).
 - [ ] 13. Check every page in both themes and six palettes for overflow and clipping; run the checker; user review.
 - [ ] 14. After acceptance, update documents that point at the mockups, each with the user's approval.

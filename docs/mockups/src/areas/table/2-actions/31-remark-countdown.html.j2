@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import table_body %}
+{% set screen_id = "table-remark-countdown" %}
+{% set title = "Countdown" %}
+{% set caption = "A cooling row shows when it tries again, counting down while visible." %}
+{% set tickets = ["mg-063"] %}
+{% call window(progress=62) %}
+{{ table_body("All", data.TABLE_ALL, remark=6) }}
+{% endcall %}

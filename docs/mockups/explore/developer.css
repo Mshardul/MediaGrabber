@@ -1,0 +1,22 @@
+/* Developer page prototype only; builds on about.css. Colours come from ../tokens.css. */
+
+.chip{cursor:default}
+.rail li{height:var(--btn-h-standard)}
+.column.developer{gap:var(--sp-5);padding-top:var(--sp-6)}
+.prose{max-width:62ch;font-size:15px;line-height:1.6}
+.prose + .prose{margin-top:var(--sp-3)}
+.person{display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);text-align:center}
+.person h1{font:var(--w-display) 28px/1.15 var(--font-display);color:var(--headline)}
+.person p{color:var(--dim)}
+.contacts{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-3)}
+.contacts button{display:flex;align-items:center;justify-content:center;gap:var(--sp-2);padding:var(--sp-3) var(--sp-2);border:var(--bw-small) solid var(--stroke);border-radius:var(--r-card);background:var(--panel);color:var(--text)}
+.contacts svg.icon{width:22px;height:22px;color:var(--accent)}
+.contacts b{font-weight:var(--w-strong)}
+
+/* The photo, inside the oracle orb's rings */
+.portrait{position:relative;width:128px;height:128px;margin-bottom:var(--sp-2)}
+.portrait .photo{position:relative;display:block;width:100%;height:100%;overflow:hidden;border:var(--bw-structure) solid var(--stroke);border-radius:50%}
+.photo img{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.35);transform-origin:50% 32%}
+/* Wider than the photo, so the 3D rings have room to circle it */
+.portrait canvas{position:absolute;top:50%;left:50%;width:260px;height:260px;transform:translate(-50%,-50%);pointer-events:none}
+.ring-front{z-index:1}

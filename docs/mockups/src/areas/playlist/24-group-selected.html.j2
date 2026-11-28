@@ -1,0 +1,20 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import toolbar, heading, row, group %}
+{% set screen_id = "playlist-group-selected" %}
+{% set title = "Part of a group selected" %}
+{% set caption = "The header checkboxes show a part selection, and the actions share the Columns row." %}
+{% set tickets = ["mg-019", "mg-234"] %}
+{% call window(progress=62) %}
+<div class="window-body">
+  {{ rail("All", data.HOME_RAIL) }}
+  <div class="content table-view">
+    {{ toolbar(data.GROUP_ACTIVE[2:4]) }}
+    <div class="table" role="table">
+      {{ heading("mixed") }}
+      {{ row(data.DOWNLOADS[7]) }}
+      {{ group(data.PLAYLIST_NAME, data.GROUP_ACTIVE, selected=(2, 3)) }}
+      {{ row(data.DOWNLOADS[6]) }}
+    </div>
+  </div>
+</div>
+{% endcall %}

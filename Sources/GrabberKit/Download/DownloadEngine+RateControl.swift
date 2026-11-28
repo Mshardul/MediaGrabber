@@ -23,7 +23,7 @@ extension DownloadEngine {
         }.map(\.id))
     }
 
-    func hostCapBlockedIDs(running: [DownloadJob]) -> Set<UUID> {
+    func hostCapBlockedIDs(running: [DownloadJob], deferredIDs: Set<UUID> = []) -> Set<UUID> {
         let runningCounts = Dictionary(
             grouping: running, by: { RateHost(urlString: $0.request.url) }
         ).mapValues(\.count)
@@ -31,6 +31,13 @@ extension DownloadEngine {
         var blocked = Set<UUID>()
         for job in jobs where job.state == .queued {
             let host = RateHost(urlString: job.request.url)
+            // Only startable jobs consume a site's slot budget.
+            if Scheduler.needsMetadata(title: job.title, extractor: job.extractor) {
+                continue
+            }
+            if deferredIDs.contains(job.id) {
+                continue
+            }
             let left = remaining[host]
                 ?? max(0, rateLimiter.adaptiveCap(for: host) - (runningCounts[host] ?? 0))
             if left == 0 {

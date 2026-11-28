@@ -1,0 +1,6 @@
+{% from "parts/playlist.html.j2" import picker_window %}
+{% set screen_id = "playlist-picker-none" %}
+{% set title = "Picker, nothing selected" %}
+{% set caption = "Add is disabled at zero." %}
+{% set tickets = ["mg-014"] %}
+{{ picker_window(data.PICKER_NONE) }}

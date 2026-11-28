@@ -1,0 +1,35 @@
+{% extends "base.html.j2" %}
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import grab_view, link_card, choices_card %}
+{% set page_title = "Trial: what happens after Grab" %}
+{% block content %}
+<link rel="stylesheet" href="grab-animation.css">
+<script src="grab-animation.js" defer></script>
+<div class="trial-bar">
+  <div class="doc-group" role="group" aria-label="Animation">
+    <button type="button" data-variant="a" aria-pressed="true">A. Orb collects, light goes to Downloading</button>
+    <button type="button" data-variant="b" aria-pressed="false">B. Orb collects and pulses</button>
+    <button type="button" data-variant="c" aria-pressed="false">C. Cards fly to the logo</button>
+    <button type="button" data-variant="d" aria-pressed="false">D. No animation</button>
+  </div>
+  <div class="doc-group">
+    <label><input type="checkbox" id="slow"> Slow motion</label>
+    <label><input type="checkbox" id="still"> Reduce Motion</label>
+  </div>
+</div>
+<p class="trial-help">Press <b>Grab</b>. Then click the empty field to paste the next link, and press Grab again. <span id="count" role="status"></span></p>
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("waiting") %}
+<div data-state="empty" hidden>{{ link_card() }}</div>
+<div data-state="resolved" class="grab-cards">
+{{ link_card(data.VIDEO_LINK, result=data.VIDEO_RESULT) }}
+{{ choices_card(data.VIDEO_CHOICE) }}
+</div>
+{% endcall %}
+  </div>
+</div>
+{% endcall %}
+{% endblock %}

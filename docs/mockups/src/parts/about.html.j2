@@ -1,0 +1,60 @@
+{# About and Developer: the tabbed shell and the two pages inside it. #}
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/controls.html.j2" import button, text_link %}
+
+{% macro about_window(tab) -%}
+{# Held first: inside the window call, caller() would mean the window's own. #}
+{% set page = caller() %}
+{% call window(active="About") %}
+<div class="window-body">
+{{ rail(tab, data.ABOUT_RAIL) }}
+<div class="content about-page">
+{{ page }}
+</div>
+</div>
+{% endcall %}
+{%- endmacro %}
+
+{% macro product_page() -%}
+<div class="about-view page-column">
+  <div class="about-banner">
+    <div class="orb" data-mood="waiting" aria-hidden="true"></div>
+    <h2 class="hero-title">MediaGrabber</h2>
+    <p>{{ data.APP_PROMISE }}</p>
+    <p class="about-version"><span>Version {{ data.APP_VERSION }}</span>{{ text_link("What’s new") }}</p>
+  </div>
+  <p class="about-source"><span>Free and open source, under the MIT license.</span>{{ text_link("Licenses") }}</p>
+  <p class="about-footer">{{ text_link("Project page") }}{{ text_link("Report a problem") }}</p>
+</div>
+{%- endmacro %}
+
+{% macro developer_page() -%}
+<div class="developer-view page-column">
+  <div class="developer-identity">
+    <div class="portrait">
+      <canvas class="portrait-ring portrait-ring-back" aria-hidden="true"></canvas>
+      <span class="portrait-photo"><img src="../developer-photo.webp" alt="{{ data.DEVELOPER_NAME }}"></span>
+      <canvas class="portrait-ring portrait-ring-front" aria-hidden="true"></canvas>
+    </div>
+    <h2>{{ data.DEVELOPER_NAME }}</h2>
+    {% for theme, headline, paragraphs in data.DEVELOPER_VOICES %}
+    <p class="only-{{ theme }}">{{ headline }}</p>
+    {% endfor %}
+  </div>
+  <div class="developer-bio">
+    <h3>About me</h3>
+    {% for theme, headline, paragraphs in data.DEVELOPER_VOICES %}
+    <div class="only-{{ theme }}">
+      {% for paragraph in paragraphs %}
+      <p>{{ paragraph }}</p>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="developer-links">
+    {% for name, symbol in data.DEVELOPER_LINKS %}
+    {{ button(name, lead=symbol) }}
+    {% endfor %}
+  </div>
+</div>
+{%- endmacro %}

@@ -30,7 +30,7 @@ class Orb{
  follow(x,y,box){const o=this.el.getBoundingClientRect(),cx=o.x+o.width/2,cy=o.y+o.height/2,clamp=v=>Math.max(-1,Math.min(1,v));
   // Scaled to the room on each side, so every edge of the box is a full lean.
   this.aim=[clamp((x-cx)/Math.max(1,x<cx?cx-box.left:box.right-cx)),clamp((cy-y)/Math.max(1,y<cy?box.bottom-cy:cy-box.top))];}
- draw(dt){const painter=painterFor(this.style);if(!painter)return;const{g,u,canvas}=painter,still=reduced.matches,tape=this.style==='tape';
+ draw(dt){this.mood=this.el.dataset.mood;const painter=painterFor(this.style);if(!painter)return;const{g,u,canvas}=painter,still=reduced.matches,tape=this.style==='tape';
   const speed={waiting:1,resting:.4,clouded:.35,drag:2.6,searching:2.4}[this.mood];
   this.search+=((this.mood==='searching'?1:0)-this.search)*(still?1:Math.min(1,dt*3));if(!still)this.swirl+=dt*2.2*this.search;if(!still)this.clock+=dt*speed;
   const ease=still?1:Math.min(1,dt*4);

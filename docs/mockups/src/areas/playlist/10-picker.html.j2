@@ -1,0 +1,6 @@
+{% from "parts/playlist.html.j2" import picker_window %}
+{% set screen_id = "playlist-picker" %}
+{% set title = "Picker" %}
+{% set caption = "Every video starts checked; flat rows, with the count line above the buttons." %}
+{% set tickets = ["mg-014", "mg-089", "mg-207"] %}
+{{ picker_window(data.PICKER_FRESH) }}

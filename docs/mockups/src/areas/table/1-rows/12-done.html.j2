@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import table_body %}
+{% set screen_id = "table-done" %}
+{% set title = "Done" %}
+{% set caption = "Only saved downloads, with the quality that was downloaded." %}
+{% set tickets = ["mg-083", "mg-214"] %}
+{% call window() %}
+{{ table_body("Done", data.TABLE_DONE, inactive=0) }}
+{% endcall %}

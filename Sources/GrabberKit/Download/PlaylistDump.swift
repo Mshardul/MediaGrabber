@@ -11,6 +11,7 @@ public struct PlaylistEntry: Sendable, Equatable {
     public var watchURL: String
     public var title: String
     public var durationSeconds: Int?
+    public var fileSizeBytes: Int?
     public var thumbnailURL: String?
     public var extractor: String?
     public var playlistIndex: Int
@@ -86,7 +87,8 @@ public extension PlaylistDump {
             watchURL: watchURL,
             title: title,
             durationSeconds: durationSeconds(object),
-            thumbnailURL: object["thumbnail"] as? String,
+            fileSizeBytes: fileSizeBytes(object),
+            thumbnailURL: ThumbnailURL.from(object),
             extractor: extractor(from: object, playlistExtractor: playlistExtractor),
             playlistIndex: integer(object["playlist_index"]) ?? fallbackIndex
         )
@@ -131,6 +133,23 @@ public extension PlaylistDump {
         }
         if let number = value as? NSNumber {
             return Int(number.doubleValue.rounded())
+        }
+        return nil
+    }
+
+    private static func fileSizeBytes(_ object: [String: Any]) -> Int? {
+        for key in ["filesize", "filesize_approx"] {
+            if let value = object[key] {
+                if let number = value as? Int {
+                    return number
+                }
+                if let number = value as? Double {
+                    return Int(number)
+                }
+                if let number = value as? NSNumber {
+                    return number.intValue
+                }
+            }
         }
         return nil
     }

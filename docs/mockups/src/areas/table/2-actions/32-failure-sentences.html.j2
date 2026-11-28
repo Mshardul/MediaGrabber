@@ -1,0 +1,15 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% set screen_id = "table-failure-sentences" %}
+{% set title = "Failure sentences" %}
+{% set caption = "Today’s sentence for each failure, as the hover popup shows it." %}
+{% set tickets = ["mg-018"] %}
+{% call window() %}
+<div class="sheet">
+  <p class="pending">Design pending: a next step for each sentence.</p>
+  <ul class="sentences">
+    {% for sentence in data.FAILURE_SENTENCES.values() %}
+    <li><span class="remark">{{ sentence }}</span></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endcall %}

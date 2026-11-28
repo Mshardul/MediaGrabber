@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import table_body %}
+{% set screen_id = "table-actions-failed" %}
+{% set title = "Row actions on a failure" %}
+{% set caption = "Restart is offered on every failed row, and the sign-in restart where signing in can help." %}
+{% set tickets = ["mg-067", "mg-213"] %}
+{% call window() %}
+{{ table_body("Inactive", data.TABLE_INACTIVE, inactive=data.TABLE_INACTIVE|length, actions=9, hover="Restart") }}
+{% endcall %}

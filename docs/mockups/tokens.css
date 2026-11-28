@@ -120,7 +120,7 @@
   --ring-a:var(--accent); --ring-b:var(--accent-2); --ring-track:rgba(160,160,160,.35);
   --bar-bg:var(--panel); --bar-text:var(--headline); --bar-on-bg:var(--panel-hi); --bar-on-text:var(--text);
   --logo-shine:radial-gradient(circle at 32% 28%,rgba(255,255,255,.95),rgba(255,255,255,0) 34%),radial-gradient(circle,rgba(0,0,0,0) 55%,rgba(0,0,0,.38));
-  --logo-edge:none;
+  --logo-edge:0 0 5px 1px rgba(94,242,200,.5),0 0 10px 1px rgba(139,123,255,.45);
   --popup-bg:var(--panel-solid); --popup-shadow:0 0 0 1px var(--glow-a),0 0 32px var(--glow-b),0 22px 60px rgba(0,0,0,.5);
   --wash:rgba(255,255,255,.07);
   --orb-a:var(--accent); --orb-b:var(--accent-2); --orb-c:var(--danger); --orb-light:var(--headline); --orb-ink:var(--on-accent);
@@ -139,5 +139,12 @@
 /* Large orb on empty and welcome screens */
 :root{--orb-size:380px}
 
+/* Playlist picker and downloads table */
+:root{--picker-w:560px; --check-size:16px; --row-h:40px; --head-h:34px; --group-h:52px; --spine-x:24px; --child-indent:44px;
+  --col-progress:92px; --col-speed:80px; --col-eta:56px; --col-quality:100px; --col-size:72px; --col-menu:44px; --col-check:40px; --col-title-min:260px}
+
 /* Home */
 :root{--orb-size-grab:300px; --thumb-w:64px; --thumb-h:36px; --type-w:64px; --grab-w:120px; --grab-w-narrow:104px}
+
+/* About and Developer */
+:root{--orb-size-about:270px; --portrait-size:128px; --portrait-ring-size:260px}

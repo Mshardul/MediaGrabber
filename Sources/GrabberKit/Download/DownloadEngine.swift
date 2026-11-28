@@ -249,6 +249,7 @@ public actor DownloadEngine: DownloadEngineProtocol {
     }
 
     public func shutdown() async {
+        isShuttingDown = true
         for job in jobs where job.state == .running || job.state == .probing {
             childTasks[job.id]?.cancel()
         }
@@ -270,6 +271,7 @@ public actor DownloadEngine: DownloadEngineProtocol {
     // MARK: - Detached work handles
 
     var childTasks: [UUID: Task<Void, Never>] = [:]
+    var isShuttingDown = false
     var probeTask: Task<Void, Never>?
 
     private func cancelChild(_ id: UUID) {
@@ -290,11 +292,15 @@ public actor DownloadEngine: DownloadEngineProtocol {
 
 extension DownloadEngine {
     func evaluateSchedule() {
+        guard !isShuttingDown else { return }
         guard queueHalt == nil else { return }
         rateLimiter.setPreferencesCap(cap)
         let now = dependencies.clock.now
         let rateBlocked = blockedHostIDs(now: now, queuedOnly: true)
-        let hostCapBlocked = hostCapBlockedIDs(running: jobs.filter { $0.state == .running })
+        let hostCapBlocked = hostCapBlockedIDs(
+            running: jobs.filter { $0.state == .running },
+            deferredIDs: Set(deferrals.map(\.id))
+        )
         let input = SchedulerInput(
             queued: snapshotsForState { $0 == .queued },
             running: snapshotsForState { $0 == .running },

@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import empty_body %}
+{% set screen_id = "table-empty-downloading" %}
+{% set title = "Empty Downloading view" %}
+{% set caption = "No download is in progress." %}
+{% set tickets = ["mg-236", "mg-237", "mg-278"] %}
+{% call window() %}
+{{ empty_body("Downloading", "resting") }}
+{% endcall %}

@@ -197,6 +197,11 @@ private struct PlaylistPickerRow: View {
                 Text(duration)
                     .font(theme.monoFont(11, .regular))
                     .foregroundStyle(theme.palette.dim)
+                if let size = entry.fileSizeBytes {
+                    Text(Self.sizeString(size))
+                        .font(theme.monoFont(11, .regular))
+                        .foregroundStyle(theme.palette.dim)
+                }
                 if let warning {
                     Text(label(for: warning))
                         .font(theme.monoFont(10, .medium))
@@ -239,6 +244,13 @@ private struct PlaylistPickerRow: View {
 
     private var thumbnailShape: RoundedRectangle {
         RoundedRectangle(cornerRadius: theme.controlRadius)
+    }
+
+    private static func sizeString(_ bytes: Int) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: Int64(bytes))
     }
 
     private var duration: String {

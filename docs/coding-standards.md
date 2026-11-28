@@ -72,6 +72,7 @@ Use this when writing code and when reviewing it. The must-follow rules are in [
 
 ## Swift
 
+- A `GrabberKit` type the app uses is declared `public`, as is every member the app calls; without it the type is `internal` and the app does not compile. A `GrabberKit` file never imports `GrabberKit`. Build with `make test` after adding or moving a type.
 - Only `AppLocations` reads the real home or `MG_HOME`; components receive the narrow location they need (`HomeAccessGuardTests` enforces it).
 
 ### Concurrency traps (hit these already — will recur)

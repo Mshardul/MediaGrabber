@@ -2,6 +2,9 @@ import Foundation
 
 extension DownloadEngine {
     func launchDownload(id: UUID) {
+        if let job = jobs.first(where: { $0.id == id }) {
+            job.runID = UUID()
+        }
         childTasks[id] = Task { [weak self] in
             await self?.performDownload(id: id)
         }
@@ -27,6 +30,7 @@ extension DownloadEngine {
     }
 
     func performDownload(id: UUID) async {
+        let runID = jobs.first(where: { $0.id == id })?.runID
         guard let prepared = await prepareDownload(id: id) else {
             return
         }
@@ -46,6 +50,9 @@ extension DownloadEngine {
             ffprobeURL: prepared.ffprobeURL,
             ffprobeIsExecutable: prepared.ffprobeIsExecutable
         )
+        guard jobs.first(where: { $0.id == id })?.runID == runID else {
+            return
+        }
         recordExit(
             id,
             result,

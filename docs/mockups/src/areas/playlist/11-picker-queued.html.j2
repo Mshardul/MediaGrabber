@@ -1,0 +1,6 @@
+{% from "parts/playlist.html.j2" import picker_window %}
+{% set screen_id = "playlist-picker-queued" %}
+{% set title = "Picker, already in the queue" %}
+{% set caption = "Saved videos start unchecked; one queued video was checked again, so the footer counts it." %}
+{% set tickets = ["mg-014", "mg-089"] %}
+{{ picker_window(data.PICKER_QUEUED) }}

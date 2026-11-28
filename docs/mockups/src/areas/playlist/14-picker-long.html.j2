@@ -1,0 +1,6 @@
+{% from "parts/playlist.html.j2" import picker_window %}
+{% set screen_id = "playlist-picker-long" %}
+{% set title = "Picker, long playlist" %}
+{% set caption = "The list scrolls inside the card and a long title is cut off." %}
+{% set tickets = ["mg-014", "mg-089"] %}
+{{ picker_window(data.PICKER_LONG) }}

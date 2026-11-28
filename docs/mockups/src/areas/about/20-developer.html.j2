@@ -1,0 +1,8 @@
+{% from "parts/about.html.j2" import about_window, developer_page %}
+{% set screen_id = "about-developer" %}
+{% set title = "The Person" %}
+{% set caption = "Who makes the app. The oracle orb’s rings circle the photo and lean towards the pointer." %}
+{% set tickets = ["mg-093"] %}
+{% call about_window("The Person") %}
+{{ developer_page() }}
+{% endcall %}

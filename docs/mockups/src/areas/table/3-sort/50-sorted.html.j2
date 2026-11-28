@@ -1,0 +1,20 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import toolbar, heading, row %}
+{% set screen_id = "table-sorted" %}
+{% set title = "Sorted by size" %}
+{% set caption = "Only the sorted heading has an arrow and a brighter name; another shows a faint arrow on hover. Unknown sizes stay last." %}
+{% set tickets = ["mg-017", "mg-280"] %}
+{% call window(progress=62) %}
+<div class="window-body">
+  {{ rail("All", data.table_rail(2)) }}
+  <div class="content table-view">
+    {{ toolbar() }}
+    <div class="table" role="table">
+      {{ heading(sort=("size", "up"), hover="speed") }}
+      {% for download in data.TABLE_BY_SIZE %}
+      {{ row(download) }}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endcall %}

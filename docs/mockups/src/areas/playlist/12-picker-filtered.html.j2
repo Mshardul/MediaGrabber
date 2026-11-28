@@ -1,0 +1,6 @@
+{% from "parts/playlist.html.j2" import picker_window %}
+{% set screen_id = "playlist-picker-filtered" %}
+{% set title = "Picker, filtered" %}
+{% set caption = "The buttons act on the shown videos only, and the footer adds how many are shown." %}
+{% set tickets = ["mg-230", "mg-089"] %}
+{{ picker_window(data.PICKER_FILTERED) }}

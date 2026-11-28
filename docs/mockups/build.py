@@ -1,4 +1,4 @@
-"""Renders the mockup pages from src/: screens.html and one page per area in screens/."""
+"""Renders the mockup pages from src/: screens.html and the area pages in screens/."""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -46,16 +46,39 @@ def load_screen(env, path):
     return Screen(module.screen_id, module.title, module.caption, body, tickets)
 
 
+@dataclass(frozen=True)
+class Part:
+    name: str
+    file: str
+    screens: list[Screen]
+
+
+def load_parts(env, slug, name):
+    folder = SOURCE / "areas" / slug
+    if slug not in data.SUBPAGES:
+        paths = sorted(folder.glob("*.html.j2"))
+        return [Part(name, f"{slug}.html", [load_screen(env, p) for p in paths])] if paths else []
+    wanted = [key for key, _ in data.SUBPAGES[slug]]
+    stray = sorted(p.name for p in folder.iterdir() if p.name not in wanted)
+    if stray:
+        raise ValueError(f"src/areas/{slug} holds files outside its subpages: {stray}")
+    parts = []
+    for index, (key, title) in enumerate(data.SUBPAGES[slug]):
+        screens = [load_screen(env, p) for p in sorted((folder / key).glob("*.html.j2"))]
+        file = f"{slug}.html" if index == 0 else f"{slug}-{key.split('-', 1)[1]}.html"
+        parts.append(Part(title, file, screens))
+    return parts
+
+
 def load_areas(env):
     known = {slug for slug, _ in data.AREAS}
     folders = {path.name for path in (SOURCE / "areas").iterdir() if path.is_dir()}
     if unknown := folders - known:
         raise ValueError(f"src/areas has folders missing from AREAS: {sorted(unknown)}")
     built = {}
-    for slug, _ in data.AREAS:
-        paths = sorted((SOURCE / "areas" / slug).glob("*.html.j2"))
-        if paths:
-            built[slug] = [load_screen(env, path) for path in paths]
+    for slug, name in data.AREAS:
+        if parts := load_parts(env, slug, name):
+            built[slug] = parts
     return built
 
 
@@ -77,10 +100,18 @@ def render():
         )
     }
     for slug, name in data.AREAS:
-        if slug in built:
-            pages[f"screens/{slug}.html"] = env.get_template("area.html.j2").render(
-                shared, root="../", current=slug, page_title=name, screens=built[slug]
+        parts = built.get(slug, [])
+        for part in parts:
+            title = f"{name}: {part.name}" if len(parts) > 1 else name
+            pages[f"screens/{part.file}"] = env.get_template("area.html.j2").render(
+                shared, root="../", current=slug, page_title=title, parts=parts, part=part
             )
+    # Clickable trials built from the same parts; not screens, so the front page skips them.
+    for source in sorted((SOURCE / "prototypes").glob("*.html.j2")):
+        name = source.name.removesuffix(".html.j2")
+        pages[f"explore/{name}.html"] = env.get_template(f"prototypes/{source.name}").render(
+            shared, root="../", current=name
+        )
     return pages
 
 

@@ -1,7 +1,7 @@
 {% extends "base.html.j2" %}
 {% from "parts/controls.html.j2" import planned %}
 {% block content %}
-{% for screen in screens %}
+{% for screen in part.screens %}
 <figure class="screen" id="{{ screen.id }}">
   <figcaption><b>{{ screen.title }}</b>{{ screen.caption }}</figcaption>
   {% if screen.tickets %}

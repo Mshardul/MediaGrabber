@@ -1,0 +1,14 @@
+[hidden]{display:none!important}
+.trial-bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--sp-3);width:var(--window-w);margin-bottom:var(--sp-2);font:var(--fs-small) var(--font-mono)}
+.trial-bar button{font:var(--fs-kicker) var(--font-mono);padding:var(--sp-1) var(--sp-3);border:1px solid var(--doc-line);border-radius:var(--r-chip);background:transparent;color:var(--doc-text);cursor:pointer}
+.trial-bar button[aria-pressed="true"]{background:var(--doc-on-bg);color:var(--doc-on-text);border-color:var(--doc-on-bg)}
+.trial-bar label{display:flex;align-items:center;gap:var(--sp-1);margin-right:var(--sp-3)}
+.trial-help{width:var(--window-w);margin-bottom:var(--sp-4);font-size:var(--fs-small);color:var(--doc-dim)}
+[data-state="empty"] .link-card{cursor:text}
+
+/* The folding copy of the two cards, and the light that leaves the orb */
+.flyer{position:absolute;z-index:8;margin:0;pointer-events:none;transform-origin:center}
+.spark{position:absolute;z-index:8;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px 4px var(--accent);pointer-events:none}
+:root[data-theme="tapedeck"] .spark{background:var(--go);border:2px solid var(--stroke);box-shadow:none}
+.rail li{transition:background-color var(--dur) var(--ease)}
+.rail li.arrived{background:color-mix(in srgb,var(--accent) 28%,transparent);color:var(--text)}

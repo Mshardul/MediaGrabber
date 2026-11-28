@@ -119,4 +119,41 @@ final class ThemeTests: XCTestCase {
         XCTAssertFalse(view.isSpinning(reduceMotion: true))
         XCTAssertTrue(view.isSpinning(reduceMotion: false))
     }
+
+    func test_faintReaches4Dot5ContrastOnEverySurface() {
+        let cases: [PaletteKind] = [
+            .auroraMintIris, .auroraLimeForest, .auroraMagentaViolet,
+            .tapeDeckA, .tapeDeckB, .tapeDeckC
+        ]
+        let surfaceNames = ["ground", "panelSolid", "panel"]
+        for kind in cases {
+            let palette = palette(for: kind)
+            let surfaceColors: [Color] = [palette.ground, palette.panelSolid, palette.panel]
+            for index in surfaceColors.indices {
+                let ratio = contrastRatio(
+                    relativeLuminance(palette.faint),
+                    relativeLuminance(surfaceColors[index])
+                )
+                XCTAssertGreaterThanOrEqual(ratio, 4.5)
+            }
+        }
+    }
+
+    private func relativeLuminance(_ color: Color) -> Double {
+        let resolved = color.resolve(in: EnvironmentValues())
+        let red = linearize(Double(resolved.red))
+        let green = linearize(Double(resolved.green))
+        let blue = linearize(Double(resolved.blue))
+        return 0.2126 * red + 0.7152 * green + 0.0722 * blue
+    }
+
+    private func linearize(_ component: Double) -> Double {
+        component <= 0.03928 ? component / 12.92 : pow((component + 0.055) / 1.055, 2.4)
+    }
+
+    private func contrastRatio(_ luminance1: Double, _ luminance2: Double) -> Double {
+        let light = max(luminance1, luminance2)
+        let dark = min(luminance1, luminance2)
+        return (light + 0.05) / (dark + 0.05)
+    }
 }

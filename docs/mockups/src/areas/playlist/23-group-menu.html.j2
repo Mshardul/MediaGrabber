@@ -1,0 +1,20 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import toolbar, heading, row, group %}
+{% set screen_id = "playlist-group-menu" %}
+{% set title = "Group actions" %}
+{% set caption = "The header menu lists each action by name; one that fits no video is disabled." %}
+{% set tickets = ["mg-019", "mg-213", "mg-031", "mg-079"] %}
+{% call window(progress=62) %}
+<div class="window-body">
+  {{ rail("All", data.HOME_RAIL) }}
+  <div class="content table-view">
+    {{ toolbar() }}
+    <div class="table" role="table">
+      {{ heading() }}
+      {{ row(data.DOWNLOADS[7]) }}
+      {{ group(data.PLAYLIST_NAME, data.GROUP_ACTIVE, menu=true) }}
+      {{ row(data.DOWNLOADS[6]) }}
+    </div>
+  </div>
+</div>
+{% endcall %}

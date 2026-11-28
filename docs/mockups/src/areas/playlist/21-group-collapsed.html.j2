@@ -1,0 +1,20 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import toolbar, heading, row, group %}
+{% set screen_id = "playlist-group-collapsed" %}
+{% set title = "Group, collapsed" %}
+{% set caption = "Only the header stays, with its counts and progress." %}
+{% set tickets = ["mg-019", "mg-146", "mg-213"] %}
+{% call window(progress=62) %}
+<div class="window-body">
+  {{ rail("All", data.HOME_RAIL) }}
+  <div class="content table-view">
+    {{ toolbar() }}
+    <div class="table" role="table">
+      {{ heading() }}
+      {{ row(data.DOWNLOADS[7]) }}
+      {{ group(data.PLAYLIST_NAME, data.GROUP_ACTIVE, open=false) }}
+      {{ row(data.DOWNLOADS[6]) }}
+    </div>
+  </div>
+</div>
+{% endcall %}

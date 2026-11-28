@@ -293,8 +293,14 @@ enum LogRedaction {
         return result
     }
 
-    // scheme://user:pass@host → scheme://host
+    // scheme://user:pass@host → scheme://host, applied to every line
     static func stripCredentials(_ value: String) -> String {
+        value.split(separator: "\n", omittingEmptySubsequences: false)
+            .map { line in String(stripCredentialsLine(String(line))) }
+            .joined(separator: "\n")
+    }
+
+    private static func stripCredentialsLine(_ value: String) -> String {
         guard let schemeRange = value.range(of: "://") else { return value }
         let head = value[..<schemeRange.upperBound]
         let rest = value[schemeRange.upperBound...]

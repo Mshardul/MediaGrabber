@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import table_body %}
+{% set screen_id = "table-actions" %}
+{% set title = "Row actions" %}
+{% set caption = "The three-dot button opens every video action; those the state does not offer are disabled." %}
+{% set tickets = ["mg-213"] %}
+{% call window(progress=62) %}
+{{ table_body("All", data.TABLE_ALL, actions=0, hover="Pause") }}
+{% endcall %}

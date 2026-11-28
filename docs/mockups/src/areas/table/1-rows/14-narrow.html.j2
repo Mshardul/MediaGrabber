@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/table.html.j2" import table_body %}
+{% set screen_id = "table-narrow" %}
+{% set title = "Narrow window" %}
+{% set caption = "Title keeps its width; scroll sideways to move the other columns between the checkbox, Title and actions." %}
+{% set tickets = ["mg-083", "mg-231", "mg-285"] %}
+{% call window(progress=62, narrow=true) %}
+{{ table_body("All", data.TABLE_ALL) }}
+{% endcall %}

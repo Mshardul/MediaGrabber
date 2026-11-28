@@ -6,8 +6,12 @@
 {%- endfor -%}
 {%- endmacro %}
 
-{% macro button(label, style="standard", size="standard", disabled=false, busy=false) -%}
-<button type="button" class="btn btn-{{ style }} size-{{ size }}"{% if disabled or busy %} disabled{% endif %}>{% if busy %}<span class="spinner"></span>{% endif %}<span class="btn-label">{{ label }}</span></button>
+{% macro button(label, style="standard", size="standard", disabled=false, busy=false, lead=none) -%}
+<button type="button" class="btn btn-{{ style }} size-{{ size }}"{% if disabled or busy %} disabled{% endif %}>{% if busy %}<span class="spinner"></span>{% endif %}{% if lead %}{{ icon(lead) }}{% endif %}<span class="btn-label">{{ label }}</span></button>
+{%- endmacro %}
+
+{% macro text_link(label) -%}
+<button type="button" class="text-link">{{ label }}</button>
 {%- endmacro %}
 
 {% macro icon_button(name, label, size="compact", style="plain") -%}
@@ -38,6 +42,10 @@
     {% endfor %}
   </ul>
 </div>
+{%- endmacro %}
+
+{% macro check(state, label) -%}
+<span class="check" role="checkbox" aria-checked="{{ state }}" aria-label="{{ label }}">{% if state == "true" %}{{ icon("check") }}{% endif %}</span>
 {%- endmacro %}
 
 {% macro planned(ticket) -%}
