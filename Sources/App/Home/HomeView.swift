@@ -4,7 +4,6 @@ import SwiftUI
 struct HomeView: View {
     @Environment(AppModel.self) private var appModel
     @Environment(\.theme) private var theme
-
     @State private var mediaType: MediaType = .video
     @State private var videoHeight = 1080
     @State private var audioFormat: AudioFormat = .m4a
@@ -100,12 +99,26 @@ struct HomeView: View {
     private var pasteField: some View {
         @Bindable var appModel = appModel
         return VStack(spacing: Spacing.s2) {
-            HStack(spacing: Spacing.s3) {
-                if runwayAttached {
-                    ResolvedLinkTitle()
+            if runwayAttached {
+                VStack(alignment: .leading, spacing: Spacing.s2) {
+                    HStack(spacing: Spacing.s3) {
+                        ResolvedLinkTitle()
+                        ClearLinkButton()
+                    }
+                    .frame(minHeight: 34)
+
+                    ResolvedLinkDetails(
+                        mediaType: mediaType,
+                        videoHeight: videoHeight,
+                        audioFormat: audioFormat,
+                        selectedTrackID: selectedTrackID,
+                        destFolder: destFolder
+                    )
+
                     attachedRunway
-                    ClearLinkButton()
-                } else {
+                }
+            } else {
+                HStack(spacing: Spacing.s3) {
                     TextField("", text: $appModel.homeFieldText)
                         .textFieldStyle(.plain)
                         .font(theme.monoFont(13, .regular))
@@ -122,9 +135,9 @@ struct HomeView: View {
                         }
                     probeStatus
                 }
+                .frame(minHeight: 34)
+                .onChange(of: appModel.homeFieldText) { _, new in autoProbe(new) }
             }
-            .frame(minHeight: 34)
-            .onChange(of: appModel.homeFieldText) { _, new in autoProbe(new) }
 
             if let error = appModel.probeError {
                 Text(error)

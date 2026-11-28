@@ -124,7 +124,13 @@ extension DownloadsGridController {
             owner: nil
         ) as? GridTitleCellView ?? GridTitleCellView()
         cell.identifier = NSUserInterfaceItemIdentifier("title-cell")
-        cell.apply(title: row.snapshot.title ?? "", state: row.snapshot.state, tokens: tokens)
+        cell.apply(
+            title: row.snapshot.title ?? "",
+            state: row.snapshot.state,
+            tokens: tokens,
+            thumbnailURL: row.snapshot.thumbnailURL,
+            showThumbnail: visibleColumns.contains(.thumbnail)
+        )
         return cell
     }
 

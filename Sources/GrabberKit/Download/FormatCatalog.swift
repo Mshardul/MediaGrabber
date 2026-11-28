@@ -27,31 +27,85 @@ public struct AudioTrack: Sendable, Equatable, Identifiable, Hashable {
     }
 }
 
-enum FormatCatalog {
+public enum FormatCatalog {
+    public struct FormatInfo: Sendable, Equatable {
+        public let formatId: String
+        public let height: Int?
+        public let vcodec: String?
+        public let acodec: String?
+        public let ext: String?
+        public let filesize: Int64?
+        public let language: String?
+        public let formatNote: String?
+
+        public init(
+            formatId: String,
+            height: Int?,
+            vcodec: String?,
+            acodec: String?,
+            ext: String?,
+            filesize: Int64?,
+            language: String?,
+            formatNote: String?
+        ) {
+            self.formatId = formatId
+            self.height = height
+            self.vcodec = vcodec
+            self.acodec = acodec
+            self.ext = ext
+            self.filesize = filesize
+            self.language = language
+            self.formatNote = formatNote
+        }
+    }
+
     struct ParsedFormats {
         var availability: FormatAvailability
         var videoHeights: [Int]
         var audioTracks: [AudioTrack]
+        var formatSizes: [String: Int64]
+        var formatInfos: [FormatInfo]
     }
 
     static func parseJSONObject(_ object: [String: Any]) -> ParsedFormats {
         let original = object["original_language"] as? String
         guard let raw = object["formats"] else {
-            return ParsedFormats(availability: .unknown, videoHeights: [], audioTracks: [])
+            return ParsedFormats(
+                availability: .unknown,
+                videoHeights: [],
+                audioTracks: [],
+                formatSizes: [:],
+                formatInfos: []
+            )
         }
         guard let formats = raw as? [[String: Any]] else {
-            return ParsedFormats(availability: .unknown, videoHeights: [], audioTracks: [])
+            return ParsedFormats(
+                availability: .unknown,
+                videoHeights: [],
+                audioTracks: [],
+                formatSizes: [:],
+                formatInfos: []
+            )
         }
         return parse(formats: formats, originalLanguage: original)
     }
 
     static func parse(formats: [[String: Any]], originalLanguage: String?) -> ParsedFormats {
         let heights = Set(formats.compactMap(videoHeight)).sorted(by: >)
-        let collected = collectAudio(formats: formats, originalLanguage: originalLanguage)
+        var formatSizes: [String: Int64] = [:]
+        var formatInfos: [FormatInfo] = []
+        let collected = collectAudio(
+            formats: formats,
+            originalLanguage: originalLanguage,
+            formatSizes: &formatSizes,
+            formatInfos: &formatInfos
+        )
         return ParsedFormats(
             availability: .listed,
             videoHeights: heights,
-            audioTracks: finalizeTracks(collected)
+            audioTracks: finalizeTracks(collected),
+            formatSizes: formatSizes,
+            formatInfos: formatInfos
         )
     }
 
@@ -62,11 +116,28 @@ enum FormatCatalog {
 
     private static func collectAudio(
         formats: [[String: Any]],
-        originalLanguage: String?
+        originalLanguage: String?,
+        formatSizes: inout [String: Int64],
+        formatInfos: inout [FormatInfo]
     ) -> [(track: AudioTrack, preference: Int)] {
         var seen: Set<String> = []
         var result: [(track: AudioTrack, preference: Int)] = []
         for row in formats {
+            let formatId = row["format_id"] as? String ?? ""
+            let size = int64Value(row["filesize"]) ?? int64Value(row["filesize_approx"])
+            if !formatId.isEmpty, let size {
+                formatSizes[formatId] = size
+            }
+            formatInfos.append(FormatInfo(
+                formatId: formatId,
+                height: intValue(row["height"]),
+                vcodec: row["vcodec"] as? String,
+                acodec: row["acodec"] as? String,
+                ext: row["ext"] as? String,
+                filesize: size,
+                language: row["language"] as? String,
+                formatNote: row["format_note"] as? String
+            ))
             guard let track = audioTrack(from: row, originalLanguage: originalLanguage) else {
                 continue
             }
@@ -177,6 +248,19 @@ enum FormatCatalog {
         }
         if let value = any as? NSNumber {
             return value.intValue
+        }
+        return nil
+    }
+
+    private static func int64Value(_ any: Any?) -> Int64? {
+        if let value = any as? Int {
+            return Int64(value)
+        }
+        if let value = any as? Double {
+            return Int64(value)
+        }
+        if let value = any as? NSNumber {
+            return value.int64Value
         }
         return nil
     }

@@ -5,6 +5,7 @@ final class DownloadJob: @unchecked Sendable {
     let id: UUID
     var request: DownloadRequest
     var title: String?
+    var thumbnailURL: String?
     var extractor: String?
     var durationSeconds: Int?
     var state: JobState
@@ -62,6 +63,7 @@ final class DownloadJob: @unchecked Sendable {
             url: request.url,
             rateHost: RateHost(urlString: request.url),
             title: title,
+            thumbnailURL: thumbnailURL,
             state: state,
             progress: progress,
             kind: request.kind,

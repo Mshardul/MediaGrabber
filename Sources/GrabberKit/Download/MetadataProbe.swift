@@ -5,10 +5,12 @@ public struct MediaMetadata: Sendable, Equatable {
     public let durationSeconds: Int?
     public let isPlaylist: Bool
     public let sourceURL: String
+    public let thumbnailURL: String?
     public let extractor: String?
     public let formatAvailability: FormatAvailability
     public let videoHeights: [Int]
     public let audioTracks: [AudioTrack]
+    public let formatInfos: [FormatCatalog.FormatInfo]
     public let prepared: PreparedInfo?
 
     public init(
@@ -16,21 +18,32 @@ public struct MediaMetadata: Sendable, Equatable {
         durationSeconds: Int?,
         isPlaylist: Bool,
         sourceURL: String,
+        thumbnailURL: String? = nil,
         extractor: String? = nil,
         formatAvailability: FormatAvailability = .unknown,
         videoHeights: [Int] = [],
         audioTracks: [AudioTrack] = [],
+        formatInfos: [FormatCatalog.FormatInfo] = [],
         prepared: PreparedInfo? = nil
     ) {
         self.title = title
         self.durationSeconds = durationSeconds
         self.isPlaylist = isPlaylist
         self.sourceURL = sourceURL
+        self.thumbnailURL = thumbnailURL
         self.extractor = extractor
         self.formatAvailability = formatAvailability
         self.videoHeights = videoHeights
         self.audioTracks = audioTracks
+        self.formatInfos = formatInfos
         self.prepared = prepared
+    }
+
+    public var formatSizes: [String: Int64] {
+        Dictionary(uniqueKeysWithValues: formatInfos.compactMap { info in
+            guard let size = info.filesize else { return nil }
+            return (info.formatId, size)
+        })
     }
 }
 
@@ -253,10 +266,12 @@ actor MetadataProbe: MetadataProbing {
             durationSeconds: durationSeconds(object),
             isPlaylist: (object["_type"] as? String) == "playlist",
             sourceURL: sourceURL,
+            thumbnailURL: object["thumbnail"] as? String,
             extractor: extractor,
             formatAvailability: parsed.availability,
             videoHeights: parsed.videoHeights,
             audioTracks: parsed.audioTracks,
+            formatInfos: parsed.formatInfos,
             prepared: reusable ? PreparedInfo(json: stdout, capturedAt: .now) : nil
         ))
     }

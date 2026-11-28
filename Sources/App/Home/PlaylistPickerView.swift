@@ -20,7 +20,7 @@ struct PlaylistPickerView: View {
             footer
         }
         .padding(Spacing.s5)
-        .frame(minWidth: 620, idealWidth: 720, maxWidth: 820, minHeight: 520, maxHeight: 680)
+        .frame(minWidth: 560, idealWidth: 560, maxWidth: 560, minHeight: 520, maxHeight: 680)
         .background(theme.palette.panelSolid)
         .accessibilityElement(children: .contain)
         .screenshotHook("playlistPicker.partialSelection") {
@@ -91,19 +91,25 @@ struct PlaylistPickerView: View {
 
     private var list: some View {
         ScrollView {
-            LazyVStack(spacing: Spacing.s2) {
-                ForEach(model.filteredEntries, id: \.playlistIndex) { entry in
-                    PlaylistPickerRow(
-                        entry: entry,
-                        isChecked: model.checked.contains(entry.playlistIndex),
-                        warning: model.warnings[entry.playlistIndex],
-                        toggle: { toggle(entry.playlistIndex) }
-                    )
+            LazyVStack(spacing: 0) {
+                ForEach(Array(model.filteredEntries.enumerated()), id: \.element.playlistIndex) { index, entry in
+                    VStack(spacing: 0) {
+                        PlaylistPickerRow(
+                            entry: entry,
+                            isChecked: model.checked.contains(entry.playlistIndex),
+                            warning: model.warnings[entry.playlistIndex],
+                            toggle: { toggle(entry.playlistIndex) }
+                        )
+                        if index < model.filteredEntries.count - 1 {
+                            Divider()
+                                .overlay(theme.palette.hair)
+                                .padding(.horizontal, Spacing.s3)
+                        }
+                    }
                 }
             }
-            .padding(Spacing.s2)
         }
-        .background(theme.palette.panel, in: RoundedRectangle(cornerRadius: theme.cardRadius))
+        .background(theme.palette.panelSolid)
         .overlay(
             RoundedRectangle(cornerRadius: theme.cardRadius)
                 .stroke(theme.palette.stroke, lineWidth: theme.hairlineWidth)
@@ -180,7 +186,7 @@ private struct PlaylistPickerRow: View {
             HStack(spacing: Spacing.s3) {
                 Image(systemName: isChecked ? "checkmark.square.fill" : "square")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(isChecked ? theme.palette.accent : theme.palette.faint)
+                    .foregroundStyle(isChecked ? theme.palette.accent2 : theme.palette.faint)
                 thumbnail
                 Text(entry.title)
                     .font(theme.bodyFont(13, .medium))
@@ -199,7 +205,7 @@ private struct PlaylistPickerRow: View {
             }
             .padding(.horizontal, Spacing.s3)
             .padding(.vertical, Spacing.s2)
-            .background(theme.palette.panelHi.opacity(isChecked ? 1 : 0.45), in: rowShape)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(accessibilityLabel)
@@ -225,14 +231,13 @@ private struct PlaylistPickerRow: View {
         RoundedRectangle(cornerRadius: theme.controlRadius)
             .fill(theme.palette.panel)
             .frame(width: 52, height: 30)
-            .overlay(thumbnailShape.stroke(theme.palette.stroke, lineWidth: theme.hairlineWidth))
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.controlRadius)
+                    .stroke(theme.palette.stroke, lineWidth: theme.hairlineWidth)
+            )
     }
 
     private var thumbnailShape: RoundedRectangle {
-        RoundedRectangle(cornerRadius: theme.controlRadius)
-    }
-
-    private var rowShape: RoundedRectangle {
         RoundedRectangle(cornerRadius: theme.controlRadius)
     }
 
@@ -281,7 +286,15 @@ private struct PlaylistPickerButtonStyle: ButtonStyle {
     }
 
     private var fill: some ShapeStyle {
-        isPrimary ? AnyShapeStyle(theme.palette.accent) : AnyShapeStyle(theme.palette.panel)
+        if isPrimary {
+            AnyShapeStyle(LinearGradient(
+                colors: [theme.palette.goFillStart, theme.palette.goFillEnd],
+                startPoint: .leading,
+                endPoint: .trailing
+            ))
+        } else {
+            AnyShapeStyle(theme.palette.panel)
+        }
     }
 
     private var shape: RoundedRectangle {

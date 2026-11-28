@@ -91,6 +91,21 @@ final class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(request.audioLanguage, .code("ja"))
     }
 
+    func test_prefetchFromPlaylistEntryCarriesThumbnail() {
+        let entry = PlaylistEntry(
+            watchURL: "https://example.com/watch/item",
+            title: "Entry",
+            durationSeconds: 20,
+            thumbnailURL: "https://example.com/poster.jpg",
+            extractor: "Example",
+            playlistIndex: 7
+        )
+        XCTAssertEqual(
+            RequestBuilder.prefetch(from: entry).thumbnailURL,
+            "https://example.com/poster.jpg"
+        )
+    }
+
     func test_buildFromPlaylistEntry_usesWatchURLAndRunwayChoices() {
         let entry = PlaylistEntry(
             watchURL: "https://example.com/watch/item",

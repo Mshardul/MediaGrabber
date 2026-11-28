@@ -161,7 +161,7 @@ final class DownloadsGridController: NSObject, NSTableViewDataSource, NSTableVie
         }
 
         tableView.addTableColumn(makeSelectionColumn())
-        for columnID in visibleColumns {
+        for columnID in visibleColumns where columnID != .thumbnail {
             tableView.addTableColumn(makeDataColumn(for: columnID))
         }
     }

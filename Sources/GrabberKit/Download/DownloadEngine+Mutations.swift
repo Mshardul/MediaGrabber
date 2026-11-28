@@ -47,6 +47,7 @@ extension DownloadEngine {
         switch result {
         case let .success(meta):
             job.title = meta.title
+            job.thumbnailURL = meta.thumbnailURL
             job.extractor = meta.extractor
             job.durationSeconds = meta.durationSeconds
             job.prepared = meta.prepared

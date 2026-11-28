@@ -39,6 +39,31 @@ final class MetadataProbeTests: XCTestCase {
         XCTAssertNil(meta.durationSeconds)
     }
 
+    func test_thumbnailReadsSingleFieldOrFirstOfList() async {
+        let single = FakeProcessRunner()
+        single.script(
+            .stdout(#"{"title":"Clip","_type":"video","thumbnail":"https://x/one.jpg"}"#),
+            forPathEndingIn: "yt-dlp"
+        )
+        let singleResult = await probe(single).probe("https://x/y")
+        guard case let .success(singleMeta) = singleResult else {
+            return XCTFail("expected success")
+        }
+        XCTAssertEqual(singleMeta.thumbnailURL, "https://x/one.jpg")
+
+        let list = FakeProcessRunner()
+        let listJSON = """
+        {"title":"Clip","_type":"video","thumbnails":
+        [{"url":"https://x/first.jpg"},{"url":"https://x/second.jpg"}]}
+        """
+        list.script(.stdout(listJSON), forPathEndingIn: "yt-dlp")
+        let listResult = await probe(list).probe("https://x/y")
+        guard case let .success(listMeta) = listResult else {
+            return XCTFail("expected success")
+        }
+        XCTAssertEqual(listMeta.thumbnailURL, "https://x/first.jpg")
+    }
+
     func test_badURL_mapsToBadURL() async {
         let runner = FakeProcessRunner()
         runner.script(

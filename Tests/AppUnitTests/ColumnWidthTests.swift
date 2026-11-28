@@ -41,6 +41,25 @@ final class ColumnWidthTests: XCTestCase {
         XCTAssertNotEqual(failed.cueColor, saved.cueColor)
     }
 
+    @MainActor
+    func test_titleCellShowsThumbnailWithoutLosingStatusCue() {
+        let tokens = DownloadsGridTokens.aurora
+        let cell = GridTitleCellView()
+        cell.apply(
+            title: "Clip",
+            state: .completed,
+            tokens: tokens,
+            thumbnailURL: nil,
+            showThumbnail: true
+        )
+        XCTAssertNotNil(cell.cueColor)
+    }
+
+    func test_thumbnailIsNotSortableOrResizable() {
+        XCTAssertFalse(ColumnMetrics.supportsSort(.thumbnail))
+        XCTAssertFalse(ColumnMetrics.isResizable(.thumbnail))
+    }
+
     func test_actionsNotResizable() {
         XCTAssertFalse(ColumnMetrics.isResizable(.actions))
         XCTAssertTrue(ColumnMetrics.isResizable(.title))

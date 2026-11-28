@@ -110,6 +110,12 @@ struct Theme {
     var cardShadowColor: Color {
         Color.black.opacity(0.35)
     }
+
+    // Motion tokens (shared across themes)
+    static let transitionEase = Animation.spring(response: 0.16, dampingFraction: 1.0).speed(1)
+    static let transitionDuration: CGFloat = 0.16
+    static let spinDuration: CGFloat = 2.0
+    static let spinEase = Animation.linear(duration: 2.0)
 }
 
 // Elevation for raised surfaces; Aurora glows, Tape Deck uses a hard offset shadow.

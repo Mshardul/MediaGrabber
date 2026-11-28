@@ -3,6 +3,7 @@ import SwiftUI
 struct MotifView: View {
     var isActive: Bool
     var size: CGFloat
+    var spinDuration: Double = 6.0
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -21,7 +22,7 @@ struct MotifView: View {
         TimelineView(.animation(paused: !isSpinning(reduceMotion: reduceMotion))) { context in
             let angle = isSpinning(reduceMotion: reduceMotion)
                 ? Angle.degrees(context.date.timeIntervalSinceReferenceDate
-                    .truncatingRemainder(dividingBy: 6) / 6 * 360)
+                    .truncatingRemainder(dividingBy: spinDuration) / spinDuration * 360)
                 : .zero
             Circle()
                 .fill(AngularGradient(colors: Self.stops, center: .center))

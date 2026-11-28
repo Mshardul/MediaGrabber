@@ -48,6 +48,7 @@ enum RequestBuilder {
             durationSeconds: entry.durationSeconds,
             isPlaylist: false,
             sourceURL: entry.watchURL,
+            thumbnailURL: entry.thumbnailURL,
             extractor: entry.extractor
         )
     }

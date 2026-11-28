@@ -45,13 +45,15 @@ public final class FakeMetadataProbe: MetadataProbing, @unchecked Sendable {
         title: String,
         durationSeconds: Int? = 10,
         extractor: String? = "youtube",
-        sourceURL: String = ""
+        sourceURL: String = "",
+        thumbnailURL: String? = nil
     ) -> Outcome {
         .success(MediaMetadata(
             title: title,
             durationSeconds: durationSeconds,
             isPlaylist: false,
             sourceURL: sourceURL,
+            thumbnailURL: thumbnailURL,
             extractor: extractor
         ))
     }

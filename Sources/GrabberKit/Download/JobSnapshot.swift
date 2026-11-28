@@ -40,6 +40,7 @@ public struct JobSnapshot: Sendable, Equatable, Identifiable {
     public let url: String
     public let rateHost: RateHost
     public let title: String?
+    public let thumbnailURL: String?
     public let state: JobState
     public let progress: Progress?
     // RowStore derives type / quality from this; not otherwise stored.
@@ -67,6 +68,7 @@ public struct JobSnapshot: Sendable, Equatable, Identifiable {
         url: String,
         rateHost: RateHost,
         title: String?,
+        thumbnailURL: String? = nil,
         state: JobState,
         progress: Progress?,
         kind: DownloadKind,
@@ -92,6 +94,7 @@ public struct JobSnapshot: Sendable, Equatable, Identifiable {
         self.url = url
         self.rateHost = rateHost
         self.title = title
+        self.thumbnailURL = thumbnailURL
         self.state = state
         self.progress = progress
         self.kind = kind

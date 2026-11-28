@@ -194,7 +194,7 @@ final class RowModel: Identifiable {
         let known = snapshot
         snapshot = JobSnapshot(
             id: known.id, url: known.url, rateHost: known.rateHost, title: known.title,
-            state: known.state,
+            thumbnailURL: known.thumbnailURL, state: known.state,
             progress: progress, kind: known.kind, durationSeconds: known.durationSeconds,
             extractor: known.extractor, addedAt: known.addedAt, finishedAt: known.finishedAt,
             destFolder: known.destFolder, outputFiles: known.outputFiles,

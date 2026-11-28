@@ -84,6 +84,13 @@ final class ColumnConfigTests: XCTestCase {
         XCTAssertTrue(config.visibleColumns.contains(.remark))
     }
 
+    func test_thumbnailVisibleByDefaultAndCanBeHidden() {
+        XCTAssertTrue(ColumnConfig.default.visibleColumns.contains(.thumbnail))
+        var config = ColumnConfig.default
+        config.setColumnVisible(.thumbnail, visible: false)
+        XCTAssertFalse(config.visibleColumns.contains(.thumbnail))
+    }
+
     func test_roundTripCodable() throws {
         var original = ColumnConfig.default
         original.sortColumn = .addedAt

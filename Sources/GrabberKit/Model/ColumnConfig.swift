@@ -1,16 +1,16 @@
 import Foundation
 
 public enum ColumnID: String, Codable, Sendable, CaseIterable {
-    case title, status, remark, progress, speed, eta, type, quality, size
+    case title, thumbnail, status, remark, progress, speed, eta, type, quality, size
     case site, addedAt, finishedAt, duration, destination, attempt, clientUsed
     case actions
 
     public static let defaultVisible: [ColumnID] = [
-        .title, .progress, .speed, .eta, .type, .quality, .size
+        .title, .thumbnail, .progress, .speed, .eta, .type, .quality, .size
     ]
 
     public static let defaultOrder: [ColumnID] = [
-        .title, .status, .remark, .progress, .speed, .eta, .type, .quality, .size,
+        .title, .thumbnail, .status, .remark, .progress, .speed, .eta, .type, .quality, .size,
         .site, .addedAt, .finishedAt, .duration, .destination, .attempt, .clientUsed,
         .actions
     ]
