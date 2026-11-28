@@ -677,11 +677,11 @@ Every palette defines the full set. Names are stable across palettes; only value
 --hair          table row rule / faint divider
 --text          primary text
 --dim           secondary text
---faint         tertiary / placeholder
+--faint         tertiary / placeholder — reaches 4.5:1 contrast on every surface
 --headline      headline text (often = --text or a touch brighter)
---on-accent     text on a solid accent fill
+--on-accent     text on a solid accent or --go fill
 --accent        primary accent / "downloading" / kicker
---accent-2      secondary accent / "queued" / links / playlist group
+--accent-2      secondary accent / "queued" / links / playlist group / selected-row wash at 10%
 --warn          cooldown / attention
 --danger        failure / error
 --go            Go button fill (Tape Deck: solid; Aurora: use --go-fill)

@@ -16,11 +16,6 @@ struct SkinnedSheet<Content: View>: View {
                 theme.palette.stroke,
                 lineWidth: theme.hairlineWidth
             ))
-            .shadow(
-                color: .black.opacity(0.35),
-                radius: theme.cardShadowRadius,
-                x: theme.cardShadowOffset,
-                y: theme.cardShadowOffset
-            )
+            .cardElevation(theme: theme)
     }
 }

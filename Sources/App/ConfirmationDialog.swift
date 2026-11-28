@@ -98,12 +98,7 @@ struct ConfirmationDialog: View {
         .frame(maxWidth: 420)
         .background(theme.palette.panelSolid, in: cardShape)
         .overlay(cardShape.stroke(theme.palette.stroke, lineWidth: theme.hairlineWidth))
-        .shadow(
-            color: theme.cardShadowColor,
-            radius: theme.kind == .aurora ? 24 : theme.cardShadowRadius,
-            x: theme.kind == .aurora ? 0 : theme.cardShadowOffset,
-            y: theme.kind == .aurora ? 8 : theme.cardShadowOffset
-        )
+        .cardElevation(theme: theme)
     }
 
     private var confirmFill: Color {

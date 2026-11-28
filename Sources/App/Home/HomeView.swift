@@ -151,6 +151,8 @@ struct HomeView: View {
             RoundedRectangle(cornerRadius: theme.cardRadius)
                 .stroke(theme.palette.stroke, lineWidth: theme.hairlineWidth)
         )
+        .shadow(color: theme.palette.glowA, radius: 1, x: 0, y: 0)
+        .shadow(color: theme.palette.glowB, radius: 32, x: 0, y: 0)
     }
 
     private var attachedRunway: some View {

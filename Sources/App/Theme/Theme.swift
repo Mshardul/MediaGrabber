@@ -112,6 +112,33 @@ struct Theme {
     }
 }
 
+// Elevation for raised surfaces; Aurora glows, Tape Deck uses a hard offset shadow.
+struct CardElevation: ViewModifier {
+    let theme: Theme
+
+    func body(content: Content) -> some View {
+        if theme.kind == .aurora {
+            content
+                .shadow(color: theme.palette.glowA, radius: 1, x: 0, y: 0)
+                .shadow(color: theme.palette.glowB, radius: 32, x: 0, y: 0)
+        } else {
+            content
+                .shadow(
+                    color: theme.cardShadowColor,
+                    radius: theme.cardShadowRadius,
+                    x: theme.cardShadowOffset,
+                    y: theme.cardShadowOffset
+                )
+        }
+    }
+}
+
+extension View {
+    func cardElevation(theme: Theme) -> some View {
+        modifier(CardElevation(theme: theme))
+    }
+}
+
 enum Spacing {
     static let s1: CGFloat = 4
     static let s2: CGFloat = 8

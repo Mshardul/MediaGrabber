@@ -123,21 +123,12 @@ struct SkinnedPicker<Option: Hashable>: View {
                 .stroke(theme.palette.stroke, lineWidth: theme.hairlineWidth)
         )
         .clipShape(RoundedRectangle(cornerRadius: theme.cardRadius))
-        .shadow(
-            color: elevationColor,
-            radius: theme.kind == .aurora ? 20 : theme.cardShadowRadius,
-            x: theme.kind == .aurora ? 0 : theme.cardShadowOffset,
-            y: theme.kind == .aurora ? 0 : theme.cardShadowOffset
-        )
+        .cardElevation(theme: theme)
         .accessibilityElement(children: .contain)
         .onKeyPress(.upArrow) { moveHighlight(-1); return .handled }
         .onKeyPress(.downArrow) { moveHighlight(1); return .handled }
         .onKeyPress(.return) { commitHighlight(); return .handled }
         .onKeyPress(.escape) { isPresented = false; return .handled }
-    }
-
-    private var elevationColor: Color {
-        theme.kind == .aurora ? theme.palette.glowB : .black.opacity(0.35)
     }
 
     private func rowView(_ row: SkinnedPickerRow<Option>) -> some View {

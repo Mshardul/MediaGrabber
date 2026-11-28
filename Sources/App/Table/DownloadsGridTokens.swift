@@ -38,7 +38,7 @@ struct DownloadsGridTokens {
         hair: NSColor(white: 1, alpha: 0.06),
         text: hex("#EDF0F5"),
         dim: hex("#9AA3B2"),
-        faint: hex("#6B7480"),
+        faint: hex("#7E8792"),
         accent: hex("#5EF2C8"),
         accent2: hex("#8B7BFF"),
         warn: hex("#FFC24B"),

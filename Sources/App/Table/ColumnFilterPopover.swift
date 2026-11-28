@@ -69,12 +69,7 @@ struct ColumnFilterPopover: View {
             RoundedRectangle(cornerRadius: theme.cardRadius)
                 .stroke(theme.palette.stroke, lineWidth: theme.hairlineWidth)
         )
-        .shadow(
-            color: theme.kind == .aurora ? theme.palette.glowB : .black.opacity(0.35),
-            radius: theme.kind == .aurora ? 20 : theme.cardShadowRadius,
-            x: theme.kind == .aurora ? 0 : theme.cardShadowOffset,
-            y: theme.kind == .aurora ? 0 : theme.cardShadowOffset
-        )
+        .cardElevation(theme: theme)
     }
 
     private var popoverWidth: CGFloat {

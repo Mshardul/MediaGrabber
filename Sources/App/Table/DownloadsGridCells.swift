@@ -358,7 +358,7 @@ final class GridRowView: NSTableRowView {
 
     override func drawSelection(in dirtyRect: NSRect) {
         guard selectionHighlightStyle != .none else { return }
-        tokens.accent.withAlphaComponent(0.18).setFill()
+        tokens.accent2.withAlphaComponent(0.10).setFill()
         dirtyRect.fill()
     }
 
