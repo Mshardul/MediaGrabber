@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MediaGrabber: title bar and logo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Sora:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9d9d6;color:#17181a;font:14px/1.5 -apple-system,sans-serif;padding-bottom:80px}
+.bar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #bbb;padding:9px 24px;display:flex;flex-wrap:wrap;gap:8px 22px}
+.g{display:flex;gap:4px;align-items:center}
+.g b{margin-right:5px;font-weight:600}
+.g button{font:inherit;border:1px solid #bbb;background:#f4f4f2;border-radius:6px;padding:3px 10px;cursor:pointer}
+.g button.on{background:#17181a;color:#fff;border-color:#17181a}
+.head{width:980px;margin:30px auto 8px;scroll-margin-top:80px}
+.head h2{font-size:18px}
+.head p{color:#45464a;max-width:80ch}
+.aurora{--surface:#0C1013;--panel:rgba(255,255,255,.05);--hi:rgba(255,255,255,.09);--stroke:rgba(255,255,255,.12);--text:#EDF0F5;--dim:#9AA3B2;--accent:#5EF2C8;--on:#07080B;--go:linear-gradient(90deg,#5EF2C8,#8B7BFF);--display:'Sora';--body:'IBM Plex Sans';--mono:'JetBrains Mono';--bw:1px;--barbg:#14191e;--bartext:#F4F6FA;--chipbg:rgba(255,255,255,.05);--solid:#151a21;--blocked:#FF6B6B;--problem:#FF9142;--warning:#FFD84B;--healthy:#5EE08A}
+.tape{--surface:#FBF4E6;--panel:#F3E9D8;--hi:#EADFCB;--stroke:#2B2118;--text:#2B2118;--dim:#75664E;--accent:#D2601A;--on:#2B2118;--go:#E0A53C;--display:'Bricolage Grotesque';--body:'DM Sans';--mono:'DM Mono';--bw:2px;--barbg:#0E5C57;--bartext:#FBF4E6;--chipbg:#FBF4E6;--solid:#FBF4E6;--blocked:#B3261E;--problem:#E8710A;--warning:#F2C200;--healthy:#2E7D32}
+.win{position:relative;margin:auto;width:var(--w,980px);height:330px;border-radius:12px;overflow:hidden;background:var(--surface);color:var(--text);font:13px/1.4 var(--body),sans-serif;border:var(--bw) solid var(--stroke);box-shadow:0 18px 44px rgba(0,0,0,.32);display:flex;flex-direction:column}
+.win.full{border-radius:0}
+.tb{flex:none;height:52px;display:flex;align-items:center;gap:14px;padding:0 14px 0 20px;background:var(--barbg);color:var(--bartext);border-bottom:var(--bw) solid var(--stroke);user-select:none}
+.tb.short{height:40px}
+.lights{display:flex;gap:8px;margin-right:6px;flex:none}
+.lights i{width:12px;height:12px;border-radius:50%;background:#ff5f57}.lights i:nth-child(2){background:#febc2e}.lights i:nth-child(3){background:#28c840}
+.full .lights{display:none}
+.inactive .lights i{background:#8d8d8d!important}
+.inactive .tb>*:not(.lights),.inactive .row>*{opacity:.45}
+.row{flex:none;display:flex;align-items:center;gap:10px;padding:7px 18px;border-bottom:1px solid var(--stroke)}
+.brand{display:flex;align-items:center;gap:9px;font:700 16px var(--display);white-space:nowrap;cursor:pointer;flex:none}
+nav{display:flex;gap:2px;flex:none}
+nav span{padding:5px 11px;border-radius:8px;font:600 12px var(--body);opacity:.72;white-space:nowrap}
+nav span.on{opacity:1;background:rgba(255,255,255,.1)}
+.row nav span.on{background:var(--hi)}
+.push{margin-left:auto}
+.chips{display:flex;gap:6px;flex:none}
+.chip{display:flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:20px;border:var(--bw) solid var(--stroke);background:var(--chipbg);color:var(--text);font:11px var(--mono);cursor:pointer;white-space:nowrap}
+.chip.compact{padding:0 8px;gap:5px}
+.chip.compact .name{display:none}
+.chip.bad{border-color:var(--lv);box-shadow:0 0 0 1px var(--lv)}
+svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic{width:15px;height:15px}
+.mark{width:13px;height:13px;stroke:#14100c;stroke-width:2.4}
+.body{flex:1;display:flex;min-height:0}
+.rail{width:160px;border-right:1px solid var(--stroke);padding:10px 8px}
+.rail div{padding:6px 12px;border-radius:8px;color:var(--dim)}
+.rail div:first-child{background:var(--panel);color:var(--text);font-weight:600}
+.col{flex:1;padding:14px 20px}
+.paste{border:var(--bw) solid var(--stroke);border-radius:12px;background:var(--panel);padding:16px 18px;font:12px var(--mono);color:var(--dim)}
+.line{height:34px;border-bottom:1px solid var(--stroke);display:flex;align-items:center;color:var(--dim)}
+.saved{position:absolute;right:16px;bottom:16px;background:var(--solid);border:var(--bw) solid var(--stroke);border-radius:10px;padding:10px 16px;box-shadow:0 10px 26px rgba(0,0,0,.4);animation:in .25s ease-out}
+@keyframes in{from{transform:translateX(30px);opacity:0}}
+
+/* logo */
+.logo{position:relative;width:24px;height:24px;flex:none;transition:transform .12s ease-out}
+.logo .ball{position:absolute;inset:2px;border-radius:50%;background:conic-gradient(from var(--spin,0deg),#5EF2C8,#8B7BFF,#FF7A6B,#5EF2C8)}
+.logo .shine{position:absolute;inset:2px;border-radius:50%;background:radial-gradient(circle at var(--lx,32%) var(--ly,28%),rgba(255,255,255,.95),rgba(255,255,255,0) 34%),radial-gradient(circle,rgba(0,0,0,0) 55%,rgba(0,0,0,.38))}
+.tape .logo .ball{box-shadow:0 0 0 2px #2B2118,3px 3px 0 2px rgba(0,0,0,.35)}
+.tape .logo .shine{background:radial-gradient(ellipse 26% 16% at var(--lx,34%) var(--ly,28%),#fffdf4 96%,transparent 100%)}
+.logo svg.ring{position:absolute;inset:-3px;width:30px;height:30px;transform:rotate(-90deg);stroke-width:2.4}
+.logo .bit{position:absolute;left:8px;top:8px;width:9px;height:9px;opacity:0;pointer-events:none}
+
+/* issues dialog */
+.veil{position:absolute;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:5}
+.dlg{width:540px;max-height:290px;display:flex;flex-direction:column;background:var(--solid);border:var(--bw) solid var(--stroke);border-radius:14px;box-shadow:0 22px 60px rgba(0,0,0,.5)}
+.dlg header{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--stroke);font:700 16px var(--display)}
+.dlg header button{margin-left:auto}
+.dlg .list{overflow:auto}
+.issue{display:grid;grid-template-columns:18px 1fr auto;gap:12px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--stroke)}
+.issue:last-child{border:0}
+.issue p{color:var(--dim);font-size:12px}
+.btn{height:30px;min-width:118px;padding:0 14px;border-radius:8px;border:var(--bw) solid var(--stroke);background:var(--panel);color:var(--text);font:600 12px var(--body);cursor:pointer}
+.x{border:0;background:none;color:var(--dim);font-size:16px;cursor:pointer}
+
+/* logo lab */
+.lab{width:980px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{border-radius:14px;overflow:hidden;border:var(--bw) solid var(--stroke);background:var(--surface);color:var(--text);font:13px/1.45 var(--body),sans-serif}
+.card .tb{height:70px}
+.card .tb .brand{font-size:21px;gap:13px}
+.card .tb .logo{zoom:1.5}
+.card div.about{padding:11px 18px 13px}
+.card h3{font:700 14px var(--display)}
+.card p{color:var(--dim)}
+.card output{margin-left:auto;font:11px var(--mono);opacity:.85}
+.name i{font-style:normal;display:inline-block}
+.ripple .name i{animation:hop .5s ease-out;animation-delay:calc(var(--n)*30ms)}
+@keyframes hop{40%{transform:translateY(-5px)}}
+
+#orbview{position:fixed;inset:0;z-index:40;background:#05070a;display:none}
+#orbview iframe{width:100%;height:100%;border:0}
+#orbview button{position:absolute;top:16px;right:20px;font:600 13px -apple-system;padding:7px 14px;border-radius:8px;border:1px solid #555;background:#111;color:#eee;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.ripple .name i,.saved{animation:none}}
+</style>
+</head>
+<body>
+<div class="bar">
+ <div class="g" data-k="theme"><b>Theme</b><button data-v="aurora">Aurora</button><button data-v="tape">Tape Deck</button></div>
+ <div class="g" data-k="palette"><b>Colours</b><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><span id="palname"></span></div>
+ <div class="g" data-k="health"><b>Health</b><button data-v="good">All healthy</button><button data-v="one">One problem</button><button data-v="many">Several issues</button></div>
+ <div class="g" data-k="size"><b>Window</b><button data-v="980">Default 980</button><button data-v="820">Narrow 820</button><button data-v="full">Full screen</button></div>
+ <div class="g" data-k="focus"><b>Focus</b><button data-v="active">Active</button><button data-v="inactive">Inactive</button></div>
+ <div class="g" data-k="busy"><b>Downloading</b><button data-v="yes">Yes</button><button data-v="no">No</button></div>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><linearGradient id="ringfill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--ring-a)"/><stop offset="1" style="stop-color:var(--ring-b)"/></linearGradient></svg>
+<div id="layouts"></div>
+
+<div class="head" id="logos"><h2>Logo behaviour</h2><p>Hover, click once and triple-click each logo. In all four, one click goes Home and a triple-click opens the orb view. The windows above use whichever one you pick below.</p></div>
+<div class="bar" style="position:static;width:980px;margin:0 auto 12px;border:0;border-radius:8px"><div class="g" data-k="logo"><b>Use in the windows above</b><button data-v="alive">1 · Alive</button><button data-v="quiet">2 · Quiet</button><button data-v="peek">3 · Peek</button><button data-v="status">4 · Status</button></div></div>
+<div class="lab" id="lab"></div>
+
+<div id="orbview"><button type="button">Close (Esc)</button><iframe title="Orb view"></iframe></div>
+
+<script>
+const S={theme:'aurora',palette:'1',health:'one',size:'980',focus:'active',busy:'yes',logo:'status'};
+// Each colour set: name, ring start, ring end, title bar.
+const PALETTES={aurora:[['Mint & Iris','#5EF2C8','#8B7BFF','#14191e'],['Lime & Forest','#B6F04A','#4ED6A0','#131a14'],['Magenta & Violet','#F25C9E','#9B6BFF','#1a1420']],
+ // The Tape Deck title bar is the deep second colour, so its ring runs between the two bright ones.
+ tape:[['Teal & Rust','#E4A11B','#D2601A','#0E5C57'],['Plum & Blush','#E8B24A','#E98C89','#5A2E52'],['Navy & Aqua','#F2B12E','#2FA69A','#1F3350']]};
+// URL settings reach innerHTML, so only listed values are accepted.
+const ALLOWED={theme:['aurora','tape'],palette:['1','2','3'],health:['good','one','many'],size:['980','820','full'],focus:['active','inactive'],busy:['yes','no'],logo:['alive','quiet','peek','status']};
+const q=new URLSearchParams(location.search);for(const k of Object.keys(ALLOWED))if(ALLOWED[k].includes(q.get(k)))S[k]=q.get(k);
+const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const P={conn:'M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0M12 19.5h.01',yt:'M14 10a4 4 0 1 0-3.5 4L12 14h2v2h2v2h3v-3l-5-5M7.5 9h.01',tools:'M14.5 6a4.5 4.5 0 0 0-5.8 5.8L3 17.5 6.500 21l5.7-5.7A4.5 4.5 0 0 0 18 9.500l-3 3-3.500-3.500 3-3',store:'M4 5h16l2 9v5H2v-5zM2 14h20M6 17h.01M10 17h.01'};
+const svg=(d,cls='ic')=>`<svg class="${cls}" viewBox="0 0 24 24"><path d="${d}"/></svg>`;
+const LV={blocked:{n:4,label:'Blocked',shape:'<path d="M8 2h8l6 6v8l-6 6H8l-6-6V8z" fill="var(--blocked)"/><path d="M8 12h8"/>'},problem:{n:3,label:'Problem',shape:'<path d="M12 3 2 21h20z" fill="var(--problem)"/><path d="M12 10v4M12 17.500h.01"/>'},warning:{n:2,label:'Warning',shape:'<circle cx="12" cy="12" r="10" fill="var(--warning)"/><path d="M12 11v6M12 7.500h.01"/>'},healthy:{n:1,label:'Healthy',shape:'<circle cx="12" cy="12" r="10" fill="var(--healthy)"/><path d="m7.500 12.500 3 3 6-6.500"/>'}};
+const mark=l=>`<svg class="mark" viewBox="0 0 24 24" role="img" aria-label="${LV[l].label}">${LV[l].shape}</svg>`;
+const CATS=[['conn','Connection'],['yt','YouTube & sign-in'],['tools','Tools'],['store','Storage']];
+// [level, minutes ago, title, explanation, action]
+const ISSUES={good:{},
+ one:{yt:[['problem',3,'YouTube check stopped','Some YouTube downloads may fail or be lower quality.','Restart']]},
+ many:{conn:[['warning',1,'YouTube is cooling down','Downloads from YouTube resume in 4:29.',null],['blocked',12,'Vimeo is paused','Vimeo keeps limiting requests. Try again later, or turn off your VPN.','Retry now'],['warning',8,'YouTube downloads run one at a time','This helps avoid more limits.',null]],
+  tools:[['warning',40,'Downloader is out of date','A newer version is ready.','Update']],
+  store:[['blocked',2,'Disk is full','Free some space so downloads can continue.','Show folder']]}};
+const sorted=cat=>[...(ISSUES[S.health][cat]||[])].sort((a,b)=>LV[b[0]].n-LV[a[0]].n||a[1]-b[1]);
+const worst=cat=>sorted(cat)[0]?.[0]||'healthy';
+
+function chip([id,name],compact){const l=worst(id),bad=l!=='healthy',tip=`${name}: ${bad?sorted(id)[0][2]:'working'}`;
+ return `<button type="button" class="chip${compact?' compact':''}${bad?' bad':''}" style="--lv:var(--${l})" data-cat="${id}" title="${tip}" aria-label="${tip}">${svg(P[id])}<span class="name">${name}</span>${mark(l)}</button>`}
+// Compact layout: only the most serious chip spells itself out, and only while there is room.
+function chipSet(compact){if(!compact)return `<div class="chips">${CATS.map(c=>chip(c)).join('')}</div>`;
+ const lead=CATS.map(c=>c[0]).filter(c=>worst(c)!=='healthy').sort((a,b)=>LV[worst(b)].n-LV[worst(a)].n||sorted(a)[0][1]-sorted(b)[0][1])[0];
+ return `<div class="chips">${CATS.map(([id,name])=>chip([id,id===lead?sorted(id)[0][2]:name],id!==lead)).join('')}</div>`}
+
+const logoEl=kind=>`<span class="logo" data-kind="${kind}"><span class="ball"></span><span class="shine"></span>${kind==='status'?'<svg class="ring" viewBox="0 0 30 30"><circle cx="15" cy="15" r="13.500" stroke="rgba(160,160,160,.35)"/><circle class="arc" cx="15" cy="15" r="13.500" stroke-dasharray="84.800" stroke="url(#ringfill)"/></svg>':''}${kind==='peek'?['conn','yt','tools','store'].map((k,i)=>`<svg class="bit" data-i="${i}" viewBox="0 0 24 24"><path d="${['M7 4l13 8-13 8z','M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0a3 3 0 1 1 6 0','M3 5h18v14H3zM7 5v14M17 5v14','M3 4h18v16H3zM3 17l5-6 4 4 3-3 6 6'][i]}"/></svg>`).join(''):''}</span>`;
+const brand=(kind=S.logo)=>`<span class="brand" role="button" tabindex="0" aria-label="MediaGrabber, go to Home">${logoEl(kind)}<span class="name">${[...'MediaGrabber'].map((c,i)=>`<i style="--n:${i}">${c}</i>`).join('')}</span></span>`;
+const NAV='<nav><span class="on">Home</span><span>Preferences</span><span>About</span></nav>';
+const LIGHTS='<span class="lights"><i></i><i></i><i></i></span>';
+const page='<div class="body"><div class="rail"><div>All</div><div>Downloading</div><div>Done</div><div>Inactive</div></div><div class="col"><div class="paste">Paste a link</div><div class="line">How a mechanical watch keeps time</div><div class="line">Rain on a tin roof (field recording)</div><div class="line">Designing a type family</div><div class="line">Coastline drone survey</div></div></div>';
+
+const LAYOUTS=[
+ ['a','A. Logo and navigation in the title bar','Chips get their own row with full names. Easiest to read; uses one extra row.',
+  ()=>`<div class="tb">${LIGHTS}${brand()}<span class="push"></span>${NAV}</div><div class="row">${chipSet(false)}</div>`],
+ ['b','B. Everything in one bar','Healthy chips shrink to an icon and mark. The most serious issue spells itself out. Saves the most space.',
+  ()=>`<div class="tb">${LIGHTS}${brand()}${NAV}<span class="push"></span>${chipSet(true)}</div>`],
+ ['c','C. Logo only in the title bar','A slim brand bar with navigation and full chips together below. Narrow windows shorten the chips.',
+  ()=>`<div class="tb short">${LIGHTS}${brand()}</div><div class="row">${NAV}<span class="push"></span>${chipSet(false)}</div>`]
+];
+
+// When a bar runs out of room, chips drop to icon and mark, least serious first.
+function fit(){document.querySelectorAll('.win .tb,.win .row').forEach(bar=>{
+ const wide=[...bar.querySelectorAll('.chip:not(.compact)')].sort((a,b)=>LV[worst(a.dataset.cat)].n-LV[worst(b.dataset.cat)].n);
+ const tight=()=>bar.lastElementChild.getBoundingClientRect().right>bar.getBoundingClientRect().right-parseFloat(getComputedStyle(bar).paddingRight)+.5;
+ while(tight()&&wide.length)wide.shift().classList.add('compact')})}
+function render(){
+ const full=S.size==='full';
+ document.getElementById('layouts').innerHTML=LAYOUTS.map(l=>`<div class="head" id="${l[0]}"><h2>${l[1]}</h2><p>${l[2]}</p></div><div class="win ${S.theme}${full?' full':''}${S.focus==='inactive'?' inactive':''}" style="--w:${full?'calc(100vw - 32px)':S.size+'px'}" data-layout="${l[0]}">${l[3]()}${page}</div>`).join('');
+ const LAB=[['alive','1 · Alive','The orb leans toward your pointer and brightens. The name ripples on hover. It spins while downloading.'],
+  ['quiet','2 · Quiet','No hover effect. It only spins while something is downloading.'],
+  ['peek','3 · Peek','On hover the orb swells and lets a few media symbols slip out and circle it.'],
+  ['status','4 · Status (chosen)','A ring shows overall download progress in the chosen theme’s colours.']];
+ document.getElementById('lab').innerHTML=LAB.map(l=>`<div class="card ${S.theme}"><div class="tb">${brand(l[0])}<output></output></div><div class="about"><h3>${l[1]}</h3><p>${l[2]}</p></div></div>`).join('');
+ document.querySelectorAll('.g[data-k] button').forEach(b=>b.classList.toggle('on',S[b.parentElement.dataset.k]===b.dataset.v));
+ const[pname,a,b,barbg]=PALETTES[S.theme][S.palette-1],root=document.documentElement.style;root.setProperty('--ring-a',a);root.setProperty('--ring-b',b);document.getElementById('palname').textContent=pname;
+ document.querySelectorAll('.win,.card').forEach(el=>el.style.setProperty('--barbg',barbg));
+ fit();
+}
+document.querySelectorAll('.g[data-k] button').forEach(b=>b.onclick=()=>{S[b.parentElement.dataset.k]=b.dataset.v;render()});
+
+function openDialog(win,cat){closeDialog();const name=CATS.find(c=>c[0]===cat)[1],list=sorted(cat);
+ const rows=list.length?list.map(i=>`<div class="issue">${mark(i[0])}<div><b>${i[2]}</b><p>${i[3]}</p></div>${i[4]?`<button type="button" class="btn">${i[4]}</button>`:'<span></span>'}</div>`).join(''):`<div class="issue">${mark('healthy')}<div><b>Everything’s working here.</b></div><span></span></div>`;
+ win.insertAdjacentHTML('beforeend',`<div class="veil"><div class="dlg" role="dialog" aria-label="${name}"><header>${svg(P[cat])}${name}<button type="button" class="x" aria-label="Close">✕</button></header><div class="list">${rows}</div></div></div>`)}
+function closeDialog(){document.querySelectorAll('.veil').forEach(v=>v.remove())}
+const view=document.getElementById('orbview'),frame=view.querySelector('iframe');
+function openOrb(){frame.src='orb.html?bare='+S.theme;view.style.display='block'}
+function closeOrb(){view.style.display='none';frame.src='about:blank'}
+view.querySelector('button').onclick=closeOrb;
+addEventListener('keydown',e=>{if(e.key==='Escape'){closeOrb();closeDialog()}});
+
+addEventListener('click',e=>{
+ const c=e.target.closest('.chip');if(c){openDialog(c.closest('.win'),c.dataset.cat);return}
+ if(e.target.closest('.x')||e.target.classList.contains('veil')){closeDialog();return}
+ const b=e.target.closest('.brand');if(!b)return;
+ if(e.detail>=3){openOrb();return}
+ if(e.detail===1){const out=b.parentElement.querySelector('output');
+  if(out){out.textContent='→ Home';setTimeout(()=>out.textContent='',1200)}
+  else{const w=b.closest('.win');w.querySelector('.saved')?.remove();w.insertAdjacentHTML('beforeend','<div class="saved">Went to Home</div>');setTimeout(()=>w.querySelector('.saved')?.remove(),1200)}}
+});
+
+let pointer=[-999,-999],hovered=null;
+addEventListener('pointermove',e=>{pointer=[e.clientX,e.clientY];const b=e.target.closest?.('.brand');
+ if(b!==hovered){hovered?.classList.remove('ripple');hovered=b;if(b&&!still&&b.querySelector('.logo').dataset.kind==='alive')b.classList.add('ripple')}});
+let t=0,spin=0,last=performance.now();
+function tick(now){const dt=Math.max(0,Math.min((now-last)/1000,.05));last=now;t+=dt;if(S.busy==='yes'&&!still)spin=(spin+dt*60)%360;
+ 
+ document.querySelectorAll('.logo').forEach(l=>{const kind=l.dataset.kind,box=l.parentElement.getBoundingClientRect(),over=hovered===l.parentElement,o=l.getBoundingClientRect();
+  l.style.setProperty('--spin',spin+'deg');
+  if(kind==='alive'&&!still){const dx=pointer[0]-(box.x+14),dy=pointer[1]-(box.y+box.height/2),d=Math.hypot(dx,dy),near=Math.max(0,1-d/260),ux=d?dx/d:0,uy=d?dy/d:0;
+   l.style.transform=`translate(${ux*near*3}px,${uy*near*3}px) scale(${1+(over?.18:near*.06)})`;l.style.setProperty('--lx',(32+ux*near*26)+'%');l.style.setProperty('--ly',(28+uy*near*26)+'%');l.style.filter=`drop-shadow(0 0 ${near*7}px rgba(94,242,200,.8))`}
+  if(kind==='peek'){l.style.transform=over&&!still?'scale(1.2)':'';l.querySelectorAll('.bit').forEach(bit=>{const a=t*2.2+bit.dataset.i*Math.PI/2,r=over&&!still?19:0;bit.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r*.65}px)`;bit.style.opacity=over&&!still?1:0})}
+  if(kind==='status'){const arc=l.querySelector('.arc'),done=still?.62:(t*.06+.3)%1;arc.style.strokeDashoffset=84.8*(1-done);l.querySelector('.ring').style.visibility=S.busy==='yes'?'':'hidden'}
+ });requestAnimationFrame(tick)}
+render();requestAnimationFrame(tick);
+// Fonts change widths once they arrive.
+document.fonts.ready.then(fit);addEventListener('resize',fit);
+if(['conn','yt','tools','store'].includes(q.get('open')))setTimeout(()=>openDialog(document.querySelector('.win[data-layout="b"]'),q.get('open')),50);
+</script>
+</body>
+</html>

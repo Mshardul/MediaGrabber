@@ -1,0 +1,17 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, choices_card, grab_view %}
+{% set screen_id = "home-open-folder" %}
+{% set title = "Save to open" %}
+{% set caption = "The choice opens in the shared popup." %}
+{% set tickets = ["mg-021", "mg-227"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view(orb=false) %}
+{{ link_card(data.VIDEO_LINK, result=data.VIDEO_RESULT) }}
+{{ choices_card(data.VIDEO_CHOICE, open="folder") }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

@@ -1,0 +1,14 @@
+{# The oracle orb and its message. The orb is decoration; the message is what gets read. #}
+{% from "parts/controls.html.j2" import button %}
+
+{% macro orb_state(mood) -%}
+{% set heading, message, actions = data.ORB_MESSAGES[mood] %}
+<div class="orb-state">
+  <div class="orb" data-mood="{{ mood }}" aria-hidden="true"></div>
+  <h3>{{ heading }}</h3>
+  <p>{{ message }}</p>
+  {% if actions %}
+  <div class="orb-actions">{% for action in actions %}{{ button(action, "main" if loop.first else "standard") }}{% endfor %}</div>
+  {% endif %}
+</div>
+{%- endmacro %}

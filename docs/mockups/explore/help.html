@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-theme="aurora" data-palette="mint">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MediaGrabber prototype: Help</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../screens.css">
+<link rel="stylesheet" href="about.css">
+<script src="../screens.js"></script>
+<script src="help.js"></script>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true"><symbol id="p-paste" viewBox="0 0 24 24"><path d="M9 4h6v3H9zM9 5H5v16h14V5h-4"/></symbol><symbol id="p-drop" viewBox="0 0 24 24"><path d="M12 3v11M8 10l4 4 4-4M4 16v5h16v-5"/></symbol><symbol id="p-copy" viewBox="0 0 24 24"><path d="M9 9h11v11H9zM5 15H4V4h11v1"/></symbol><symbol id="p-share" viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1"/></symbol><symbol id="p-github" viewBox="0 0 24 24"><path d="M8 7 3 12l5 5M16 7l5 5-5 5"/></symbol><symbol id="p-linkedin" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 10v7M8 7h.01M12 17v-7M12 13c0-4 5-4 5 0v4"/></symbol><symbol id="p-globe" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 1 0 18a9 9 0 0 1 0-18zM3 12h18M12 3c-6 6-6 12 0 18M12 3c6 6 6 12 0 18"/></symbol><symbol id="p-mail" viewBox="0 0 24 24"><path d="M3 5h18v14H3zM3 7l9 7 9-7"/></symbol></svg>
+<header class="doc-bar"><nav class="doc-menu" aria-label="Pages"><a href="../screens.html">All screens</a></nav><div class="doc-switch"><button type="button" data-set-theme="aurora" data-set-palette="mint">Aurora: Mint &amp; Iris</button><button type="button" data-set-theme="aurora" data-set-palette="lime">Aurora: Lime &amp; Forest</button><button type="button" data-set-theme="aurora" data-set-palette="magenta">Aurora: Magenta &amp; Violet</button><button type="button" data-set-theme="tapedeck" data-set-palette="teal">Tape Deck: Teal &amp; Rust</button><button type="button" data-set-theme="tapedeck" data-set-palette="plum">Tape Deck: Plum &amp; Blush</button><button type="button" data-set-theme="tapedeck" data-set-palette="navy">Tape Deck: Navy &amp; Aqua</button></div></header>
+<main class="doc-main">
+<div class="review"><p class="review-note" role="status">Links show here what they would do.</p></div>
+<div class="window">
+<div class="titlebar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand"><span class="logo"><span class="logo-ball"></span><span class="logo-shine"></span></span><span>MediaGrabber</span></span><nav class="nav"><span>Home</span><span>Preferences</span><span class="on">Help</span><span>About</span></nav></div>
+<div class="chips"><button type="button" class="chip lv-healthy">Connection</button><button type="button" class="chip lv-healthy">YouTube &amp; sign-in</button><button type="button" class="chip lv-healthy">Tools</button><button type="button" class="chip lv-healthy">Storage</button></div>
+<div class="window-body">
+<nav class="rail" aria-label="Help sections"><button type="button" data-jump="how">How it works</button><button type="button" data-jump="can">What it can do</button><button type="button" data-jump="questions">Common questions</button><button type="button" data-jump="trouble">Troubleshooting</button></nav>
+<div class="page"><div class="column"><section class="block " id="how" data-section><h2>How it works</h2>
+<div class="steps-tabs" role="tablist">
+<button type="button" role="tab" data-step="paste" aria-selected="true"><span>1.</span><span>Add a link</span></button>
+<button type="button" role="tab" data-step="choose" aria-selected="false"><span>2.</span><span>Choose what you want</span></button>
+<button type="button" role="tab" data-step="grab" aria-selected="false"><span>3.</span><span>Grab it</span></button></div>
+<div class="stage">
+<div data-stage="paste"><div class="mock-row"><span class="mono">https://example.com/watch?v=sourdough</span></div><p>Add a link in any of these ways. MediaGrabber checks it and shows its title.</p><ul class="ways">
+<li><svg class="icon" aria-hidden="true"><use href="#p-paste"/></svg><b>Paste it</b><span>Into the box on Home.</span></li>
+<li><svg class="icon" aria-hidden="true"><use href="#p-drop"/></svg><b>Drag it in</b><span>Drop a link anywhere on the window.</span></li>
+<li><svg class="icon" aria-hidden="true"><use href="#p-copy"/></svg><b>Just copy it</b><span>With clipboard detection on, the app picks it up.</span></li>
+<li><svg class="icon" aria-hidden="true"><use href="#p-share"/></svg><b>Share it</b><span>Use the Share or Services menu in other apps.</span></li></ul></div>
+<div data-stage="choose" hidden><div class="mock-row"><span>Video, 1080p, saved to Downloads</span><span class="fake-button">Grab</span></div><p>Pick video or audio, the quality and where it goes. Your last choices are already filled in.</p></div>
+<div data-stage="grab" hidden><div class="mock-row"><span>Sourdough, start to finish</span><span class="bar"><i></i></span><span>Saved</span></div><p>Watch the progress, then show the file in Finder.</p></div></div></section><section class="block " id="can" data-section><h2>What it can do</h2><div class="can">
+<article class="tall"><div><h3>Pick the quality</h3><p>Choose from what the video offers.</p></div>
+<ul class="options"><li>2160p</li><li>1440p</li><li class="on">1080p</li><li>720p</li><li>480p</li></ul></article>
+<article><div><h3>Video or only audio</h3><p>Save audio as M4A or MP3.</p></div>
+<div class="segment" role="radiogroup" aria-label="Type"><button type="button" role="radio" data-kind="video" aria-checked="true">Video</button><button type="button" role="radio" data-kind="audio" aria-checked="false">Audio</button></div></article>
+<article><div><h3>Choose the language</h3><p>For videos with more than one audio track.</p></div>
+<ul class="options"><li class="on">Original</li><li>English</li></ul></article>
+<article><div><h3>Playlists</h3><p>Take all of it, or only the videos you tick.</p></div>
+<ul class="checks"><li>Part 1: The starter</li><li class="off">Part 2: Questions</li><li>Part 3: The bake</li></ul></article>
+<article><div><h3>Several at once</h3><p>Pause, resume or cancel any download.</p></div>
+<div class="mock-row"><span class="bar"><i></i></span><span class="fake-button">Pause</span></div></article></div></section><section class="block faq" id="questions" data-section><h2>Common questions</h2>
+<details><summary>Which sites work?</summary><p>YouTube and many other video sites. A few sites won’t work.</p></details>
+<details><summary>Why would a video need a sign-in?</summary><p>Private and age-restricted videos can need your account. MediaGrabber uses your browser’s sign-in only if you choose a browser.</p></details>
+<details><summary>Where do my files go?</summary><p>To your Downloads folder, unless you choose another one.</p></details>
+<details><summary>Is it okay to download anything?</summary><p>Only download what you have the right to.</p></details></section><section class="block" id="trouble" data-section><h2>Something not working?</h2><p class="lead-text">Try these in order.</p><ol class="fixes"><li><div class="fix-text"><h3>Look at the top of the window</h3><p>A check that needs attention is outlined. Click it to see what is wrong and what you can do.</p></div><div class="fix-sample" aria-label="Example: Tools needs attention"><span class="chip lv-healthy">Connection</span><span class="chip lv-healthy">YouTube &amp; sign-in</span><span class="chip lv-warning">Tools</span><span class="chip lv-healthy">Storage</span></div></li><li><div class="fix-text"><h3>Run a health check</h3><p>Diagnostics tests the app and lets you copy the details.</p></div><button type="button" class="btn" data-note="Opens Preferences, Diagnostics."><span class="btn-label">Open Diagnostics</span></button></li><li><div class="fix-text"><h3>Report the problem</h3><p>Diagnostics opens first, so you can copy the details into your report.</p></div><button type="button" class="btn" data-note="Opens Diagnostics, where a button opens the report form."><span class="btn-label">Report a problem</span></button></li></ol></section></div></div>
+</div></div>
+</main>
+</body>
+</html>

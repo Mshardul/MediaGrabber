@@ -1,0 +1,72 @@
+{# Home: the link card, the one-row choices card and the pieces around them. #}
+{% from "parts/controls.html.j2" import icon, button, icon_button, picker, segment, popover %}
+
+{% macro link_card(link="", result=none, checking=none, error=none, actions=()) -%}
+<div class="link-card">
+  <div class="link-row">
+    <span class="field-input{% if not link %} placeholder{% endif %}">{{ link or "Paste a link" }}</span>
+    {% if checking %}<span class="checking"><span class="spinner"></span>{{ checking }}</span>{% endif %}
+    {% if result %}{{ icon_button("close", "Clear link") }}{% endif %}
+  </div>
+  {% if result %}
+  <div class="link-result">
+    {% if result.picture %}<span class="thumb">{{ icon("picture") }}</span>{% endif %}
+    <div>
+      <p class="result-title">{{ icon("check") }}<span>{{ result.title }}</span></p>
+      {% if result.file %}
+      <p class="result-detail"><span class="file">Saves as {{ result.file }}</span>{% if result.exists %}<span class="file-exists">Already in this folder</span>{% endif %}<span>{{ result.length }}</span><span>≈ {{ result.size }}</span></p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+  {% if error %}<p class="link-error" role="alert">{{ error }}</p>{% endif %}
+  {% if actions %}<div class="link-actions">{% for action in actions %}{{ button(action) }}{% endfor %}</div>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro choices_card(choice, grab="Grab", open=none) -%}
+{% set audio = choice.kind == "Audio" %}
+<div class="choices">
+  <div class="slot slot-type">
+    {{ picker(choice.kind, "audio" if audio else "video", "icon") }}
+    {% if open == "type" %}{{ popover("Type", data.TYPE_ROWS, choice.kind) }}{% endif %}
+  </div>
+  <div class="slot{% if open == "quality" %} flip{% endif %}">
+    {% if audio %}{{ segment(("M4A", "MP3"), choice.format) }}{% else %}{{ picker(choice.format, "quality", "fill") }}{% endif %}
+    {% if open == "quality" %}{{ popover("Resolution", data.QUALITY_ROWS, choice.format) }}{% endif %}
+  </div>
+  <div class="slot">{{ picker(choice.language, "language", "fill") }}</div>
+  <div class="slot">
+    {{ picker(choice.folder, "folder", "fill") }}
+    {% if open == "folder" %}{{ popover("Save to", data.FOLDER_ROWS, choice.folder) }}{% endif %}
+  </div>
+  <div class="grab">{{ button(grab, "main", "large") }}</div>
+</div>
+{%- endmacro %}
+
+{% macro share_tip() -%}
+<div class="tip">
+  {{ icon("share") }}
+  <p>Grab links straight from any app: turn on MediaGrabber in System Settings → Extensions.</p>
+  {{ button("Open Settings", "plain", "compact") }}{{ icon_button("close", "Dismiss") }}
+</div>
+{%- endmacro %}
+
+{% macro grab_view(mood="waiting", orb=true, first_run=false) -%}
+<div class="grab-view">
+  {% if orb %}<div class="orb" data-mood="{{ mood }}" aria-hidden="true"></div>{% endif %}
+  <h2 class="hero-title">One link in. One file out.</h2>
+  <div class="grab-cards">{{ caller() }}</div>
+  {% if first_run %}
+  <p class="link-hint">{{ data.LINK_HINT }}</p>
+  <ol class="steps">
+    {% for step, detail in data.FIRST_RUN_STEPS %}
+    <li>
+      <span class="step-number">{{ loop.index }}</span>
+      <span><span class="step-title">{{ step }}</span><span class="step-detail">{{ detail }}</span></span>
+    </li>
+    {% endfor %}
+  </ol>
+  {% endif %}
+</div>
+{%- endmacro %}

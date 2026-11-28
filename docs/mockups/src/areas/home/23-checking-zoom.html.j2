@@ -1,0 +1,16 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, grab_view %}
+{% set screen_id = "home-checking-zoom" %}
+{% set title = "Checking a Zoom link" %}
+{% set caption = "Zoom links say they can take longer." %}
+{% set tickets = ["mg-237"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("searching") %}
+{{ link_card(data.ZOOM_LINK, checking="Checking link… Zoom links can take up to a minute.") }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

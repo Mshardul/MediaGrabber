@@ -1,0 +1,16 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, grab_view %}
+{% set screen_id = "home-failed-final" %}
+{% set title = "Check failed, retry cannot help" %}
+{% set caption = "No button for a removed video." %}
+{% set tickets = ["mg-229", "mg-208"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("clouded") %}
+{{ link_card(data.VIDEO_LINK, error=data.FAILURE_SENTENCES["unavailable"]) }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

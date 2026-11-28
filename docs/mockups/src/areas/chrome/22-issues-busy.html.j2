@@ -1,0 +1,10 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/health.html.j2" import issues_dialog %}
+{% set screen_id = "issues-busy" %}
+{% set title = "Chip dialog while an action runs" %}
+{% set caption = "The pressed button and its chip are busy and cannot be pressed again." %}
+{% set tickets = ["mg-243"] %}
+{% call window(health="one", busy="signin") %}
+<div class="window-body">{{ rail("All", data.HOME_RAIL) }}<div class="content"></div></div>
+{{ issues_dialog("one", "signin", busy=true) }}
+{% endcall %}

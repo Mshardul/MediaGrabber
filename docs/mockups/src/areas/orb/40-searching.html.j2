@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window %}
+{% from "parts/orb.html.j2" import orb_state %}
+{% set screen_id = "orb-searching" %}
+{% set title = "Searching" %}
+{% set caption = "Working on it: the inside speeds up and a bright point sweeps the rings." %}
+{% set tickets = ["mg-237"] %}
+{% call window() %}
+{{ orb_state("searching") }}
+{% endcall %}

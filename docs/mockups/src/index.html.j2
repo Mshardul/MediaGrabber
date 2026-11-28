@@ -1,0 +1,19 @@
+{% extends "base.html.j2" %}
+{% block content %}
+<div class="doc-index">
+  {% for slug, name in areas %}
+  <section>
+    <h2>{{ name }}</h2>
+    {% if slug in built %}
+    <ul>
+      {% for screen in built[slug] %}
+      <li><a href="screens/{{ slug }}.html#{{ screen.id }}">{{ screen.title }}</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="doc-empty">Not built yet.</p>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -176,6 +176,31 @@ final class EngineIntentsTests: XCTestCase {
         XCTAssertNil(collector.latestSnapshot()?.jobs.first { $0.id == id })
     }
 
+    func test_removeJob_keepsPartFilesOfAnotherJobWithSharedPrefix() async throws {
+        let dir = try tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let ownPart = dir.appendingPathComponent("Intro.mp4.part")
+        let otherPart = dir.appendingPathComponent("Intro to Swift.mp4.part")
+        try Data("partial".utf8).write(to: ownPart)
+        try Data("partial".utf8).write(to: otherPart)
+
+        let runner = FakeProcessRunner()
+        runner.perRunDelay = .seconds(30)
+        runner.script(Fix.completingScript(), forPathEndingIn: "yt-dlp")
+        let probe = FakeMetadataProbe()
+        probe.result(FakeMetadataProbe.success(title: "Intro"))
+        let engine = Fix.engine(runner: runner, probe: probe, cap: 1)
+        let collector = EventCollector(engine.events)
+
+        let id = await submitJob(engine, Fix.request(destFolder: dir))
+        _ = await collector.waitForState(id) { $0 == .running }
+        await engine.remove(id)
+        try? await Task.sleep(for: .milliseconds(30))
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: ownPart.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: otherPart.path))
+    }
+
     func test_removeTerminalJob_leavesList() async {
         let runner = FakeProcessRunner()
         runner.script(Fix.completingScript(), forPathEndingIn: "yt-dlp")

@@ -1,0 +1,8 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% set screen_id = "window-narrow" %}
+{% set title = "Window at 820" %}
+{% set caption = "The narrowest drawn width keeps all four chip names." %}
+{% set tickets = ["mg-029", "mg-244"] %}
+{% call window(health="several", progress=62, narrow=true) %}
+<div class="window-body">{{ rail("All", data.HOME_RAIL) }}<div class="content"></div></div>
+{% endcall %}

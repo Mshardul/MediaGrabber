@@ -1,0 +1,12 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% set screen_id = "home-table-drag" %}
+{% set title = "Link dragged over a table view" %}
+{% set caption = "Dropping it opens the Grab view and checks the link." %}
+{% set tickets = ["mg-023"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("All", data.HOME_RAIL) }}
+  <div class="content"></div>
+</div>
+<div class="drop-highlight" aria-hidden="true"></div>
+{% endcall %}

@@ -1,0 +1,41 @@
+{# The window every screen is drawn in: title bar, health chips and the optional left rail. #}
+{% from "parts/health.html.j2" import chips %}
+
+{% macro logo(progress=none) -%}
+<span class="logo{% if progress is not none %} downloading progress-{{ progress }}{% endif %}">
+  {%- if progress is not none %}<span class="logo-ring" role="progressbar" aria-valuenow="{{ progress }}"></span>{% endif -%}
+  <span class="logo-ball"></span><span class="logo-shine"></span>
+</span>
+{%- endmacro %}
+
+{% macro titlebar(active, progress=none) -%}
+<div class="titlebar">
+  <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+  <span class="brand">{{ logo(progress) }}<span>MediaGrabber</span></span>
+  <nav class="nav">
+    {% for page in data.PAGES %}
+    <span{% if page == active %} class="on" aria-current="page"{% endif %}>{{ page }}</span>
+    {% endfor %}
+  </nav>
+</div>
+{%- endmacro %}
+
+{% macro rail(selected, rows) -%}
+<ul class="rail">
+  {% for name, badge in rows %}
+  {% if name %}
+  <li{% if name == selected %} class="on" aria-current="true"{% endif %}><span>{{ name }}</span>{% if badge %}<span class="badge">{{ badge }}</span>{% endif %}</li>
+  {% else %}
+  <li class="rail-divider" role="separator"></li>
+  {% endif %}
+  {% endfor %}
+</ul>
+{%- endmacro %}
+
+{% macro window(active="Home", health="healthy", progress=none, busy=none, narrow=false, inactive=false) -%}
+<div class="window{% if narrow %} narrow{% endif %}{% if inactive %} inactive{% endif %}">
+  {{ titlebar(active, progress) }}
+  {{ chips(health, busy) }}
+{{ caller() }}
+</div>
+{%- endmacro %}

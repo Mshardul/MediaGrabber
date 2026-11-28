@@ -1,0 +1,8 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% set screen_id = "window-inactive" %}
+{% set title = "Window not in front" %}
+{% set caption = "The title bar and chips dim and the window buttons turn grey." %}
+{% set tickets = ["mg-029"] %}
+{% call window(health="several", inactive=true) %}
+<div class="window-body">{{ rail("All", data.HOME_RAIL) }}<div class="content"></div></div>
+{% endcall %}

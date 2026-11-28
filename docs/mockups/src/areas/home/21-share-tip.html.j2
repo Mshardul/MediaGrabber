@@ -1,0 +1,17 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, share_tip, grab_view %}
+{% set screen_id = "home-share-tip" %}
+{% set title = "Share tip" %}
+{% set caption = "A dismissible tip under the field." %}
+{% set tickets = ["mg-076"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("waiting") %}
+{{ link_card() }}
+{{ share_tip() }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

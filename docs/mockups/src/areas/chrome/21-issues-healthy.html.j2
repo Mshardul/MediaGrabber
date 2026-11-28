@@ -1,0 +1,10 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/health.html.j2" import issues_dialog %}
+{% set screen_id = "issues-healthy" %}
+{% set title = "Chip dialog when healthy" %}
+{% set caption = "A healthy chip says everything there is working." %}
+{% set tickets = ["mg-243"] %}
+{% call window() %}
+<div class="window-body">{{ rail("All", data.HOME_RAIL) }}<div class="content"></div></div>
+{{ issues_dialog("healthy", "storage") }}
+{% endcall %}

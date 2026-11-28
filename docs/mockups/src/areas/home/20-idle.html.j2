@@ -1,0 +1,16 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, grab_view %}
+{% set screen_id = "home-idle" %}
+{% set title = "Grab view" %}
+{% set caption = "Where Home opens after the first download." %}
+{% set tickets = ["mg-237"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("waiting") %}
+{{ link_card() }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

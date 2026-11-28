@@ -1,0 +1,8 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% set screen_id = "window-healthy" %}
+{% set title = "Window, all healthy" %}
+{% set caption = "Title bar, four healthy chips and the Home rail; the table is not drawn yet." %}
+{% set tickets = ["mg-029", "mg-244", "mg-210"] %}
+{% call window() %}
+<div class="window-body">{{ rail("All", data.HOME_RAIL) }}<div class="content"></div></div>
+{% endcall %}

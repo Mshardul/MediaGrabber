@@ -1,0 +1,16 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, grab_view %}
+{% set screen_id = "home-first-launch" %}
+{% set title = "First launch" %}
+{% set caption = "The rail shows from the start; the orb waits above the field, with a hint and the steps." %}
+{% set tickets = ["mg-237", "mg-276"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.FIRST_RAIL) }}
+  <div class="content">
+{% call grab_view("waiting", first_run=true) %}
+{{ link_card() }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

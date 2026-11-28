@@ -21,6 +21,9 @@ public final class Preferences: @unchecked Sendable {
     private let defaults: UserDefaults
     private let downloadsFolder: URL
 
+    // Every setting shares one observed key, so a new setting or a reset cannot be left out.
+    private var _observationToken = 0
+
     public init(defaults: UserDefaults, downloadsFolder: URL) {
         self.defaults = defaults
         self.downloadsFolder = downloadsFolder
@@ -316,19 +319,15 @@ extension Preferences {
         store(value.path, forKey: "mg.\(name)")
     }
 
-    // Every setting shares one observed key, so a new setting or a reset cannot be left out.
-    private var anySetting: Void {
-        ()
-    }
-
     private var saved: UserDefaults {
-        access(keyPath: \.anySetting)
+        access(keyPath: \._observationToken)
         return defaults
     }
 
     private func store(_ value: Any?, forKey key: String) {
-        withMutation(keyPath: \.anySetting) {
+        withMutation(keyPath: \._observationToken) {
             defaults.set(value, forKey: key)
+            _observationToken &+= 1
         }
     }
 }

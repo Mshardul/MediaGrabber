@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MediaGrabber: the oracle orb</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Sora:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9d9d6;color:#17181a;font:14px/1.5 -apple-system,sans-serif;padding-bottom:60px}
+.bar{position:sticky;top:0;z-index:9;background:#fff;border-bottom:1px solid #bbb;padding:9px 24px;display:flex;flex-wrap:wrap;gap:8px 24px}
+.g{display:flex;gap:4px;align-items:center}
+.g b{margin-right:5px;font-weight:600}
+.g button{font:inherit;border:1px solid #bbb;background:#f4f4f2;border-radius:6px;padding:3px 10px;cursor:pointer}
+.g button.on{background:#17181a;color:#fff;border-color:#17181a}
+h2{width:980px;margin:28px auto 10px;font-size:18px}
+.duo{width:980px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stage{height:470px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.stage small{font:600 13px var(--body);color:var(--dim);margin-top:4px}
+.aurora{--surface:#0C1013;--panel:rgba(255,255,255,.05);--stroke:rgba(255,255,255,.12);--text:#EDF0F5;--dim:#9AA3B2;--accent:#5EF2C8;--on:#07080B;--go:linear-gradient(90deg,#5EF2C8,#8B7BFF);--display:'Sora';--body:'IBM Plex Sans';--mono:'JetBrains Mono';--bw:1px;--head:#0C1013;--headtext:#F4F6FA;background:#0C1013;color:#EDF0F5}
+.tape{--surface:#FBF4E6;--panel:#F3E9D8;--stroke:#2B2118;--text:#2B2118;--dim:#75664E;--accent:#D2601A;--on:#2B2118;--go:#E0A53C;--display:'Bricolage Grotesque';--body:'DM Sans';--mono:'DM Mono';--bw:2px;--head:#0E5C57;--headtext:#FBF4E6;background:#FBF4E6;color:#2B2118}
+.orb{position:relative;width:var(--size,380px);height:var(--size,380px);flex:none}
+.orb canvas{position:absolute;inset:0;width:100%;height:100%}
+.win{width:980px;height:680px;margin:auto;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;border:var(--bw) solid var(--stroke);font:13px/1.5 var(--body),sans-serif;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.brand{height:46px;flex:none;display:flex;align-items:center;gap:10px;padding:0 22px;background:var(--head);color:var(--headtext);font:700 17px var(--display);border-bottom:var(--bw) solid var(--stroke)}
+.mark{width:20px;height:20px;border-radius:50%;background:conic-gradient(#5EF2C8,#8B7BFF,#FF7A6B,#5EF2C8)}
+.brand nav{margin-left:auto;display:flex;gap:22px;font:600 12px var(--body)}
+.chips{flex:none;display:flex;gap:8px;padding:8px 22px;border-bottom:1px solid var(--stroke)}
+.chips span{font:10px var(--mono);color:var(--dim);border:var(--bw) solid var(--stroke);border-radius:20px;padding:3px 10px}
+.main{flex:1;display:flex;min-height:0}
+.rail{width:160px;border-right:1px solid var(--stroke);padding:10px 8px}
+.rail div{padding:7px 12px;border-radius:8px;color:var(--dim)}
+.rail div.on{background:var(--panel);color:var(--text);font-weight:600}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;text-align:center}
+.paste{align-self:stretch;margin:14px 20px 0;border:var(--bw) solid var(--stroke);border-radius:12px;background:var(--panel);padding:16px 18px;font:12px var(--mono);color:var(--dim);text-align:left;flex:none}
+.heads{align-self:stretch;margin-top:12px;display:flex;justify-content:space-between;padding:8px 60px;font:600 10px var(--mono);color:var(--dim);border-block:1px solid var(--stroke);background:var(--panel)}
+.heads span:nth-child(5){color:var(--accent)}
+h3{font:700 21px/1.25 var(--display)}
+.sub{color:var(--dim);margin-top:5px;max-width:54ch}
+.btns{display:flex;gap:10px;margin-top:14px}
+.btn{height:34px;min-width:130px;padding:0 18px;display:inline-grid;place-items:center;border:var(--bw) solid var(--stroke);border-radius:9px;background:var(--panel);font-weight:600}
+.btn.go{background:var(--go);color:var(--on)}
+.spacer{flex:1}
+.steps{width:540px;text-align:left;margin-top:16px}
+.steps div{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--stroke);align-items:center}
+.steps i{width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--surface);display:grid;place-items:center;font-style:normal;font-weight:700}
+.strip{display:flex;gap:42px;margin-top:20px;color:var(--dim);text-align:left}
+.strip b{display:block;color:var(--text)}
+</style>
+</head>
+<body>
+<div class="bar">
+ <div class="g" data-k="mood"><b>Mood</b><button data-v="waiting" class="on">Waiting</button><button data-v="resting">Resting</button><button data-v="clouded">Clouded</button><button data-v="drag">Link dragged over</button><button data-v="searching">Searching</button></div>
+ <div class="g" data-k="motion"><b>Reduce Motion</b><button data-v="off" class="on">Off</button><button data-v="on">On</button></div>
+</div>
+
+<h2>Close-up: move your pointer over an orb</h2>
+<div class="duo">
+ <div class="stage aurora"><div class="orb" data-style="aurora" style="--size:400px"></div><small>Aurora: glass and slow light</small></div>
+ <div class="stage tape"><div class="orb" data-style="tape" style="--size:400px"></div><small>Tape Deck: printed, bouncy, hand-drawn</small></div>
+</div>
+
+<h2>In the app</h2>
+<div class="bar" style="position:static;width:980px;margin:0 auto 12px;border:0;border-radius:8px;padding:8px 14px">
+ <div class="g" data-k="place"><b>Screen</b><button data-v="empty" class="on">Empty table</button><button data-v="first">First launch</button><button data-v="onboard">Onboarding</button></div>
+ <div class="g" data-k="theme"><b>Theme</b><button data-v="aurora" class="on">Aurora</button><button data-v="tape">Tape Deck</button></div>
+</div>
+<div class="win aurora" id="win"></div>
+
+<script>
+const S={mood:'waiting',motion:matchMedia('(prefers-reduced-motion: reduce)').matches?'on':'off',place:'empty',theme:'aurora'};
+
+const VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+const NOISE=`
+float h(vec3 p){p=fract(p*.3183099+.1);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
+float n(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);
+return mix(mix(mix(h(i),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);}
+float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*n(p);p*=2.03;a*=.5;}return s;}
+vec3 spin(vec3 p,float a){float c=cos(a),s=sin(a);return vec3(c*p.x+s*p.z,p.y,-s*p.x+c*p.z);}
+vec3 brand(float k){k=fract(k)*3.;vec3 m=vec3(.37,.95,.78),i=vec3(.55,.48,1.),c=vec3(1.,.48,.42);return k<1.?mix(m,i,k):k<2.?mix(i,c,k-1.):mix(c,m,k-2.);}`;
+
+const FS_AURORA=`precision highp float;uniform vec2 res,look;uniform float t,fog,glow,R;uniform mat3 turn;${NOISE}
+void main(){vec2 uv=(gl_FragCoord.xy*2.-res)/res.y;float r=length(uv)/R;vec3 col=vec3(0);float a=0.;
+ float halo=exp(-max(r-1.,0.)*4.2)*(.34+.5*glow);vec3 hc=brand(atan(uv.y,uv.x)/6.283+t*.03);
+ if(r<1.){vec2 q=uv/R;float z=sqrt(1.-r*r);vec3 N=vec3(q,z);
+  vec3 inner=vec3(.015,.02,.045);float acc=0.;
+  for(int i=0;i<14;i++){float d=(float(i)+.5)/14.;vec3 p=vec3(q*(1.-.16*z*d),z*(1.-2.*d));
+   vec3 w=turn*p;
+   float f=fbm(w*2.1+vec3(0.,t*.09,0.)+fbm(w*1.4-t*.05)*1.9);
+   float den=smoothstep(.45,.78,f)*(1.-.4*dot(p,p));
+   inner+=brand(f*1.5+w.y*.28+t*.025)*den*(1.-acc)*.34;acc+=den*.15;}
+  inner*=1.+.55*glow;
+  float core=exp(-r*r*5.)*(.22+.12*sin(t*1.3)+.35*glow);inner+=vec3(.75,.95,1.)*core;
+  inner=mix(inner,vec3(.3,.33,.39)*(.55+.7*fbm(spin(N,t*.07)*2.4)),fog*.86);
+  float fres=pow(1.-z,2.6);inner+=brand(q.x*.22+q.y*.3+t*.04)*fres*.95*(1.-fog*.65);
+  vec3 L=normalize(vec3(-.55+look.x*.2,.7+look.y*.2,.6));float sp=pow(max(dot(reflect(-L,N),vec3(0,0,1)),0.),60.);
+  inner+=vec3(1.)*sp*.35;
+  inner+=vec3(1.)*smoothstep(.2,0.,length((q-vec2(.34,-.62))*vec2(1.,2.6)))*.17;
+  col=inner;a=1.;}
+ float edge=smoothstep(1.012,.992,r);vec3 hcol=hc*(1.-fog*.7);
+ vec3 outc=mix(hcol,col,edge);float outa=mix(halo*(1.-smoothstep(1.35,1.62,r)),1.,edge);
+ gl_FragColor=vec4(outc*outa,outa);}`;
+
+const FS_TAPE=`precision highp float;uniform vec2 res,look;uniform float t,fog,glow,R;uniform mat3 turn;${NOISE}
+vec3 band(float f){return f<.40?vec3(.055,.36,.34):f<.48?vec3(.12,.54,.5):f<.545?vec3(.88,.65,.235):f<.61?vec3(.82,.376,.1):vec3(.985,.935,.84);}
+float disc(vec2 uv,vec2 c,vec2 sq){return length((uv-c)/sq)/R;}
+void main(){vec2 uv=(gl_FragCoord.xy*2.-res)/res.y;vec3 ink=vec3(.17,.13,.095);
+ float wob=sin(t*3.2)*(.028+.03*glow);vec2 sq=vec2(1.+wob,1.-wob);
+ float r=disc(uv,vec2(0.),sq);float ang=atan(uv.y,uv.x);r+=sin(ang*5.+t*2.4)*.006;
+ vec4 o=vec4(0.);
+ float sh=disc(uv,vec2(.07,-.085)-look*.075,sq);if(sh<1.05)o=vec4(ink*.34,.34);
+ if(r<1.){vec2 q=uv/(R*sq);float z=sqrt(max(1.-dot(q,q),0.));
+  vec3 p=turn*vec3(q,z);
+  vec2 sw=vec2(fbm(p*1.5+t*.08),fbm(p*1.5+7.-t*.06));
+  float f=fbm(p*1.7+vec3(sw*2.4,t*.1));
+  vec3 c=band(f);
+  vec2 g=gl_FragCoord.xy/(res.y/80.);mat2 rot=mat2(.8,.6,-.6,.8);vec2 cell=fract(rot*g)-.5;
+  float shade=clamp(dot(q,vec2(.55,-.65))+.12,0.,1.);
+  c=mix(c,ink,step(length(cell),shade*.62)*.62);
+  c=mix(c,vec3(1.,.97,.9),glow*.28);
+  vec3 cloud=fbm(spin(vec3(q,z),t*.18)*2.6)>.5?vec3(.82,.77,.68):vec3(.66,.6,.5);
+  c=mix(c,mix(cloud,ink,step(length(cell),shade*.55)*.4),fog*.92);
+  c=mix(c,vec3(1.,.85,.55),step(.86,r)*step(q.y,-.3)*step(r,.92)*.9);
+  o=vec4(c,1.);}
+ float line=1.-smoothstep(.026,.034,abs(r-1.));o=mix(o,vec4(ink,1.),line);
+ gl_FragColor=vec4(o.rgb*(o.a<1.&&line<.01?1.:1.),o.a);}`;
+
+// 24x24 outlines, one of each, so no two symbols in the orb are alike.
+const SYMBOLS=[
+ ['play','M7 4l13 8-13 8z',true],
+ ['note','M12 18V3c2 4 7 3 6 9M12 18a3.5 3 0 1 1-7 0a3.5 3 0 1 1 7 0',false],
+ ['beamed','M9 18V5l12-2v13M9 9l12-2M9 18a3 3 0 1 1-6 0a3 3 0 1 1 6 0M21 16a3 3 0 1 1-6 0a3 3 0 1 1 6 0',false],
+ ['film','M3 5h18v14H3zM7 5v14M17 5v14M3 10h4M3 14h4M17 10h4M17 14h4',false],
+ ['reel','M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0M10 7.5a2 2 0 1 0 4 0a2 2 0 1 0-4 0M10 16.5a2 2 0 1 0 4 0a2 2 0 1 0-4 0M5.5 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0M14.5 12a2 2 0 1 0 4 0a2 2 0 1 0-4 0',false],
+ ['camcorder','M3 7h12v10H3zM15 10l6-3v10l-6-3',false],
+ ['camera','M3 8h4l2-3h6l2 3h4v11H3zM15.5 13a3.5 3.5 0 1 1-7 0a3.5 3.5 0 1 1 7 0',false],
+ ['mic','M9 6a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0zM5 11a7 7 0 0 0 14 0M12 18v4M8 22h8',false],
+ ['headphones','M4 15v-3a8 8 0 0 1 16 0v3M4 14h4v7H6a2 2 0 0 1-2-2zM20 14h-4v7h2a2 2 0 0 0 2-2z',false],
+ ['picture','M3 4h18v16H3zM3 17l5-6 4 4 3-3 6 6M17 8.5a1.5 1.5 0 1 1-3 0a1.5 1.5 0 1 1 3 0',false],
+ ['clapper','M3 10h18v10H3zM3 10l-1-4 17-4 1 4zM7 5l3 3M12 4l3 3',false],
+ ['wave','M3 10v4M7 6v12M11 3v18M15 8v8M19 5v14M23 10v4',false],
+ ['speaker','M3 9h4l6-5v16l-6-5H3zM16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12',false],
+ ['tv','M3 7h18v13H3zM8 2l4 5 4-5',false],
+ ['radio','M3 9h18v11H3zM6 9l12-6M10 14.5a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0M14 13h4M14 16h4',false],
+ ['vinyl','M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0M15 12a3 3 0 1 1-6 0a3 3 0 1 1 6 0M6 12a6 6 0 0 1 6-6',false],
+ ['broadcast','M14 12a2 2 0 1 1-4 0a2 2 0 1 1 4 0M8 8a6 6 0 0 0 0 8M16 8a6 6 0 0 1 0 8M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14',false],
+ ['captions','M3 5h18v14H3zM10 10a2.5 2.5 0 1 0 0 4M17 10a2.5 2.5 0 1 0 0 4',false],
+ ['playlist','M3 6h12M3 11h12M3 16h7M16 13l6 4-6 4z',false],
+ ['download','M12 3v12M7 10l5 5 5-5M4 21h16',false],
+ ['link','M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1',false],
+ ['gamepad','M7 8h10a5 5 0 0 1 0 10l-3-3h-4l-3 3a5 5 0 0 1 0-10zM7 11v3M5.5 12.5h3M16 12h.1M18 14h.1',false],
+ ['book','M12 6c-2-2-6-2-9-1v14c3-1 7-1 9 1c2-2 6-2 9-1V5c-3-1-7-1-9 1zM12 6v14',false],
+ ['cassette','M3 6h18v12H3zM10 11a2 2 0 1 1-4 0a2 2 0 1 1 4 0M18 11a2 2 0 1 1-4 0a2 2 0 1 1 4 0M7 18l2-3h6l2 3',false]
+].map(([name,d,solid])=>({name,path:new Path2D(d),solid}));
+const rnd=i=>{const x=Math.sin(i*91.7+13.1)*43758.5;return x-Math.floor(x)};
+
+class Orb{
+ constructor(el){this.el=el;this.style=el.dataset.style;this.look=[0,0];this.aim=[0,0];this.pos=[0,0];this.vel=[0,0];this.fog=0;this.glow=0;this.search=0;this.swirl=0;this.clock=rnd(this.style.length)*20;
+  this.back=document.createElement('canvas');this.gl=document.createElement('canvas');this.fx=document.createElement('canvas');el.append(this.back,this.gl,this.fx);this.bctx=this.back.getContext('2d');this.ctx=this.fx.getContext('2d');this.yaw=0;this.pitch=0;this.init();
+  }
+ follow(x,y,box){const o=this.el.getBoundingClientRect(),cx=o.x+o.width/2,cy=o.y+o.height/2,clamp=v=>Math.max(-1,Math.min(1,v));
+  // Scaled to the room on each side, so every edge of the box is a full lean.
+  this.aim=[clamp((x-cx)/Math.max(1,x<cx?cx-box.left:box.right-cx)),clamp((cy-y)/Math.max(1,y<cy?box.bottom-cy:cy-box.top))];}
+ init(){const g=this.gl.getContext('webgl',{premultipliedAlpha:this.style==='aurora'});this.g=g;if(!g){this.el.textContent='This browser cannot draw the 3D orb.';return}
+  const sh=(type,src)=>{const s=g.createShader(type);g.shaderSource(s,src);g.compileShader(s);if(!g.getShaderParameter(s,g.COMPILE_STATUS))console.error(g.getShaderInfoLog(s));return s};
+  const p=g.createProgram();g.attachShader(p,sh(g.VERTEX_SHADER,VS));g.attachShader(p,sh(g.FRAGMENT_SHADER,this.style==='aurora'?FS_AURORA:FS_TAPE));g.linkProgram(p);g.useProgram(p);
+  g.bindBuffer(g.ARRAY_BUFFER,g.createBuffer());g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),g.STATIC_DRAW);
+  const l=g.getAttribLocation(p,'p');g.enableVertexAttribArray(l);g.vertexAttribPointer(l,2,g.FLOAT,false,0,0);
+  this.u={};for(const k of ['res','look','t','fog','glow','R','turn'])this.u[k]=g.getUniformLocation(p,k);}
+ draw(dt){const g=this.g;if(!g)return;const still=S.motion==='on',tape=this.style==='tape';
+  const speed={waiting:1,resting:.4,clouded:.35,drag:2.6,searching:2.4}[S.mood];
+  this.search+=((S.mood==='searching'?1:0)-this.search)*(still?1:Math.min(1,dt*3));if(!still)this.swirl+=dt*2.2*this.search;if(!still)this.clock+=dt*speed;
+  const ease=still?1:Math.min(1,dt*4);
+  this.fog+=((S.mood==='clouded'?1:0)-this.fog)*ease;this.glow+=((S.mood==='drag'?1:0)-this.glow)*ease;
+  const aim=still?[0,0]:this.aim;this.look=this.look.map((v,i)=>v+(aim[i]-v)*ease);
+  const t=still?6.4:tape?Math.floor(this.clock*12)/12:this.clock;
+  const size=this.el.clientWidth,d=Math.min(devicePixelRatio,2),px=Math.round(size*d);
+  for(const cv of [this.back,this.gl,this.fx])if(cv.width!==px||cv.height!==px){cv.width=cv.height=px}
+  const near=still?0:Math.max(0,1-Math.hypot(...this.look))*(this.hover?1:0);
+  const R=.56*(1+(still?0:Math.sin(t*1.15)*.012*(S.mood==='waiting'?1.6:1))+this.glow*.07+near*.045);
+  // Idle spin around the upright axis, plus the pointer turning the ball towards itself.
+  this.yaw=(tape?.42:.2)*t-this.look[0]*1.25;this.pitch=.28+this.look[1]*.95;
+  const cy=Math.cos(this.yaw),sy=Math.sin(this.yaw),cp=Math.cos(this.pitch),sp=Math.sin(this.pitch);
+  this.m=[cy,0,sy, sp*sy,cp,-sp*cy, -cp*sy,sp,cp*cy];
+  g.viewport(0,0,px,px);g.uniform2f(this.u.res,px,px);g.uniform2f(this.u.look,...this.look);g.uniform1f(this.u.t,t);g.uniform1f(this.u.fog,this.fog);g.uniform1f(this.u.glow,this.glow);g.uniform1f(this.u.R,R);g.uniformMatrix3fv(this.u.turn,false,this.m);g.drawArrays(g.TRIANGLES,0,3);
+  const lift=still?0:Math.sin(t*(tape?2.1:.9))*size*.012;
+  // A spring: Tape Deck overshoots and bounces, Aurora glides.
+  const[stiff,drag]=tape?[150,11]:[70,15];
+  this.pos=this.pos.map((p,i)=>{if(still)return 0;this.vel[i]+=((aim[i]*size*.13-p)*stiff-this.vel[i]*drag)*dt;return p+this.vel[i]*dt});
+  for(const cv of [this.back,this.gl,this.fx])cv.style.transform=`translate(${this.pos[0]}px,${lift-this.pos[1]}px)`;
+  const c=this.ctx;c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,size,size);const mid=size/2,rad=size*R/2;
+  const b=this.bctx;b.setTransform(d,0,0,d,0,0);b.clearRect(0,0,size,size);
+  this.contents(c,t,mid,rad,tape);this.glass(c,mid,rad,tape);this.orbit(c,b,t,mid,rad,tape);}
+ // Object space to screen space: the same turn the shader undoes.
+ view([x,y,z]){const m=this.m;return[m[0]*x+m[1]*y+m[2]*z,m[3]*x+m[4]*y+m[5]*z,m[6]*x+m[7]*y+m[8]*z]}
+ contents(c,t,mid,rad,tape){c.save();c.beginPath();c.arc(mid,mid,rad*.95,0,7);c.clip();
+  const n=SYMBOLS.length;
+  const items=SYMBOLS.map((symbol,i)=>{
+   // Filled through the whole volume, not laid on the surface.
+   const h=1-2*(i+.5)/n,flat=Math.sqrt(1-h*h),around=i*2.39996+t*(.04+rnd(i+1)*.05)*(i%2?1:-1)+this.swirl*(.8+rnd(i+31)*.4),depthIn=.26+.54*Math.cbrt(rnd(i+11));
+   // Each one also drifts on its own slow loop in all three directions.
+   const drift=k=>Math.sin(t*(.32+rnd(i+k)*.35)+rnd(i+k+2)*6.28)*.11;
+   const at=this.view([Math.cos(around)*flat*depthIn+drift(13),h*depthIn+drift(17),Math.sin(around)*flat*depthIn+drift(19)]);
+   const life=.5+.5*Math.sin(t*(.36+rnd(i+9)*.3)+i*2.7);
+   return{i,symbol,at,alpha:Math.max(0,Math.min(1,life*1.7-.1))}}).sort((p,q)=>p.at[2]-q.at[2]);
+  for(const m of items){const[x,y,z]=m.at,persp=1/(1-z*.38),depth=Math.max(0,Math.min(1,(z+.8)/1.6)),pull=this.glow*.45;
+   const px=mid+x*persp*rad*.88*(1-pull),py=mid-y*persp*rad*.88*(1-pull)-this.glow*rad*.26,s=rad*(.045+.075*depth*depth+.015*rnd(m.i+21))*persp;
+   c.save();c.translate(px,py);c.rotate(Math.sin(t*(.3+rnd(m.i+23)*.4)+m.i)*.38);
+   // A slow tumble about its own axis, never fully edge on.
+   c.scale(.62+.38*Math.abs(Math.cos(t*(.25+rnd(m.i+25)*.35)+m.i*1.7)),1);
+   c.globalAlpha=m.alpha*(.16+.84*depth*depth)*(1-this.fog*.88);
+   this.symbol(c,s,m.symbol,tape,depth);c.restore();}
+  c.restore();}
+ // Reflections drawn over the symbols, so they read as being behind the glass.
+ glass(c,mid,rad,tape){const lx=this.look[0]*rad*.07,ly=-this.look[1]*rad*.07,spot=(x,y,rx,ry,turn,fill)=>{c.save();c.translate(mid+x*rad+lx,mid+y*rad+ly);c.rotate(turn);c.scale(rx*rad,ry*rad);c.beginPath();c.arc(0,0,1,0,7);c.restore();c.fillStyle=fill;c.fill()};
+  c.save();c.globalAlpha=1-this.fog*.6;
+  if(tape){spot(-.44,-.5,.23,.1,-.65,'rgba(255,252,242,.93)');spot(-.12,-.74,.05,.05,0,'rgba(255,252,242,.95)')}
+  else{c.save();c.beginPath();c.arc(mid,mid,rad*.99,0,7);c.clip();
+   const veil=c.createRadialGradient(mid+lx,mid+ly,rad*.45,mid,mid,rad);veil.addColorStop(0,'rgba(10,18,34,0)');veil.addColorStop(.78,'rgba(70,110,150,.08)');veil.addColorStop(1,'rgba(190,235,255,.3)');c.fillStyle=veil;c.fillRect(mid-rad,mid-rad,rad*2,rad*2);
+   const sheen=c.createLinearGradient(mid,mid-rad,mid,mid);sheen.addColorStop(0,'rgba(255,255,255,.13)');sheen.addColorStop(1,'rgba(255,255,255,0)');spot(-.06,-.56,.66,.36,-.12,sheen);
+   const dot=c.createRadialGradient(mid-rad*.4+lx,mid-rad*.5+ly,0,mid-rad*.4+lx,mid-rad*.5+ly,rad*.13);dot.addColorStop(0,'rgba(255,255,255,.95)');dot.addColorStop(1,'rgba(255,255,255,0)');spot(-.4,-.5,.13,.13,0,dot);
+   c.restore()}
+  c.restore()}
+ symbol(c,s,{path,solid},tape,depth){c.scale(s/10,s/10);c.translate(-12,-12);c.lineCap=c.lineJoin='round';
+  // Deeper symbols take the colour of what surrounds them.
+  const mix=(a,b)=>`rgb(${a.map((v,k)=>Math.round(v+(b[k]-v)*depth)).join(',')})`;
+  if(tape){const line=mix([30,92,84],[251,244,230]);c.strokeStyle=mix([20,70,62],[43,33,24]);c.lineWidth=3+2*depth;c.stroke(path);if(solid){c.fillStyle=line;c.fill(path)}c.strokeStyle=line;c.lineWidth=2;c.stroke(path)}
+  else{const line=mix([96,170,196],[245,253,255]);c.shadowColor='rgba(170,240,255,.9)';c.shadowBlur=s*(1.5-.9*depth);c.strokeStyle=line;c.lineWidth=1.2+.7*depth;c.stroke(path);if(solid){c.globalAlpha*=.55;c.fillStyle=line;c.fill(path)}}}
+
+ // Rings and lights circle in 3D: the far half is drawn behind the sphere, the near half in front.
+ orbit(front,back,t,mid,rad,tape){const dim=1-this.fog*.75,screen=p=>{const v=this.view(p),k=1/(1-v[2]*.16);return[mid+v[0]*rad*k,mid-v[1]*rad*k,v[2],k]};
+  const ring=(radius,tilt,color,width)=>{let prev=null;for(let i=0;i<=96;i++){const a=i/96*Math.PI*2,x=Math.cos(a)*radius,z=Math.sin(a)*radius;
+    const q=screen([x,z*Math.sin(tilt),z*Math.cos(tilt)]);
+    if(prev){const near=(q[2]+prev[2])/2>0,c=near?front:back;c.beginPath();c.moveTo(prev[0],prev[1]);c.lineTo(q[0],q[1]);c.globalAlpha=(near?.85:.4)*dim;
+     if(tape){c.strokeStyle='#2B2118';c.lineWidth=width*q[3]+2.5;c.stroke()}c.strokeStyle=color;c.lineWidth=width*q[3];c.stroke()}
+    prev=q}};
+  ring(1.27,.22,tape?'#E0A53C':'rgba(94,242,200,.75)',tape?3.5:1.2);
+  ring(1.42,-.62,tape?'#D2601A':'rgba(139,123,255,.55)',tape?2:.8);
+  const count=tape?9:26;
+  for(let i=0;i<count;i++){const h=(rnd(i+4)-.5)*1.5,a=t*(.1+rnd(i)*.2)*(i%2?1:-1)+i*2.4,d=1.22+rnd(i+2)*.42-this.glow*.3*((t*.5+rnd(i))%1);
+   const q=screen([Math.cos(a)*d,h,Math.sin(a)*d]),near=q[2]>0,c=near?front:back,shine=.5+.5*Math.sin(t*1.6+i);
+   c.globalAlpha=(near?1:.5)*dim*(.35+.65*shine);
+   if(tape){const r=rad*.075*q[3]*(.55+.45*shine+this.glow*.3);c.beginPath();for(let j=0;j<8;j++){const w=j*Math.PI/4,l=j%2?r*.3:r;c.lineTo(q[0]+Math.cos(w)*l,q[1]+Math.sin(w)*l)}c.closePath();
+    c.fillStyle=['#E0A53C','#D2601A','#0E5C57'][i%3];c.strokeStyle='#2B2118';c.lineWidth=1.6;c.fill();c.stroke()}
+   else{c.beginPath();c.arc(q[0],q[1],(1+rnd(i+5)*1.8)*q[3],0,7);c.fillStyle=['#5EF2C8','#8B7BFF','#FF7A6B'][i%3];c.fill()}}
+  // While searching, a bright point sweeps each ring with a short tail.
+  if(this.search>.02)[[1.27,.22],[1.42,-.62]].forEach(([radius,tilt],r)=>{for(let k=0;k<30;k++){const a=1.1+r*2.6+this.swirl*(r?-1.5:1.9)-(r?-1:1)*k*.05,x=Math.cos(a)*radius,z=Math.sin(a)*radius,q=screen([x,z*Math.sin(tilt),z*Math.cos(tilt)]),c=q[2]>0?front:back;
+    c.globalAlpha=this.search*Math.pow(1-k/30,1.4)*(q[2]>0?1:.55);c.shadowColor='#7FFFE0';c.shadowBlur=tape||k>8?0:16;c.beginPath();c.arc(q[0],q[1],(tape?10:7.5)*(1-k/38)*q[3],0,7);c.fillStyle=tape?'#D2601A':'#E8FFF8';c.fill();c.shadowBlur=0;if(tape&&!k){c.strokeStyle='#2B2118';c.lineWidth=2;c.stroke()}}});
+  front.globalAlpha=back.globalAlpha=1}
+}
+
+const COPY={waiting:['Whatever you need','Paste a link above and MediaGrabber fetches it for you.',[]],
+ resting:['Nothing is downloading','3 are saved and 1 needs a look.',['View saved','View inactive']],
+ clouded:['No downloads match','Your filter is Quality: 720p. 4 downloads are hidden by it.',['Clear filters']],
+ drag:['Drop it in','Let go and MediaGrabber checks the link.',[]],
+ searching:['Looking for it…','Checking your link.',[]]};
+
+const win=document.getElementById('win');
+const shared=document.createElement('div');shared.className='orb';
+let inApp=null,inAppStyle='';
+function appOrb(style,size){if(inAppStyle!==style){if(inApp){inApp.g?.getExtension('WEBGL_lose_context')?.loseContext();orbs.splice(orbs.indexOf(inApp),1)}
+  const el=document.createElement('div');el.className='orb';el.dataset.style=style;inApp=new Orb(el);inAppStyle=style;orbs.push(inApp)}
+ inApp.el.style.setProperty('--size',size+'px');return inApp.el}
+function renderWindow(){
+ const [h,sub,acts]=COPY[S.mood];const buttons=acts.length?`<div class="btns">${acts.map((a,i)=>`<span class="btn${i?'':' go'}">${a}</span>`).join('')}</div>`:'';
+ const top=nav=>`<div class="brand"><span class="mark"></span>MediaGrabber${nav?'<nav><span>Home</span><span>Preferences</span><span>About</span></nav>':''}</div>`;
+ const chips='<div class="chips"><span>YouTube check · on</span><span>Downloader · current</span><span>online</span></div>';
+ let html,size;
+ if(S.place==='empty'){size=330;const on=S.mood==='resting'?1:0;
+  html=`${top(true)}${chips}<div class="main"><div class="rail">${['All','Downloading','Done','Inactive'].map((r,i)=>`<div class="${i===on?'on':''}">${r}</div>`).join('')}</div><div class="col"><div class="paste">Paste a link</div>${S.mood==='clouded'?'<div class="heads"><span>Title</span><span>Progress</span><span>Speed</span><span>ETA</span><span>Quality ▾</span><span>Size</span></div>':''}<div class="spacer"></div><div data-slot></div><h3>${h}</h3><p class="sub">${sub}</p>${buttons}<div class="spacer"></div></div></div>`}
+ else if(S.place==='first'){size=300;
+  html=`${top(true)}${chips}<div class="col" style="padding:0 110px"><div class="spacer"></div><div data-slot></div><h3 style="font-size:30px">One link in. One file out.</h3><div class="paste" style="margin:18px 0 0">Paste a link</div><div class="strip"><div><b>1. Paste a link</b>Any video page.</div><div><b>2. Pick a format</b>Video or audio only.</div><div><b>3. Press Grab</b>It saves to your folder.</div></div><div class="spacer"></div></div>`}
+ else{size=290;
+  html=`${top(false)}<div class="col"><div class="spacer"></div><div data-slot></div><h3 style="font-size:30px">Let’s get you set up.</h3><p class="sub">The downloader is included. One short check confirms it can reach a known video.</p><div class="steps"><div><i>✓</i><b>YouTube check</b><span class="sub" style="margin:0 0 0 auto">Already installed.</span></div><div><i>✓</i><b>Test run</b><span class="sub" style="margin:0 0 0 auto">Everything works.</span></div></div><div class="btns"><span class="btn go" style="width:540px;height:44px">Continue</span></div><div class="spacer"></div></div>`}
+ win.className='win '+S.theme;win.innerHTML=html;
+ win.querySelector('[data-slot]').replaceWith(appOrb(S.theme,size));
+}
+const orbs=[...document.querySelectorAll('.stage .orb')].map(el=>new Orb(el));
+function track(box,find){box.addEventListener('pointermove',e=>{const o=find();if(o){o.hover=true;o.follow(e.clientX,e.clientY,box.getBoundingClientRect())}});
+ box.addEventListener('pointerleave',()=>{const o=find();if(o){o.hover=false;o.aim=[0,0]}})}
+
+document.querySelectorAll('.stage').forEach((box,i)=>track(box,()=>orbs[i]));
+track(win,()=>inApp);
+// Only listed URL values are accepted.
+const ALLOWED={mood:['waiting','resting','clouded','drag','searching'],motion:['off','on'],place:['empty','first','onboard'],theme:['aurora','tape']};
+const q=new URLSearchParams(location.search);for(const k of Object.keys(ALLOWED))if(ALLOWED[k].includes(q.get(k)))S[k]=q.get(k);
+function sync(){document.querySelectorAll('.g[data-k] button').forEach(b=>b.classList.toggle('on',S[b.parentElement.dataset.k]===b.dataset.v))}
+document.querySelectorAll('.g[data-k] button').forEach(b=>b.onclick=()=>{S[b.parentElement.dataset.k]=b.dataset.v;sync();renderWindow()});
+sync();renderWindow();
+// Full-screen view of one orb, used when another mockup opens it.
+const bare=ALLOWED.theme.includes(q.get('bare'))?q.get('bare'):null;
+if(bare){const stage=document.querySelector('.stage.'+bare),orb=stage.querySelector('.orb');document.body.style.cssText='margin:0;padding:0;overflow:hidden';
+ for(const el of document.body.children)if(!el.contains(stage)&&el.tagName!=='SCRIPT')el.style.display='none';
+ stage.parentElement.style.cssText='display:block;width:auto';stage.querySelector('small').remove();
+ for(const el of stage.parentElement.children)if(el!==stage)el.style.display='none';
+ stage.style.cssText='position:fixed;inset:0;height:auto;border-radius:0';orb.style.setProperty('--size',Math.round(Math.min(innerWidth,innerHeight)*.9)+'px')}
+
+let last=performance.now();
+function tick(now){const dt=Math.max(0,Math.min((now-last)/1000,.05));last=now;if(!document.hidden)orbs.forEach(o=>{const b=o.el.getBoundingClientRect();if(b.bottom>0&&b.top<innerHeight)o.draw(dt)});requestAnimationFrame(tick)}
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

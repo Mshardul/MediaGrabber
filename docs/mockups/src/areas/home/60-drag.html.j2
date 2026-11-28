@@ -1,0 +1,17 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, grab_view %}
+{% set screen_id = "home-drag" %}
+{% set title = "Link dragged over" %}
+{% set caption = "A highlight frames the window and the orb gets ready to catch the link." %}
+{% set tickets = ["mg-023", "mg-237"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("drag") %}
+{{ link_card() }}
+{% endcall %}
+  </div>
+</div>
+<div class="drop-highlight" aria-hidden="true"></div>
+{% endcall %}

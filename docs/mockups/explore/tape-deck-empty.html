@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MediaGrabber: Tape Deck empty table artwork</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Sora:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--page:#d9d9d6;--ink0:#17181a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--ink0);font:14px/1.5 -apple-system,sans-serif;padding:0 0 80px}
+.bar{position:sticky;top:0;z-index:9;background:#fff;border-bottom:1px solid #bbb;padding:10px 24px;display:flex;gap:26px;flex-wrap:wrap;align-items:center}
+.bar .g{display:flex;gap:4px;align-items:center}
+.bar b{margin-right:6px;font-weight:600}
+.bar button,.bar a{font:inherit;border:1px solid #bbb;background:#f4f4f2;border-radius:6px;padding:4px 11px;cursor:pointer;color:inherit;text-decoration:none}
+.bar button.on{background:#17181a;color:#fff;border-color:#17181a}
+section{width:980px;margin:36px auto 0;scroll-margin-top:70px}
+section h2{font-size:19px}
+section p{max-width:78ch;color:#45464a;margin:2px 0 10px}
+
+.aurora{--ground:#0C1013;--surface:#0E1117;--panel:rgba(255,255,255,.05);--panelhi:rgba(255,255,255,.08);--stroke:rgba(255,255,255,.12);--hair:rgba(255,255,255,.07);--text:#EDF0F5;--dim:#9AA3B2;--faint:#6B7480;--accent:#5EF2C8;--accent2:#8B7BFF;--warn:#FFC24B;--danger:#FF7A6B;--on:#07080B;--go:linear-gradient(90deg,#5EF2C8,#8B7BFF);--display:'Sora';--body:'IBM Plex Sans';--mono:'JetBrains Mono';--bw:1px;--r:14px;--cr:9px;--shadow:0 24px 60px rgba(0,0,0,.45);--head:#0C1013;--headtext:#F4F6FA}
+.tape{--ground:#F3E9D8;--surface:#FBF4E6;--panel:#F3E9D8;--panelhi:#EADFCB;--stroke:#2B2118;--hair:rgba(43,33,24,.18);--text:#2B2118;--dim:#75664E;--faint:#8A7A60;--accent:#D2601A;--accent2:#0E5C57;--warn:#9C5A00;--danger:#B4472A;--on:#2B2118;--go:#E0A53C;--display:'Bricolage Grotesque';--body:'DM Sans';--mono:'DM Mono';--bw:2px;--r:12px;--cr:8px;--shadow:8px 8px 0 rgba(0,0,0,.3);--head:#0E5C57;--headtext:#FBF4E6}
+
+.win{width:980px;height:640px;border-radius:14px;overflow:hidden;background:var(--surface);color:var(--text);font:13px/1.5 var(--body),sans-serif;box-shadow:var(--shadow);border:var(--bw) solid var(--stroke);display:flex;flex-direction:column}
+.brand{height:46px;display:flex;align-items:center;gap:10px;padding:0 22px;background:var(--head);color:var(--headtext);font:700 17px var(--display);border-bottom:var(--bw) solid var(--stroke)}
+.orbmark{width:20px;height:20px;border-radius:50%;background:conic-gradient(#5EF2C8,#8B7BFF,#FF7A6B,#5EF2C8)}
+.brand nav{margin-left:auto;display:flex;gap:22px;font:600 12px var(--body);opacity:.85}
+.chips{display:flex;gap:8px;padding:8px 22px;border-bottom:1px solid var(--hair)}
+.chips span{font:10px var(--mono);color:var(--dim);border:var(--bw) solid var(--stroke);border-radius:20px;padding:3px 10px}
+.chips span::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent2);margin-right:7px}
+.main{flex:1;display:flex;min-height:0}
+.rail{width:160px;border-right:1px solid var(--hair);padding:10px 8px}
+.rail div{padding:7px 12px;border-radius:var(--cr);color:var(--dim);display:flex;justify-content:space-between}
+.rail div.on{background:var(--panelhi);color:var(--text);font-weight:600}
+.rail i{font:600 10px/16px var(--mono);font-style:normal;background:var(--danger);color:var(--surface);border-radius:9px;padding:0 6px}
+.col{flex:1;display:flex;flex-direction:column;min-width:0}
+.paste{margin:14px 20px 0;border:var(--bw) solid var(--stroke);border-radius:var(--r);background:var(--panel);padding:17px 18px;font:12px var(--mono);color:var(--faint)}
+.tools{height:38px;display:flex;justify-content:flex-end;align-items:center;padding:0 20px;color:var(--dim)}
+.heads{display:grid;grid-template-columns:34px 1fr 90px 76px 66px 96px 74px 44px;padding:8px 14px;font:600 10px var(--mono);color:var(--dim);border-block:1px solid var(--hair);background:var(--panel)}
+.heads .hot{color:var(--accent)}
+.body{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 28px;text-align:center;overflow:hidden}
+h3{font:700 21px/1.25 var(--display);letter-spacing:-.01em}
+.sub{color:var(--dim);margin-top:6px;max-width:52ch}
+.btns{display:flex;gap:10px;margin-top:18px;justify-content:center}
+.btn{height:34px;min-width:120px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:var(--bw) solid var(--stroke);border-radius:var(--cr);background:var(--panel);font-weight:600}
+.btn.go{background:var(--go);color:var(--on)}
+svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.tape svg{stroke-width:2.6}
+
+/* 1 drop zone */
+.zone{position:absolute;inset:14px 20px 20px;border:2px dashed var(--accent2);border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(var(--panel),var(--panel))}
+.zone .big{width:74px;height:74px;border-radius:50%;background:var(--go);color:var(--on);display:grid;place-items:center;margin-bottom:18px;border:var(--bw) solid var(--stroke)}
+.zone .big svg{width:34px;height:34px}
+.ways{display:flex;gap:34px;margin-top:26px}
+.ways div{display:flex;gap:8px;align-items:center;color:var(--dim)}
+.ways svg{color:var(--accent)}
+
+/* 2 ghost rows */
+.ghost{position:absolute;inset:0;text-align:left}
+.grow{display:grid;grid-template-columns:34px 1fr 90px 76px 66px 96px 74px 44px;padding:0 14px;height:44px;align-items:center;border-bottom:1px dashed var(--hair);opacity:.38}
+.grow .n{display:flex;gap:9px;align-items:center}
+.thumb{width:38px;height:22px;border-radius:4px;background:var(--panelhi);border:1px solid var(--stroke)}
+.meter{height:6px;width:70px;border-radius:6px;background:var(--panelhi);overflow:hidden}
+.meter u{display:block;height:100%;background:var(--accent)}
+.card{position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);width:440px;background:var(--surface);border:var(--bw) solid var(--stroke);border-radius:var(--r);padding:22px;text-align:center;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.tag{position:absolute;right:14px;top:6px;font-size:11px;color:var(--faint)}
+
+/* 3 signal path */
+.path{display:flex;align-items:flex-start;margin-top:34px}
+.stop{width:104px;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--faint)}
+.node{width:62px;height:62px;border-radius:50%;border:2px solid var(--stroke);display:grid;place-items:center;background:var(--panel)}
+.node svg{width:26px;height:26px}
+.stop strong{font:700 22px var(--display);line-height:1}
+.stop.lit{color:var(--text)}
+.stop.lit .node{border-color:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 18%,transparent)}
+.stop.here .node{background:var(--go);color:var(--on)}
+.wire{width:34px;height:2px;background:var(--stroke);margin-top:31px}
+.wire.cut{background:repeating-linear-gradient(90deg,var(--danger) 0 6px,transparent 6px 11px)}
+
+/* 4 signature object */
+.deck{width:360px;height:216px;border:3px solid var(--text);border-radius:16px;background:var(--accent2);position:relative}
+.deck .label{position:absolute;inset:14px 22px 98px;background:#FBF4E6;color:#2B2118;border:2px solid #2B2118;border-radius:8px;padding:9px 12px;text-align:left}
+.deck .label b{font:800 18px var(--display);display:block;border-bottom:2px solid #D2601A}
+.deck .label small{font:11px var(--mono)}
+.reels{position:absolute;left:46px;right:46px;bottom:32px;height:54px;border-radius:30px;background:#2B2118;display:flex;justify-content:space-between;align-items:center;padding:0 12px}
+.reel{width:42px;height:42px;border-radius:50%;background:repeating-conic-gradient(#FBF4E6 0 22deg,#2B2118 22deg 60deg);border:5px solid #FBF4E6}
+.window{width:110px;height:24px;background:#E0A53C;border-radius:4px}
+.screws{position:absolute;bottom:8px;left:80px;right:80px;height:16px;border:2px solid var(--text);border-bottom:0;border-radius:12px 12px 0 0}
+.halo{width:230px;height:216px;display:grid;place-items:center;position:relative}
+.halo i{position:absolute;border-radius:50%;border:1px solid var(--stroke)}
+.halo i:nth-child(1){width:216px;height:216px;opacity:.5}
+.halo i:nth-child(2){width:168px;height:168px}
+.halo b{width:104px;height:104px;border-radius:50%;background:conic-gradient(#5EF2C8,#8B7BFF,#FF7A6B,#5EF2C8);box-shadow:0 0 60px rgba(139,123,255,.45)}
+.halo.faded b{opacity:.35;filter:saturate(.4)}
+.aurora .only-tape,.tape .only-aurora{display:none}
+.after{margin-top:20px}
+
+/* 5 meanwhile board */
+.board{width:100%;flex:1;min-height:0;display:grid;grid-template-columns:1.35fr 1fr;gap:14px;text-align:left}
+.pane{min-height:0;border:var(--bw) solid var(--stroke);border-radius:var(--r);padding:18px;background:var(--panel);display:flex;flex-direction:column}
+.pane h4{font:600 13px var(--body);margin-bottom:8px}
+.line{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--hair)}
+.line span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.line em{font-style:normal;color:var(--accent);font-weight:600}
+.line svg{color:var(--accent2)}
+.aurora .line svg{color:var(--accent)}
+.pane .btns{margin-top:auto;justify-content:flex-start;padding-top:12px;gap:8px}
+.pane .btns .btn{min-width:0;padding:0 11px;white-space:nowrap}
+svg.art{flex:none}
+.after{margin-top:14px}
+.ways{margin-top:18px}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="g"><b>Situation</b>
+    <button data-case="none" class="on">No downloads</button>
+    <button data-case="view">Empty view</button>
+    <button data-case="filter">Filters match nothing</button></div>
+  <div class="g"><b>Jump to</b><a href="#o1">A</a><a href="#o2">B</a><a href="#o3">C</a><a href="#o4">D</a><a href="#o5">E</a></div>
+</div>
+<main id="out"></main>
+<script>
+const P={paste:'<path d="M9 4h6v3H9z"/><path d="M9 5H5v16h14V5h-4"/>',drag:'<path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/>',share:'<path d="M12 15V3m0 0L8 7m4-4 4 4M5 11v10h14V11"/>',check:'<path d="m4 12 5 5L20 6"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',down:'<path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/>',link:'<path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1"/><path d="M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/>',filter:'<path d="M3 5h18l-7 8v6l-4-2v-4z"/>',alert:'<path d="M12 4 2 20h20zM12 10v4m0 3v.1"/>',folder:'<path d="M3 6h6l2 2h10v11H3z"/>'};
+const I=n=>`<svg viewBox="0 0 24 24">${P[n]}</svg>`;
+const B=(t,go,ic)=>`<span class="btn${go?' go':''}">${ic?I(ic):''}${t}</span>`;
+const WAYS=`<div class="ways"><div>${I('paste')}Paste a link above</div><div>${I('drag')}Drag a link here</div><div>${I('share')}Share from another app</div></div>`;
+const COPY={
+ none:{h:'Nothing grabbed yet',s:'Paste a link to a video, pick a format, and MediaGrabber saves the file to your folder.',a:[]},
+ view:{h:'Nothing is downloading',s:'Links you grab wait and download here. Right now 3 are saved and 1 needs a look.',a:[['View saved',1,'check'],['View inactive',0,'alert']]},
+ filter:{h:'No downloads match',s:'Your filter is Quality: 720p. 4 downloads are hidden by it.',a:[['Clear filters',1,'filter']]}
+};
+const acts=c=>COPY[c].a.length?`<div class="btns">${COPY[c].a.map(a=>B(...a)).join('')}</div>`:'';
+const msg=c=>`<h3>${COPY[c].h}</h3><p class="sub">${COPY[c].s}</p>`;
+const heads=c=>c==='filter'?`<div class="heads"><span></span><span>Title</span><span>Progress</span><span>Speed</span><span>ETA</span><span class="hot">Quality ▾</span><span>Size</span><span></span></div>`:'';
+
+const opt1=c=>{
+ const ic={none:'link',view:'down',filter:'filter'}[c];
+ return `${heads(c)}<div class="body"><div class="zone"><div class="big">${I(ic)}</div>${msg(c)}${acts(c)}${c==='filter'?'':WAYS}</div></div>`;
+};
+
+const opt2=c=>{
+ const rows=[['How a mechanical watch keeps time',62,'3.2 MB/s','0:38','1080p','512 MB'],['Rain on a tin roof',100,'','','m4a','58 MB'],['Designing a type family',0,'','','1080p','184 MB'],['Coastline drone survey',34,'1.1 MB/s','2:05','1080p','240 MB'],['Door chime',100,'','','mp3','412 KB'],['Weekly community call',0,'','','1080p','—'],['Sourdough, start to finish',0,'','','1080p','184 MB']];
+ const g=rows.map(r=>`<div class="grow"><span>▢</span><span class="n"><i class="thumb"></i>${r[0]}</span><span><div class="meter"><u style="width:${r[1]}%"></u></div></span><span>${r[2]}</span><span>${r[3]}</span><span>${r[4]}</span><span>${r[5]}</span><span>⋮</span></div>`).join('');
+ const head=`<div class="heads"><span></span><span>Title</span><span>Progress</span><span>Speed</span><span>ETA</span><span class="${c==='filter'?'hot':''}">Quality${c==='filter'?' ▾':''}</span><span>Size</span><span></span></div>`;
+ const note={none:'This is how your downloads will look.',view:'',filter:''}[c];
+ return `${head}<div class="body"><div class="ghost">${g}</div><div class="card">${msg(c)}${note?`<p class="sub">${note} The faded rows are examples.</p>`:''}${acts(c)}${c==='none'?`<div class="btns">${B('Paste from clipboard',1,'paste')}</div>`:''}</div><span class="tag">${c==='none'?'Example rows':''}</span></div>`;
+};
+
+const opt3=c=>{
+ const n={none:[0,0,0,0],view:[0,0,3,1],filter:[0,0,3,1]}[c];
+ const S=[['link','Paste',null],['search','Checking',n[0]],['down','Downloading',n[1]],['check','Saved',n[2]]];
+ const cls=(i,v)=>c==='none'?(i===0?'lit here':''):`${v>0?'lit':''}${c==='view'&&i===2?' lit here':''}`;
+ const path=S.map((s,i)=>`<div class="stop ${cls(i,s[2])}"><div class="node">${I(s[0])}</div>${s[2]===null?'<strong>&nbsp;</strong>':`<strong>${s[2]}</strong>`}<span>${s[1]}</span></div>`).join('<div class="wire"></div>')
+  +(n[3]?`<div class="wire cut"></div><div class="stop lit"><div class="node" style="border-color:var(--danger);color:var(--danger);box-shadow:none">${I('alert')}</div><strong>${n[3]}</strong><span>Needs a look</span></div>`:'');
+ return `${heads(c)}<div class="body">${msg(c)}<div class="path">${path}</div>${c==='none'?'<p class="sub after">Every link follows this path. Start by pasting one above, dragging it here, or sharing it from another app.</p>':acts(c)}</div>`;
+};
+
+const opt4=c=>{
+ const tape={none:['Side A','blank, ready for your first link'],view:['All quiet','3 recorded · 1 needs a look'],filter:['No such track','filtered to Quality: 720p']}[c];
+ return `${heads(c)}<div class="body">
+ <div class="deck only-tape"><div class="label"><b>${tape[0]}</b><small>${tape[1]}</small></div><div class="reels"><i class="reel"></i><i class="window"></i><i class="reel"></i></div><div class="screws"></div></div>
+ <div class="halo only-aurora ${c==='none'?'':'faded'}"><i></i><i></i><b></b></div>
+ <div class="after">${msg(c)}${acts(c)}${c==='none'?WAYS:''}</div></div>`;
+};
+
+const INK='#2B2118',CREAM='#FBF4E6',TEAL='#0E5C57',RUST='#D2601A',AMBER='#E0A53C';
+const orb=(sz,extra='')=>`<span style="display:block;width:${sz}px;height:${sz}px;border-radius:50%;background:conic-gradient(#5EF2C8,#8B7BFF,#FF7A6B,#5EF2C8);border:3px solid ${INK};${extra}"></span>`;
+const svg=(inner,w=320,h=220)=>`<svg class="art" viewBox="0 0 ${w} ${h}" style="width:${w}px;height:${h}px;stroke-width:3;color:${INK}">${inner}</svg>`;
+
+const badge=c=>{const rays=Array.from({length:24},(_,k)=>{const a=k*Math.PI/12;return `<path d="M${110+88*Math.cos(a)} ${110+88*Math.sin(a)}L${110+(k%2?98:106)*Math.cos(a)} ${110+(k%2?98:106)*Math.sin(a)}" stroke="${RUST}"/>`}).join('');
+ return `<div style="position:relative;width:220px;height:220px;margin:auto;${c==='filter'?'opacity:.45;filter:saturate(.4)':''}">${svg(rays+`<circle cx="116" cy="116" r="76" style="fill:${INK};stroke:none;opacity:.3"/><circle cx="110" cy="110" r="76" style="fill:${AMBER}"/><circle cx="110" cy="110" r="62" style="fill:${CREAM}"/>`,220,220)}<div style="position:absolute;left:62px;top:62px">${orb(96)}</div></div>`};
+
+const record=c=>`<div style="position:relative;width:320px;height:220px;margin:auto">${svg(`<circle cx="148" cy="116" r="102" style="fill:${INK};opacity:.25;stroke:none"/><circle cx="142" cy="110" r="102" style="fill:${INK}"/>${[90,78,66,54].map(r=>`<circle cx="142" cy="110" r="${r}" style="stroke:#6a5a49;stroke-width:1.5"/>`).join('')}<circle cx="278" cy="38" r="17" style="fill:${AMBER}"/><path d="${c==='filter'?'M278 38 L286 128 L276 158':'M278 38 L262 108 L228 140'}" style="stroke:${TEAL};stroke-width:8"/><path d="${c==='filter'?'M270 156l12 8':'M222 134l12 12'}" style="stroke:${INK};stroke-width:12"/>`)}<div style="position:absolute;left:105px;top:73px">${orb(74)}</div></div>`;
+
+const meter=c=>{const ticks=Array.from({length:11},(_,k)=>{const a=(-150+k*12)*Math.PI/180;return `<path d="M${160+118*Math.cos(a)} ${186+118*Math.sin(a)}L${160+(k%5?130:138)*Math.cos(a)} ${186+(k%5?130:138)*Math.sin(a)}" stroke="${k>7?RUST:INK}"/>`}).join('');
+ const lamps=c==='view'?[['saved',3,TEAL],['needs a look',1,RUST]]:c==='filter'?[['hidden',4,AMBER]]:[['ready',0,AMBER]];
+ return `<div style="width:320px;margin:auto">${svg(`<rect x="8" y="8" width="310" height="178" rx="16" style="fill:${INK};opacity:.25;stroke:none"/><rect x="3" y="3" width="310" height="178" rx="16" style="fill:${TEAL}"/><rect x="18" y="18" width="280" height="148" rx="8" style="fill:${CREAM}"/>${ticks}<path d="M160 164 L62 98" style="stroke:${RUST};stroke-width:4"/><circle cx="160" cy="164" r="11" style="fill:${INK}"/>`,320,190)}<div style="display:flex;gap:20px;justify-content:center;margin-top:8px;font:12px var(--mono)">${lamps.map(l=>`<span style="display:flex;gap:7px;align-items:center"><i style="width:12px;height:12px;border-radius:50%;border:2px solid ${INK};background:${l[2]}"></i>${l[1]||''} ${l[0]}</span>`).join('')}</div></div>`};
+
+const tray=c=>`<div style="position:relative;width:320px;height:220px;margin:auto">${svg(`<path d="M52 118 L92 74 H228 L268 118" style="fill:${CREAM}"/><path d="M52 118 H112 C116 146 204 146 208 118 H268 V190 Q268 202 256 202 H64 Q52 202 52 190 Z" style="fill:${AMBER}"/><path d="M60 210 H264" style="stroke:${INK};opacity:.25;stroke-width:9"/><path d="M82 174h54" style="stroke:${INK}"/>${c==='filter'?`<path d="M122 14h76l-27 32v26l-22-13V46z" style="fill:${TEAL}"/>`:`<path d="M160 10v10M160 32v10M160 54v10" style="stroke:${RUST};stroke-width:5"/><path d="M144 66l16 20 16-20" style="stroke:${RUST};stroke-width:5"/>`}`)}<div style="position:absolute;left:139px;top:88px">${c==='filter'?'':orb(42)}</div></div>`;
+
+const screen=c=>{const bars=['#FBF4E6',AMBER,'#6FA89A',TEAL,RUST,'#8A3B22'].map((f,k)=>`<rect x="${40+k*40}" y="38" width="40" height="${c==='filter'?44:86}" style="fill:${f};stroke:none"/>`).join('');
+ const cap={none:'NO SIGNAL YET',view:'STANDING BY',filter:'NOTHING ON THIS CHANNEL'}[c];
+ return `<div style="width:320px;margin:auto">${svg(`<rect x="22" y="20" width="288" height="190" rx="24" style="fill:${INK};opacity:.25;stroke:none"/><rect x="16" y="14" width="288" height="190" rx="24" style="fill:${TEAL}"/><rect x="40" y="38" width="240" height="124" style="fill:${CREAM}"/>${bars}<rect x="40" y="38" width="240" height="124" rx="10"/><rect x="40" y="${c==='filter'?82:124}" width="240" height="${c==='filter'?80:38}" style="fill:${INK}"/><text x="160" y="${c==='filter'?127:148}" text-anchor="middle" style="fill:${CREAM};stroke:none;font:500 13px 'DM Mono'">${cap}</text><circle cx="62" cy="183" r="8" style="fill:${AMBER}"/><circle cx="90" cy="183" r="8" style="fill:${CREAM}"/><path d="M200 177h72M200 189h72"/>`,320,216)}</div>`};
+
+const make=draw=>c=>`${heads(c)}<div class="body">${draw(c)}<div class="after">${msg(c)}${acts(c)}${c==='none'?WAYS:''}</div></div>`;
+const OPTS=[
+ [make(badge),'A. Orb badge','The app orb as a chunky printed badge. Closest partner to the Aurora orb, so both themes tell the same story.'],
+ [make(record),'B. Record','A record with the orb as its label; the arm lifts away when filters hide everything. Warm and familiar, but suggests audio only.'],
+ [make(meter),'C. Level meter','A hi-fi meter resting at zero, with lamps showing your counts. It shows what the app is doing, but may feel technical.'],
+ [make(tray),'D. Catch tray','A tray waiting to catch your next grab. It matches the app name, with nothing tied to audio or video.'],
+ [make(screen),'E. Test card','A retro screen with a test pattern and a short caption. The most playful, but suggests video only.']
+];
+let state={case:'none',theme:'tape'};
+function render(){
+ const c=state.case;
+ const active={none:0,view:1,filter:2}[c];
+ const rail=['All','Downloading','Done','Inactive'].map((r,i)=>{const on=(c==='view'&&i===1)||(c==='filter'&&i===0)||(c==='none'&&i===0);return `<div class="${on?'on':''}">${r}${i===3&&c!=='none'?'<i>1</i>':''}</div>`}).join('');
+ document.getElementById('out').innerHTML=OPTS.map((o,i)=>`<section id="o${i+1}"><h2>${o[1]}</h2><p>${o[2]}</p>
+ <div class="win ${state.theme}"><div class="brand"><span class="orbmark"></span>MediaGrabber<nav><span>Home</span><span>Preferences</span><span>About</span></nav></div>
+ <div class="chips"><span>YouTube check · on</span><span>Downloader · current</span><span>online</span></div>
+ <div class="main"><div class="rail">${rail}</div><div class="col"><div class="paste">Paste a link</div><div class="tools">Columns</div>${o[0](c)}</div></div></div></section>`).join('');
+ document.querySelectorAll('.bar button').forEach(b=>b.classList.toggle('on',b.dataset.case===c||b.dataset.theme===state.theme));
+}
+document.querySelectorAll('.bar button').forEach(b=>b.onclick=()=>{if(b.dataset.case)state.case=b.dataset.case;else state.theme=b.dataset.theme;render()});
+const q=new URLSearchParams(location.search);
+if(['none','view','filter'].includes(q.get('case')))state.case=q.get('case');
+render();
+</script>
+</body>
+</html>

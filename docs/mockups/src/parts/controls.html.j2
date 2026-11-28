@@ -1,0 +1,45 @@
+{# Controls shared by every screen. Their widths are fixed and never follow the label. #}
+
+{% macro icon(name) -%}
+{%- for theme, theme_name, palettes in data.THEMES -%}
+<svg class="icon only-{{ theme }}" viewBox="0 0 24 24" aria-hidden="true"><use href="#{{ theme }}-{{ name }}"/></svg>
+{%- endfor -%}
+{%- endmacro %}
+
+{% macro button(label, style="standard", size="standard", disabled=false, busy=false) -%}
+<button type="button" class="btn btn-{{ style }} size-{{ size }}"{% if disabled or busy %} disabled{% endif %}>{% if busy %}<span class="spinner"></span>{% endif %}<span class="btn-label">{{ label }}</span></button>
+{%- endmacro %}
+
+{% macro icon_button(name, label, size="compact", style="plain") -%}
+<button type="button" class="btn btn-{{ style }} btn-icon size-{{ size }}" title="{{ label }}" aria-label="{{ label }}">{{ icon(name) }}</button>
+{%- endmacro %}
+
+{% macro picker(label, lead=none, kind="") -%}
+<button type="button" class="picker{% if kind %} picker-{{ kind }}{% endif %}" title="{{ label }}">{% if lead %}<span class="lead">{{ icon(lead) }}</span>{% endif %}<span class="btn-label{% if kind == 'icon' %} sr-only{% endif %}">{{ label }}</span>{{ icon("chevron-down") }}</button>
+{%- endmacro %}
+
+{% macro segment(options, selected) -%}
+<div class="segment" role="radiogroup">
+  {% for option in options %}
+  <span role="radio" aria-checked="{{ 'true' if option == selected else 'false' }}">{{ option }}</span>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro popover(caption, rows, selected) -%}
+<div class="popover" role="listbox" aria-label="{{ caption }}">
+  <p class="popover-caption">{{ caption }}</p>
+  <ul class="popover-list">
+    {% for title, subtitle in rows %}
+    <li role="option" aria-selected="{{ 'true' if title == selected else 'false' }}">
+      <span><span class="row-title">{{ title }}</span>{% if subtitle %}<span class="row-detail">{{ subtitle }}</span>{% endif %}</span>
+      {% if title == selected %}{{ icon("check") }}{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{%- endmacro %}
+
+{% macro planned(ticket) -%}
+<span class="planned" data-ticket="{{ ticket }}">Planned · {{ ticket }}</span>
+{%- endmacro %}

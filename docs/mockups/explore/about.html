@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en" data-theme="aurora" data-palette="mint">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MediaGrabber prototype: About and Developer</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../screens.css">
+<link rel="stylesheet" href="about.css">
+<script src="../screens.js"></script>
+<script src="../orb-shaders.js"></script>
+<script src="../orb-symbols.js"></script>
+<script src="../orb.js"></script>
+<script src="about.js"></script>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true"><symbol id="p-paste" viewBox="0 0 24 24"><path d="M9 4h6v3H9zM9 5H5v16h14V5h-4"/></symbol><symbol id="p-drop" viewBox="0 0 24 24"><path d="M12 3v11M8 10l4 4 4-4M4 16v5h16v-5"/></symbol><symbol id="p-copy" viewBox="0 0 24 24"><path d="M9 9h11v11H9zM5 15H4V4h11v1"/></symbol><symbol id="p-share" viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1"/></symbol><symbol id="p-github" viewBox="0 0 24 24"><path d="M8 7 3 12l5 5M16 7l5 5-5 5"/></symbol><symbol id="p-linkedin" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 10v7M8 7h.01M12 17v-7M12 13c0-4 5-4 5 0v4"/></symbol><symbol id="p-globe" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 1 0 18a9 9 0 0 1 0-18zM3 12h18M12 3c-6 6-6 12 0 18M12 3c6 6 6 12 0 18"/></symbol><symbol id="p-mail" viewBox="0 0 24 24"><path d="M3 5h18v14H3zM3 7l9 7 9-7"/></symbol></svg>
+<header class="doc-bar"><nav class="doc-menu" aria-label="Pages"><a href="../screens.html">All screens</a></nav><div class="doc-switch"><button type="button" data-set-theme="aurora" data-set-palette="mint">Aurora: Mint &amp; Iris</button><button type="button" data-set-theme="aurora" data-set-palette="lime">Aurora: Lime &amp; Forest</button><button type="button" data-set-theme="aurora" data-set-palette="magenta">Aurora: Magenta &amp; Violet</button><button type="button" data-set-theme="tapedeck" data-set-palette="teal">Tape Deck: Teal &amp; Rust</button><button type="button" data-set-theme="tapedeck" data-set-palette="plum">Tape Deck: Plum &amp; Blush</button><button type="button" data-set-theme="tapedeck" data-set-palette="navy">Tape Deck: Navy &amp; Aqua</button></div></header>
+<main class="doc-main">
+<div class="review">
+<fieldset><button type="button" data-set="chosen">Your choice (1, 8, 10)</button><button type="button" data-set="suggested">Suggested (A)</button><button type="button" data-set="short">Short (B)</button><button type="button" data-set="all">All ten</button><label><input type="checkbox" id="numbers"> Show block numbers</label></fieldset>
+<fieldset><label><input type="checkbox" data-toggle-block="1"> 1. Opening banner</label><label><input type="checkbox" data-toggle-block="2"> 2. How it works</label><label><input type="checkbox" data-toggle-block="3"> 3. What it can do</label><label><input type="checkbox" data-toggle-block="4"> 4. Ways to add links</label><label><input type="checkbox" data-toggle-block="5"> 5. Privacy</label><label><input type="checkbox" data-toggle-block="6"> 6. Common questions</label><label><input type="checkbox" data-toggle-block="7"> 7. Your numbers</label><label><input type="checkbox" data-toggle-block="8"> 8. Open source</label><label><input type="checkbox" data-toggle-block="9"> 9. Share</label><label><input type="checkbox" data-toggle-block="10"> 10. Footer links</label></fieldset>
+<fieldset><span>Developer layout</span><button type="button" data-dev-layout="centred" aria-pressed="true">Centred</button><button type="button" data-dev-layout="side" aria-pressed="false">Side by side</button></fieldset>
+<p class="review-note" role="status">Links show here what they would do.</p>
+</div>
+<div class="window">
+<div class="titlebar"><span class="lights" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand"><span class="logo"><span class="logo-ball"></span><span class="logo-shine"></span></span><span>MediaGrabber</span></span><nav class="nav"><span>Home</span><span>Preferences</span><span>Help</span><span class="on">About</span></nav></div>
+<div class="chips"><button type="button" class="chip lv-healthy">Connection</button><button type="button" class="chip lv-healthy">YouTube &amp; sign-in</button><button type="button" class="chip lv-healthy">Tools</button><button type="button" class="chip lv-healthy">Storage</button></div>
+<div class="window-body">
+<nav class="rail" aria-label="About sections"><button type="button" data-go="about">About</button><button type="button" data-go="developer">Developer</button></nav>
+<div class="page" data-page="about"><div class="column"><section class="block banner" data-block="1"><span class="block-number">Block 1</span><div class="orb" data-mood="waiting" aria-hidden="true"></div>
+<h1>MediaGrabber</h1><p class="promise">Paste a link. Keep the video, or just the sound.</p>
+<div class="banner-foot"><span>Version 1.0.0</span><button type="button" class="link" data-note="Opens the online release notes.">What’s new</button></div></section><section class="block " data-block="2"><span class="block-number">Block 2</span><h2>How it works</h2>
+<div class="steps-tabs" role="tablist">
+<button type="button" role="tab" data-step="paste" aria-selected="true"><span>1.</span><span>Paste a link</span></button>
+<button type="button" role="tab" data-step="choose" aria-selected="false"><span>2.</span><span>Choose what you want</span></button>
+<button type="button" role="tab" data-step="grab" aria-selected="false"><span>3.</span><span>Grab it</span></button></div>
+<div class="stage">
+<div data-stage="paste"><div class="mock-row"><span class="mono">https://example.com/watch?v=sourdough</span></div><p>MediaGrabber checks the link and shows its title.</p></div>
+<div data-stage="choose" hidden><div class="mock-row"><span>Video, 1080p, saved to Downloads</span><span class="fake-button">Grab</span></div><p>Pick video or audio, the quality and where it goes. Your last choices are already filled in.</p></div>
+<div data-stage="grab" hidden><div class="mock-row"><span>Sourdough, start to finish</span><span class="bar"><i></i></span><span>Saved</span></div><p>Watch the progress, then show the file in Finder.</p></div></div></section><section class="block " data-block="3"><span class="block-number">Block 3</span><h2>What it can do</h2><div class="can">
+<article class="tall"><div><h3>Pick the quality</h3><p>Choose from what the video offers.</p></div>
+<ul class="options"><li>2160p</li><li>1440p</li><li class="on">1080p</li><li>720p</li><li>480p</li></ul></article>
+<article><div><h3>Video or only audio</h3><p>Save audio as M4A or MP3.</p></div>
+<div class="segment" role="radiogroup" aria-label="Type"><button type="button" role="radio" data-kind="video" aria-checked="true">Video</button><button type="button" role="radio" data-kind="audio" aria-checked="false">Audio</button></div></article>
+<article><div><h3>Choose the language</h3><p>For videos with more than one audio track.</p></div>
+<ul class="options"><li class="on">Original</li><li>English</li></ul></article>
+<article><div><h3>Playlists</h3><p>Take all of it, or only the videos you tick.</p></div>
+<ul class="checks"><li>Part 1: The starter</li><li class="off">Part 2: Questions</li><li>Part 3: The bake</li></ul></article>
+<article><div><h3>Several at once</h3><p>Pause, resume or cancel any download.</p></div>
+<div class="mock-row"><span class="bar"><i></i></span><span class="fake-button">Pause</span></div></article></div></section><section class="block " data-block="4"><span class="block-number">Block 4</span><h2>Ways to add a link</h2><ul class="ways">
+<li><svg class="icon" aria-hidden="true"><use href="#p-paste"/></svg><b>Paste it</b><span>Into the box on Home.</span></li>
+<li><svg class="icon" aria-hidden="true"><use href="#p-drop"/></svg><b>Drag it in</b><span>Drop a link anywhere on the window.</span></li>
+<li><svg class="icon" aria-hidden="true"><use href="#p-copy"/></svg><b>Just copy it</b><span>With clipboard detection on, the app picks it up.</span></li>
+<li><svg class="icon" aria-hidden="true"><use href="#p-share"/></svg><b>Share it</b><span>Use the Share or Services menu in other apps.</span></li></ul></section><section class="block privacy" data-block="5"><span class="block-number">Block 5</span><h2>No account. No tracking. No analytics.</h2>
+<p>Your data stays on your Mac. The app goes online for the sites you download from, update checks and the few other things listed in the privacy statement.</p>
+<button type="button" class="link" data-note="Opens Preferences, Privacy.">Read the privacy statement</button></section><section class="block faq" data-block="6"><span class="block-number">Block 6</span><h2>Common questions</h2>
+<details><summary>Which sites work?</summary><p>YouTube and many other video sites. A few sites won’t work.</p></details>
+<details><summary>Why would a video need a sign-in?</summary><p>Private and age-restricted videos can need your account. MediaGrabber uses your browser’s sign-in only if you choose a browser.</p></details>
+<details><summary>Where do my files go?</summary><p>To your Downloads folder, unless you choose another one.</p></details>
+<details><summary>Is it okay to download anything?</summary><p>Only download what you have the right to.</p></details></section><section class="block " data-block="7"><span class="block-number">Block 7</span><h2>Your numbers</h2><div class="numbers"><div><b>142</b><span>files saved</span></div><div><b>38 GB</b><span>downloaded</span></div></div>
+<p class="sample">Sample figures. The app does not keep these totals today.</p></section><section class="block " data-block="8"><span class="block-number">Block 8</span><div class="line"><span>Free and open source, under the MIT license.</span><button type="button" class="link" data-note="Opens Preferences, Licenses.">Licenses</button></div></section><section class="block " data-block="9"><span class="block-number">Block 9</span><div class="line"><span>Know someone who’d use this?</span><button type="button" class="fake-button" data-note="Opens the Mac share menu with the project page.">Share MediaGrabber</button></div></section><section class="block " data-block="10"><span class="block-number">Block 10</span><div class="footer-links"><button type="button" class="link" data-note="Opens the project page in your browser.">Project page</button><button type="button" class="link" data-note="Opens Diagnostics, where a button opens the report form.">Report a problem</button></div></section></div></div>
+<div class="page" data-page="developer" hidden><div class="column">
+<div class="person"><div class="photo">Your photo</div><h1>Shardul Lingwal</h1><p>Solo developer, building in the open.</p></div>
+<div class="contacts"><button type="button" data-note="GitHub: address to come."><svg class="icon" aria-hidden="true"><use href="#p-github"/></svg><span><b>GitHub</b><small>See my code</small></span></button><button type="button" data-note="LinkedIn: address to come."><svg class="icon" aria-hidden="true"><use href="#p-linkedin"/></svg><span><b>LinkedIn</b><small>My work history</small></span></button><button type="button" data-note="Portfolio: address to come."><svg class="icon" aria-hidden="true"><use href="#p-globe"/></svg><span><b>Portfolio</b><small>Other things I make</small></span></button><button type="button" data-note="Email: address to come."><svg class="icon" aria-hidden="true"><use href="#p-mail"/></svg><span><b>Email</b><small>Write to me</small></span></button></div>
+<div class="code-rows"><div class="line"><span>Source code</span><button type="button" class="link" data-note="Opens the repository.">View on GitHub</button></div><div class="line"><span>License</span><button type="button" class="link" data-note="Opens the license file.">Read the license</button></div></div>
+</div></div>
+</div></div>
+</main>
+</body>
+</html>

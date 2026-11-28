@@ -104,7 +104,7 @@ extension DownloadEngine {
     }
 
     private func isPartFile(_ url: URL, stem: String) -> Bool {
-        url.lastPathComponent.hasPrefix(stem) && url.pathExtension == "part"
+        url.lastPathComponent.hasPrefix(stem + ".") && url.pathExtension == "part"
     }
 
     func resolveOutputFiles(for job: DownloadJob) -> [URL] {

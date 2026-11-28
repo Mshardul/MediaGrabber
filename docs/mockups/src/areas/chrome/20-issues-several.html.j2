@@ -1,0 +1,10 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/health.html.j2" import issues_dialog %}
+{% set screen_id = "issues-several" %}
+{% set title = "Chip dialog with several issues" %}
+{% set caption = "Most severe first, then newest; each action sits under its issue, on the right." %}
+{% set tickets = ["mg-243", "mg-244"] %}
+{% call window(health="several") %}
+<div class="window-body">{{ rail("All", data.HOME_RAIL) }}<div class="content"></div></div>
+{{ issues_dialog("several", "connection") }}
+{% endcall %}

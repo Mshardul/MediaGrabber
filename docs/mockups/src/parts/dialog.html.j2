@@ -1,0 +1,12 @@
+{# The one card every dialog uses: type icon and title, message, optional field, buttons. #}
+{% from "parts/controls.html.j2" import icon %}
+
+{% macro dialog(kind, title, message) -%}
+<div class="scrim">
+  <div class="dialog" role="dialog" aria-modal="true" aria-label="{{ title }}">
+    <header class="dialog-title type-{{ kind }}">{{ icon(kind) }}<h3>{{ title }}</h3></header>
+    <p class="dialog-message">{{ message }}</p>
+    {{ caller() }}
+  </div>
+</div>
+{%- endmacro %}

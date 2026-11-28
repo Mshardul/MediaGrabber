@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window %}
+{% from "parts/orb.html.j2" import orb_state %}
+{% set screen_id = "orb-waiting" %}
+{% set title = "Waiting" %}
+{% set caption = "Give me a link: first launch, onboarding and no downloads at all." %}
+{% set tickets = ["mg-237"] %}
+{% call window() %}
+{{ orb_state("waiting") }}
+{% endcall %}

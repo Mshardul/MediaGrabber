@@ -1,0 +1,17 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, choices_card, grab_view %}
+{% set screen_id = "home-audio" %}
+{% set title = "Audio chosen" %}
+{% set caption = "The format choice becomes a two-way switch." %}
+{% set tickets = ["mg-228", "mg-037"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view(orb=false) %}
+{{ link_card(data.VIDEO_LINK, result=data.AUDIO_RESULT) }}
+{{ choices_card(data.AUDIO_CHOICE) }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

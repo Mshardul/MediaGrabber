@@ -1,0 +1,122 @@
+/* About and Developer prototype only. Colours come from ../tokens.css. */
+
+.review{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--sp-2) var(--sp-5);width:var(--window-w);margin:0 auto var(--sp-4);font:var(--fs-small) var(--font-mono)}
+.review fieldset{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--sp-1) var(--sp-3);border:0}
+.review button{font:var(--fs-kicker) var(--font-mono);padding:var(--sp-1) var(--sp-2);border:1px solid var(--doc-line);border-radius:var(--r-chip);background:transparent;color:var(--doc-text);cursor:pointer}
+.review button[aria-pressed="true"]{background:var(--doc-on-bg);color:var(--doc-on-text);border-color:var(--doc-on-bg)}
+.review label{display:flex;align-items:center;gap:var(--sp-1);cursor:pointer}
+.review-note{flex-basis:100%;min-height:20px;text-align:center;color:var(--doc-dim)}
+
+.window button{font-family:var(--font-body);cursor:pointer}
+.rail button{display:flex;align-items:center;width:100%;height:var(--btn-h-standard);padding:0 var(--sp-3);border:0;border-radius:var(--r-control);background:transparent;color:var(--dim);font-size:var(--fs-body);text-align:left}
+.rail button[aria-current="page"]{background:var(--panel-hi);color:var(--text);font-weight:var(--w-strong)}
+
+.page{flex:1;min-width:0;overflow-y:auto;scroll-behavior:smooth}
+.page[hidden],.block[hidden]{display:none}
+.column{display:flex;flex-direction:column;gap:56px;max-width:680px;margin:0 auto;padding:var(--sp-5) var(--sp-6) var(--sp-8)}
+
+.block{position:relative}
+.block h2{margin-bottom:var(--sp-4);font:var(--w-display) 20px/1.25 var(--font-display);color:var(--headline)}
+.block-number{display:none;position:absolute;top:0;right:0;padding:0 var(--sp-2);border:1px dashed var(--dim);border-radius:var(--r-chip);font:var(--fs-th)/18px var(--font-mono);color:var(--dim)}
+.show-numbers .block-number{display:block}
+
+.link{padding:0;border:0;background:none;color:var(--accent);font-size:var(--fs-body);font-weight:var(--w-strong);text-decoration:underline;text-underline-offset:3px}
+:root[data-theme="tapedeck"] .link{color:var(--accent-2)}
+
+/* 1. Opening banner: the one bold element on the page */
+.banner{display:flex;flex-direction:column;align-items:center;text-align:center}
+.banner .orb{--orb-size:270px;margin-bottom:calc(var(--sp-3) * -1)}
+.banner h1{font:var(--w-display) 36px/1.05 var(--font-display);letter-spacing:-.03em;color:var(--headline)}
+.promise{max-width:34ch;margin-top:var(--sp-3);font-size:17px;line-height:1.45;color:var(--text)}
+.banner-foot{display:flex;align-items:center;gap:var(--sp-4);margin-top:var(--sp-4);color:var(--dim);font-size:var(--fs-small)}
+
+/* 2. How it works: a real sequence, shown on one stage */
+.steps-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-2)}
+.steps-tabs button{display:flex;gap:var(--sp-2);padding:var(--sp-2) 0;border:0;border-top:3px solid var(--hair);background:none;color:var(--dim);font-size:var(--fs-body);text-align:left}
+.steps-tabs button[aria-selected="true"]{border-top-color:var(--accent);color:var(--headline);font-weight:var(--w-strong)}
+.stage{display:grid;align-items:center;min-height:132px;margin-top:var(--sp-3);padding:var(--sp-5);background:var(--panel-hi);border:var(--bw-structure) solid var(--stroke);border-radius:var(--r-card);box-shadow:var(--elev-console)}
+.stage > div{display:flex;flex-direction:column;gap:var(--sp-3)}
+.stage > div[hidden]{display:none}
+.mock-row{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-2) var(--sp-3);background:var(--panel-solid);border:var(--bw-small) solid var(--stroke);border-radius:var(--r-control)}
+.mock-row span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mock-row .mono{font-family:var(--font-mono);font-size:var(--fs-small)}
+.fake-button{display:inline-block;padding:var(--sp-1) var(--sp-4);border-radius:var(--r-control);background:var(--go-fill);color:var(--on-accent);font-weight:var(--w-strong);font-size:var(--fs-small)}
+.stage p{font-size:var(--fs-small);color:var(--dim)}
+.bar{width:120px;height:6px;border-radius:6px;background:var(--hair);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--bar-fill)}
+
+/* 3. What it can do: pieces of the real controls, sized by weight */
+.can{display:grid;grid-template-columns:1.25fr 1fr;gap:var(--sp-3)}
+.can article{display:flex;flex-direction:column;justify-content:space-between;gap:var(--sp-3);padding:var(--sp-4);background:var(--panel);border:var(--bw-small) solid var(--stroke);border-radius:var(--r-card)}
+.can .tall{grid-row:span 2}
+.can .wide{grid-column:1 / -1}
+.can h3{font:var(--w-strong) 14px var(--font-body);color:var(--headline)}
+.can p{font-size:var(--fs-small);line-height:1.5;color:var(--dim)}
+.options{list-style:none;border:var(--bw-small) solid var(--stroke);border-radius:var(--r-control);background:var(--panel-solid)}
+.options li{display:flex;justify-content:space-between;padding:var(--sp-1) var(--sp-3);font-size:var(--fs-small)}
+.options li.on{background:var(--wash)}
+.options li.on::after{content:"\2713";color:var(--accent)}
+.checks{list-style:none;font-size:var(--fs-small)}
+.checks li{display:flex;gap:var(--sp-2);padding:var(--sp-1) 0;border-bottom:var(--bw-small) solid var(--hair)}
+.checks li::before{content:"\2611";color:var(--accent-2)}
+.checks li.off::before{content:"\2610";color:var(--dim)}
+.can .segment button{flex:1;border:0;border-radius:var(--r-chip);background:none;color:var(--dim);font-weight:600;font-size:var(--fs-small)}
+.can .segment button[aria-checked="true"]{background:var(--panel-solid);color:var(--text)}
+.can .mock-row .bar{flex:1}
+
+/* 4. Ways to add a link */
+.ways{display:grid;grid-template-columns:1fr 1fr;column-gap:var(--sp-6);list-style:none}
+.ways li{display:grid;grid-template-columns:auto 1fr;column-gap:var(--sp-3);align-items:start;padding:var(--sp-3) 0;border-top:var(--bw-small) solid var(--hair)}
+.ways svg.icon{grid-row:span 2;width:22px;height:22px;margin-top:2px;color:var(--accent)}
+.ways b{font-weight:var(--w-strong);color:var(--headline)}
+.ways span{font-size:var(--fs-small);line-height:1.5;color:var(--dim)}
+
+/* 5. Privacy: a plain statement on its own ground */
+.privacy{padding:var(--sp-6);border-radius:var(--r-card);background:var(--panel-hi);border:var(--bw-structure) solid var(--accent-2)}
+.privacy h2{margin-bottom:var(--sp-3);font-size:28px;line-height:1.15;letter-spacing:-.02em}
+.privacy p{max-width:58ch;margin-bottom:var(--sp-3);color:var(--text)}
+
+/* 6. Questions */
+.faq details{border-top:var(--bw-small) solid var(--hair)}
+.faq details:last-of-type{border-bottom:var(--bw-small) solid var(--hair)}
+.faq summary{padding:var(--sp-3) 0;font-weight:var(--w-strong);cursor:pointer}
+.faq details p{max-width:62ch;padding-bottom:var(--sp-3);color:var(--dim)}
+
+/* 7. Numbers */
+.numbers{display:flex;gap:var(--sp-8)}
+.numbers div b{display:block;font:var(--w-display) 30px var(--font-display);color:var(--headline)}
+.numbers div span,.sample{font-size:var(--fs-small);color:var(--dim)}
+
+/* 8, 9, 10 */
+.line{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4)}
+.footer-links{display:flex;justify-content:center;gap:var(--sp-6);padding-top:var(--sp-5);border-top:var(--bw-small) solid var(--hair)}
+
+/* Help: adding a link, inside step 1 */
+.stage .ways span{color:var(--dim)}
+
+/* Help: troubleshooting as three steps to try in order */
+.lead-text{margin:calc(var(--sp-3) * -1) 0 var(--sp-4);color:var(--dim)}
+.fixes{display:flex;flex-direction:column;gap:var(--sp-3);list-style:none;counter-reset:fix}
+.fixes li{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:var(--sp-3) var(--sp-4);padding:var(--sp-4) var(--sp-5);background:var(--panel);border:var(--bw-small) solid var(--stroke);border-radius:var(--r-card);counter-increment:fix}
+.fixes li::before{content:counter(fix);display:grid;place-items:center;align-self:start;width:28px;height:28px;border:2px solid var(--accent);border-radius:50%;font:var(--w-strong) var(--fs-small) var(--font-mono);color:var(--headline)}
+.fix-text h3{font:var(--w-strong) 14px var(--font-body);color:var(--headline)}
+.fix-text p{max-width:46ch;font-size:var(--fs-small);line-height:1.5;color:var(--dim)}
+.fix-sample{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+.fix-sample .chip{cursor:default}
+
+/* Developer */
+.person{display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);text-align:center}
+.photo{display:grid;place-items:center;width:132px;height:132px;margin-bottom:var(--sp-2);border:var(--bw-structure) dashed var(--dim);border-radius:50%;background:var(--panel-hi);color:var(--dim);font-size:var(--fs-small)}
+.person h1{font:var(--w-display) 28px/1.15 var(--font-display);color:var(--headline)}
+.person p{color:var(--dim)}
+.contacts{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-3)}
+.contacts button{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);border:var(--bw-small) solid var(--stroke);border-radius:var(--r-card);background:var(--panel);color:var(--text);text-align:left}
+.contacts svg.icon{width:22px;height:22px;color:var(--accent)}
+.contacts b{display:block;font-weight:var(--w-strong)}
+.contacts small{display:block;font-size:var(--fs-kicker);color:var(--dim)}
+.code-rows .line{padding:var(--sp-3) 0;border-top:var(--bw-small) solid var(--hair)}
+.code-rows .line:last-child{border-bottom:var(--bw-small) solid var(--hair)}
+
+.dev-side .column{max-width:720px;display:grid;grid-template-columns:220px 1fr;align-items:start;gap:var(--sp-6) var(--sp-8);padding-top:var(--sp-8)}
+.dev-side .person{grid-row:span 2}
+.dev-side .contacts{grid-template-columns:1fr}

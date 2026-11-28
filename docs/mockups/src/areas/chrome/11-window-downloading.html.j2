@@ -1,0 +1,8 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% set screen_id = "window-downloading" %}
+{% set title = "Window, downloading with issues" %}
+{% set caption = "A progress ring on the logo; each chip shows its most severe level." %}
+{% set tickets = ["mg-029", "mg-244", "mg-210", "mg-247"] %}
+{% call window(health="several", progress=62) %}
+<div class="window-body">{{ rail("All", data.HOME_RAIL) }}<div class="content"></div></div>
+{% endcall %}

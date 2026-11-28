@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window %}
+{% from "parts/orb.html.j2" import orb_state %}
+{% set screen_id = "orb-resting" %}
+{% set title = "Resting" %}
+{% set caption = "Nothing here right now: an empty Downloading, Done or Inactive view." %}
+{% set tickets = ["mg-237"] %}
+{% call window() %}
+{{ orb_state("resting") }}
+{% endcall %}

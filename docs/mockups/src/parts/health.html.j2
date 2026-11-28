@@ -1,0 +1,54 @@
+{# Health chips, their issues dialog and the alerts that report them. #}
+{% from "parts/controls.html.j2" import icon, button, icon_button %}
+
+{% macro mark(level) -%}
+<svg class="mark lv-{{ level }}" viewBox="0 0 24 24" role="img" aria-label="{{ data.LEVELS[level] }}">
+  {%- if level == "blocked" -%}
+  <path class="mark-shape" d="M8 2h8l6 6v8l-6 6H8l-6-6V8z"/><path d="M8 12h8"/>
+  {%- elif level == "problem" -%}
+  <path class="mark-shape" d="M12 3 2 21h20z"/><path d="M12 10v4M12 17.5h.01"/>
+  {%- elif level == "warning" -%}
+  <path class="mark-shape" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20z"/><path d="M12 11v6M12 7.5h.01"/>
+  {%- else -%}
+  <path class="mark-shape" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20z"/><path d="m7.5 12.5 3 3 6-6.5"/>
+  {%- endif -%}
+</svg>
+{%- endmacro %}
+
+{% macro chips(sample, busy=none) -%}
+<div class="chips">
+  {% for key, name in data.CATEGORIES %}
+  {% set level = data.worst_level(sample, key) %}
+  <button type="button" class="chip lv-{{ level }}"{% if busy == key %} disabled aria-busy="true"{% endif %}>
+    {{ icon(key) }}<span>{{ name }}</span>{% if busy == key %}<span class="spinner"></span>{% else %}{{ mark(level) }}{% endif %}
+  </button>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro issues_dialog(sample, category, busy=false) -%}
+{% set name = dict(data.CATEGORIES)[category] %}
+<div class="scrim">
+  <div class="dialog" role="dialog" aria-modal="true" aria-label="{{ name }}">
+    <header class="dialog-head">{{ mark(data.worst_level(sample, category)) }}<h3>{{ name }}</h3>{{ icon_button("close", "Close") }}</header>
+    <ul class="issues">
+      {% for issue in data.sorted_issues(sample, category) %}
+      <li>
+        {{ mark(issue.level) }}
+        <div><b>{{ issue.title }}</b><p>{{ issue.detail }}</p></div>
+        {% if issue.action %}<div class="issue-action">{{ button(issue.action, size="compact", busy=busy and loop.first) }}</div>{% endif %}
+      </li>
+      {% else %}
+      <li>{{ mark("healthy") }}<div><b>Everything’s working here.</b></div></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro alert(level, text, action=none) -%}
+<div class="alert" role="status">
+  {{ mark(level) }}<p>{{ text }}</p>{{ icon_button("close", "Close") }}
+  {% if action %}<div class="alert-action">{{ button(action, size="compact") }}</div>{% endif %}
+</div>
+{%- endmacro %}

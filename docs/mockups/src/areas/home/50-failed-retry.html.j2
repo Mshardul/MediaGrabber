@@ -1,0 +1,16 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, grab_view %}
+{% set screen_id = "home-failed-retry" %}
+{% set title = "Check failed, retry may help" %}
+{% set caption = "The orb clouds over and Try again is offered." %}
+{% set tickets = ["mg-237", "mg-229"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("clouded") %}
+{{ link_card(data.VIDEO_LINK, error=data.FAILURE_SENTENCES["botCheck"], actions=("Try again",)) }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

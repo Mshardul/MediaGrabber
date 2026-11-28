@@ -1,0 +1,22 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, grab_view %}
+{% from "parts/dialog.html.j2" import dialog %}
+{% from "parts/controls.html.j2" import button %}
+{% set screen_id = "home-passcode" %}
+{% set title = "Passcode popup" %}
+{% set caption = "It opens by itself when a link needs a passcode." %}
+{% set tickets = ["mg-227"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("clouded") %}
+{{ link_card(data.ZOOM_LINK, error=data.FAILURE_SENTENCES["passcodeRequired"], actions=("Enter passcode",)) }}
+{% endcall %}
+  </div>
+</div>
+{% call dialog("info", "Enter passcode", "Enter the passcode the owner gave you.") %}
+<div class="dialog-field">Passcode</div>
+<footer class="dialog-buttons">{{ button("Cancel") }}{{ button("Continue", "main", disabled=true) }}</footer>
+{% endcall %}
+{% endcall %}

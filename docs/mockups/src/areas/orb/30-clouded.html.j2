@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window %}
+{% from "parts/orb.html.j2" import orb_state %}
+{% set screen_id = "orb-clouded" %}
+{% set title = "Clouded" %}
+{% set caption = "Something is in the way: filters that match nothing, a failed step or being offline." %}
+{% set tickets = ["mg-237"] %}
+{% call window() %}
+{{ orb_state("clouded") }}
+{% endcall %}

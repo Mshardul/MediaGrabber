@@ -1,0 +1,16 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, grab_view %}
+{% set screen_id = "home-failed-passcode" %}
+{% set title = "Passcode popup cancelled" %}
+{% set caption = "The reason stays, with Enter passcode to open the popup again." %}
+{% set tickets = ["mg-209"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("clouded") %}
+{{ link_card(data.ZOOM_LINK, error=data.FAILURE_SENTENCES["passcodeRequired"], actions=("Enter passcode",)) }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

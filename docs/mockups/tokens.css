@@ -1,0 +1,143 @@
+/* The only file that holds literal colours: values mirror ../design-system.md. */
+
+@font-face{font-family:"MG Sora";src:url("../../Resources/Fonts/Sora/Sora.ttf");font-weight:400 800}
+@font-face{font-family:"MG Plex";src:url("../../Resources/Fonts/IBMPlexSans/IBMPlexSans-Regular.ttf");font-weight:400}
+@font-face{font-family:"MG Plex";src:url("../../Resources/Fonts/IBMPlexSans/IBMPlexSans-Medium.ttf");font-weight:500}
+@font-face{font-family:"MG Plex";src:url("../../Resources/Fonts/IBMPlexSans/IBMPlexSans-SemiBold.ttf");font-weight:600}
+@font-face{font-family:"MG JetBrains";src:url("../../Resources/Fonts/JetBrainsMono/JetBrainsMono.ttf");font-weight:400 700}
+@font-face{font-family:"MG Bricolage";src:url("../../Resources/Fonts/BricolageGrotesque/BricolageGrotesque-Regular.ttf");font-weight:400}
+@font-face{font-family:"MG Bricolage";src:url("../../Resources/Fonts/BricolageGrotesque/BricolageGrotesque-Bold.ttf");font-weight:700}
+@font-face{font-family:"MG Bricolage";src:url("../../Resources/Fonts/BricolageGrotesque/BricolageGrotesque-ExtraBold.ttf");font-weight:800}
+@font-face{font-family:"MG DMSans";src:url("../../Resources/Fonts/DMSans/DMSans-Regular.ttf");font-weight:400}
+@font-face{font-family:"MG DMSans";src:url("../../Resources/Fonts/DMSans/DMSans-Medium.ttf");font-weight:500}
+@font-face{font-family:"MG DMSans";src:url("../../Resources/Fonts/DMSans/DMSans-Bold.ttf");font-weight:700}
+@font-face{font-family:"MG DMMono";src:url("../../Resources/Fonts/DMMono/DMMono-Regular.ttf");font-weight:400}
+@font-face{font-family:"MG DMMono";src:url("../../Resources/Fonts/DMMono/DMMono-Medium.ttf");font-weight:500}
+
+/* Shared by both themes */
+:root{
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:22px; --sp-6:30px; --sp-8:44px;
+  --fs-hero:32px; --fs-onboarding:26px; --fs-section:18px; --fs-body:13px; --fs-small:12px;
+  --fs-kicker:11px; --fs-data:11px; --fs-th:10px;
+  --ease:cubic-bezier(.2,.7,.2,1); --dur:160ms;
+  --window-w:980px; --window-w-narrow:820px; --window-h:720px;
+  --column-w:760px; --field-h:34px;
+}
+
+/* Theme axes */
+:root[data-theme="aurora"]{
+  --font-display:"MG Sora",system-ui,sans-serif; --font-body:"MG Plex",system-ui,sans-serif;
+  --font-mono:"MG JetBrains",ui-monospace,monospace;
+  --w-display:600; --w-strong:600;
+  --r-window:18px; --r-card:14px; --r-control:9px; --r-pill:20px; --r-chip:7px;
+  --bw-structure:1px; --bw-small:1px;
+  --elev-window:0 24px 60px rgba(0,0,0,.6);
+  --elev-console:0 0 0 1px var(--glow-a),0 0 32px var(--glow-b);
+}
+:root[data-theme="tapedeck"]{
+  --font-display:"MG Bricolage",system-ui,sans-serif; --font-body:"MG DMSans",system-ui,sans-serif;
+  --font-mono:"MG DMMono",ui-monospace,monospace;
+  --w-display:800; --w-strong:700;
+  --r-window:14px; --r-card:12px; --r-control:8px; --r-pill:20px; --r-chip:6px;
+  --bw-structure:2px; --bw-small:1.5px;
+  --elev-window:8px 8px 0 rgba(0,0,0,.35);
+  --elev-console:none;
+}
+
+/* Aurora palettes */
+:root[data-theme="aurora"]{
+  --panel:rgba(255,255,255,.05); --panel-hi:rgba(255,255,255,.08); --hair:rgba(255,255,255,.06);
+  --on-accent:#07080B; --brand:transparent;
+}
+:root[data-theme="aurora"][data-palette="mint"]{
+  --ground:#0C1013; --panel-solid:#0E1117; --stroke:rgba(255,255,255,.12);
+  --text:#EDF0F5; --dim:#9AA3B2; --faint:#6B7480; --headline:#F4F6FA;
+  --accent:#5EF2C8; --accent-2:#8B7BFF; --warn:#FFC24B; --danger:#FF7A6B;
+  --go:#5EF2C8; --go-fill:linear-gradient(135deg,#5EF2C8,#8B7BFF);
+  --bar-fill:linear-gradient(90deg,#5EF2C8,#8B7BFF);
+  --glow-a:rgba(94,242,200,.14); --glow-b:rgba(139,123,255,.16);
+}
+:root[data-theme="aurora"][data-palette="lime"]{
+  --ground:#0A0F0C; --panel-solid:#0C1210; --stroke:rgba(190,255,210,.13);
+  --text:#E9F2EC; --dim:#93A99C; --faint:#5F7268; --headline:#F2F8F3;
+  --accent:#B6F04A; --accent-2:#4ED6A0; --warn:#F2C14E; --danger:#FF6F6F;
+  --go:#B6F04A; --go-fill:linear-gradient(135deg,#B6F04A,#4ED6A0);
+  --bar-fill:linear-gradient(90deg,#B6F04A,#4ED6A0);
+  --glow-a:rgba(182,240,74,.16); --glow-b:rgba(78,214,160,.14);
+}
+:root[data-theme="aurora"][data-palette="magenta"]{
+  --ground:#100C14; --panel-solid:#120E16; --stroke:rgba(230,190,255,.14);
+  --text:#F1EAF5; --dim:#A996B5; --faint:#7A6B85; --headline:#F7F2FA;
+  --accent:#F25C9E; --accent-2:#9B6BFF; --warn:#FFC24B; --danger:#FF6B6B;
+  --go:#F25C9E; --go-fill:linear-gradient(135deg,#F25C9E,#9B6BFF);
+  --bar-fill:linear-gradient(90deg,#F25C9E,#9B6BFF);
+  --glow-a:rgba(242,92,158,.16); --glow-b:rgba(155,107,255,.16);
+}
+
+/* Tape Deck palettes */
+:root[data-theme="tapedeck"]{
+  --panel-hi:rgba(0,0,0,.04); --glow-a:transparent; --glow-b:transparent;
+}
+:root[data-theme="tapedeck"][data-palette="teal"]{
+  --ground:#F3E9D8; --panel-solid:#FBF4E6; --panel:#F3E9D8; --stroke:#2B2118; --hair:rgba(43,33,24,.18);
+  --text:#2B2118; --dim:#8A7A60; --faint:#8A7A60; --headline:#2B2118; --on-accent:#2B2118;
+  --brand:#0E5C57; --accent:#D2601A; --accent-2:#0E5C57; --warn:#9C5A00; --danger:#B4472A;
+  --go:#E4A11B; --go-fill:#E4A11B; --bar-fill:#D2601A;
+}
+:root[data-theme="tapedeck"][data-palette="plum"]{
+  --ground:#EFE9E9; --panel-solid:#FBF5F5; --panel:#EFE9E9; --stroke:#281E26; --hair:rgba(40,30,38,.18);
+  --text:#281E26; --dim:#8B8088; --faint:#8B8088; --headline:#281E26; --on-accent:#281E26;
+  --brand:#5A2E52; --accent:#E98C89; --accent-2:#5A2E52; --warn:#9A6410; --danger:#C25B57;
+  --go:#E8B24A; --go-fill:#E8B24A; --bar-fill:#E98C89;
+}
+:root[data-theme="tapedeck"][data-palette="navy"]{
+  --ground:#E7E9E7; --panel-solid:#F5F6F3; --panel:#E7E9E7; --stroke:#1B222A; --hair:rgba(27,34,42,.18);
+  --text:#1B222A; --dim:#7C838A; --faint:#7C838A; --headline:#1B222A; --on-accent:#1B222A;
+  --brand:#1F3350; --accent:#2FA69A; --accent-2:#1F3350; --warn:#8E6318; --danger:#D9694C;
+  --go:#F2B12E; --go-fill:#F2B12E; --bar-fill:#2FA69A;
+}
+
+/* Review pages around the app windows */
+:root[data-theme="aurora"]{
+  --doc-ground:#08090B; --doc-panel:#0E0F12; --doc-line:#33353A; --doc-text:#DDDFE3;
+  --doc-dim:#9A9DA4; --doc-link:#8FD8C4; --doc-on-bg:#FFFFFF; --doc-on-text:#111111;
+}
+:root[data-theme="tapedeck"]{
+  --doc-ground:#D8CDB8; --doc-panel:#EFE6D4; --doc-line:#8A7A60; --doc-text:#2B2118;
+  --doc-dim:#5A4D38; --doc-link:#0E5C57; --doc-on-bg:#2B2118; --doc-on-text:#F3E9D8;
+}
+
+/* Window parts shared by every screen */
+:root{
+  --titlebar-h:52px; --rail-w:200px; --chip-h:28px; --logo-size:24px;
+  --btn-w:184px; --btn-h-large:44px; --btn-h-standard:34px; --btn-h-compact:28px;
+  --dialog-w:420px; --alert-w:360px; --edge-gap:16px;
+  --light-close:#FF5F57; --light-minimise:#FEBC2E; --light-zoom:#28C840; --light-off:#8D8D8D;
+  --logo-fill:conic-gradient(#5EF2C8,#8B7BFF,#FF7A6B,#5EF2C8);
+}
+:root[data-theme="aurora"]{
+  --blocked:#FF6B6B; --problem:#FF9142; --warning:#FFD84B; --healthy:#5EE08A; --mark-ink:#14100C; --mark-ink-on-dark:#FFFDF4;
+  --ring-a:var(--accent); --ring-b:var(--accent-2); --ring-track:rgba(160,160,160,.35);
+  --bar-bg:var(--panel); --bar-text:var(--headline); --bar-on-bg:var(--panel-hi); --bar-on-text:var(--text);
+  --logo-shine:radial-gradient(circle at 32% 28%,rgba(255,255,255,.95),rgba(255,255,255,0) 34%),radial-gradient(circle,rgba(0,0,0,0) 55%,rgba(0,0,0,.38));
+  --logo-edge:none;
+  --popup-bg:var(--panel-solid); --popup-shadow:0 0 0 1px var(--glow-a),0 0 32px var(--glow-b),0 22px 60px rgba(0,0,0,.5);
+  --wash:rgba(255,255,255,.07);
+  --orb-a:var(--accent); --orb-b:var(--accent-2); --orb-c:var(--danger); --orb-light:var(--headline); --orb-ink:var(--on-accent);
+}
+:root[data-theme="tapedeck"]{
+  --blocked:#B3261E; --problem:#E8710A; --warning:#F2C200; --healthy:#2E7D32; --mark-ink:#14100C; --mark-ink-on-dark:#FFFDF4;
+  --ring-a:var(--go); --ring-b:var(--accent); --ring-track:rgba(160,160,160,.35);
+  --bar-bg:var(--brand); --bar-text:var(--panel-solid); --bar-on-bg:var(--panel); --bar-on-text:var(--brand);
+  --logo-shine:radial-gradient(ellipse 26% 16% at 34% 28%,#FFFDF4 96%,transparent 100%);
+  --logo-edge:0 0 0 2px #2B2118,3px 3px 0 2px rgba(0,0,0,.35);
+  --popup-bg:var(--panel-solid); --popup-shadow:6px 6px 0 rgba(0,0,0,.35);
+  --wash:rgba(0,0,0,.06);
+  --orb-a:var(--accent-2); --orb-b:var(--go); --orb-c:var(--accent); --orb-light:var(--panel-solid); --orb-ink:var(--stroke);
+}
+
+/* Large orb on empty and welcome screens */
+:root{--orb-size:380px}
+
+/* Home */
+:root{--orb-size-grab:300px; --thumb-w:64px; --thumb-h:36px; --type-w:64px; --grab-w:120px; --grab-w-narrow:104px}

@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window %}
+{% from "parts/orb.html.j2" import orb_state %}
+{% set screen_id = "orb-drag" %}
+{% set title = "Link dragged over" %}
+{% set caption = "Ready to catch it." %}
+{% set tickets = ["mg-237"] %}
+{% call window() %}
+{{ orb_state("drag") }}
+{% endcall %}

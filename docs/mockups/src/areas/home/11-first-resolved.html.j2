@@ -1,0 +1,17 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, choices_card, grab_view %}
+{% set screen_id = "home-first-resolved" %}
+{% set title = "First launch, link checked" %}
+{% set caption = "The orb gives way to the two cards." %}
+{% set tickets = ["mg-228", "mg-085", "mg-086", "mg-088", "mg-092"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.FIRST_RAIL) }}
+  <div class="content">
+{% call grab_view(orb=false, first_run=true) %}
+{{ link_card(data.VIDEO_LINK, result=data.VIDEO_RESULT) }}
+{{ choices_card(data.VIDEO_CHOICE) }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

@@ -1,0 +1,15 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/health.html.j2" import alert %}
+{% set screen_id = "alerts" %}
+{% set title = "Alerts" %}
+{% set caption = "Bottom right, newest on top, 16 from the edge, each with its level mark." %}
+{% set tickets = ["mg-216", "mg-217", "mg-242"] %}
+{% call window(health="several") %}
+<div class="window-body">{{ rail("All", data.HOME_RAIL) }}<div class="content"></div></div>
+<div class="alerts">
+  {{ alert("blocked", "Disk is full") }}
+  {{ alert("problem", "YouTube check stopped") }}
+  {{ alert("healthy", "The downloader is working again") }}
+  {{ alert("healthy", "Slow-baked sourdough, start to finish saved", "Reveal") }}
+</div>
+{% endcall %}

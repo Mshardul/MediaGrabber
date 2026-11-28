@@ -1,0 +1,16 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, grab_view %}
+{% set screen_id = "home-checking" %}
+{% set title = "Checking a link" %}
+{% set caption = "The orb searches while the link is checked." %}
+{% set tickets = ["mg-237"] %}
+{% call window() %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view("searching") %}
+{{ link_card(data.VIDEO_LINK, checking="Checking link…") }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

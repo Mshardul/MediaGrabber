@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window %}
+{% from "parts/controls.html.j2" import picker, popover %}
+{% set screen_id = "popup-short" %}
+{% set title = "Dropdown" %}
+{% set caption = "The shared popup look, used by dropdowns, menus and filter lists." %}
+{% set tickets = ["mg-227"] %}
+{% call window() %}
+<div class="popup-demo">{{ picker("1080p") }}{{ popover("Video quality", data.QUALITY_ROWS, "1080p") }}</div>
+{% endcall %}

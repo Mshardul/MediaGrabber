@@ -1,0 +1,9 @@
+{% from "parts/window.html.j2" import window %}
+{% from "parts/controls.html.j2" import picker, popover %}
+{% set screen_id = "popup-long" %}
+{% set title = "Dropdown with a long list" %}
+{% set caption = "The popup stops inside the window and its list scrolls." %}
+{% set tickets = ["mg-223", "mg-227"] %}
+{% call window() %}
+<div class="popup-demo">{{ picker("English") }}{{ popover("Language", data.LANGUAGE_ROWS, "English") }}</div>
+{% endcall %}

@@ -1,0 +1,17 @@
+{% from "parts/window.html.j2" import window, rail %}
+{% from "parts/home.html.j2" import link_card, choices_card, grab_view %}
+{% set screen_id = "home-narrow" %}
+{% set title = "Long values at 820" %}
+{% set caption = "The narrowest drawn width with long text; cut-off values show in full on hover." %}
+{% set tickets = ["mg-228"] %}
+{% call window(narrow=true) %}
+<div class="window-body">
+  {{ rail("Grab", data.HOME_RAIL) }}
+  <div class="content">
+{% call grab_view(orb=false) %}
+{{ link_card(data.VIDEO_LINK, result=data.LONG_RESULT) }}
+{{ choices_card(data.LONG_CHOICE) }}
+{% endcall %}
+  </div>
+</div>
+{% endcall %}

@@ -1,0 +1,28 @@
+{% from "parts/window.html.j2" import window %}
+{% from "parts/controls.html.j2" import button, icon_button, picker %}
+{% set screen_id = "buttons" %}
+{% set title = "Buttons" %}
+{% set caption = "Three heights and four styles, all one fixed width; icon-only buttons are square." %}
+{% set tickets = ["mg-211"] %}
+{% call window() %}
+<div class="sheet">
+  <table>
+    <thead><tr><th>Height</th><th>Main</th><th>Standard</th><th>Destructive</th><th>Text only</th><th>Icon</th></tr></thead>
+    <tbody>
+      {% for size, name in data.BUTTON_SIZES %}
+      <tr>
+        <th>{{ name }}</th>
+        <td>{{ button("Grab", "main", size) }}</td>
+        <td>{{ button("Open System Settings", "standard", size) }}</td>
+        <td>{{ button("Reset settings", "danger", size) }}</td>
+        <td>{{ button("Cancel", "plain", size) }}</td>
+        <td>{{ icon_button("folder", "Show in Finder", size, "standard") }}</td>
+      </tr>
+      {% endfor %}
+      <tr><th>Disabled</th><td>{{ button("Add 0", "main", disabled=true) }}</td><td>{{ button("Retry now", disabled=true) }}</td><td>{{ button("Remove", "danger", disabled=true) }}</td><td>{{ button("Clear", "plain", disabled=true) }}</td><td></td></tr>
+      <tr><th>Busy</th><td>{{ button("Updating", "main", busy=true) }}</td><td>{{ button("Restart", busy=true) }}</td><td></td><td></td><td></td></tr>
+      <tr><th>Picker</th><td>{{ picker("1080p") }}</td><td>{{ picker("Best available") }}</td><td></td><td></td><td></td></tr>
+    </tbody>
+  </table>
+</div>
+{% endcall %}

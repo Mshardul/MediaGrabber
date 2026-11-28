@@ -22,10 +22,10 @@
 
 ## Tasks
 
-- [ ] 1. Build system: Jinja sources, `build.py`, shared CSS and JS, sample data, checker; `screens.html` front page, area pages with a top menu, theme and palette switcher.
-- [ ] 2. Shared window: title bar, logo ring, chips, issues dialog, alerts, buttons, popups. Log: App-wide, Chrome. DS §4.1, §4.4. Reference: `titlebar.html` layout A, logo 4 (not B, C or logos 1–3).
-- [ ] 3. Orb component, both themes, five moods. Log: Empty states and the oracle orb. DS §4.2.5. Reuse `orb.html`.
-- [ ] 4. Home, including first launch. Log: Home. DS §4.2.1–4.2.2.
+- [x] 1. Build system: Jinja sources, `build.py`, shared CSS and JS, sample data, checker; `screens.html` front page, area pages with a top menu, theme and palette switcher.
+- [x] 2. Shared window: title bar, logo ring, chips, issues dialog, alerts, buttons, popups. Log: App-wide, Chrome. DS §4.1, §4.4. Reference: `titlebar.html` layout A, logo 4 (not B, C or logos 1–3).
+- [x] 3. Orb component, both themes, five moods. Log: Empty states and the oracle orb. DS §4.2.5. Reuse `orb.html`.
+- [x] 4. Home, including first launch. Log: Home. DS §4.2.1–4.2.2.
 - [ ] 5. Playlist picker and group. Log: Playlist. DS §4.2.4, §4.3.
 - [ ] 6. Table and its empty states. Log: Table. DS §4.2.3, §4.2.5.
 - [ ] 7. Chrome states: each chip, level and issue; alerts; drop highlight; setup and passcode panels.

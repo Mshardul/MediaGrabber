@@ -1,0 +1,48 @@
+<!doctype html>
+{{ marker }}
+<html lang="en" data-theme="{{ default_theme }}" data-palette="{{ default_palette }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MediaGrabber mockups: {{ page_title }}</title>
+<link rel="stylesheet" href="{{ root }}tokens.css">
+<link rel="stylesheet" href="{{ root }}screens.css">
+<script src="{{ root }}screens.js"></script>
+<script src="{{ root }}orb-shaders.js"></script>
+<script src="{{ root }}orb-symbols.js"></script>
+<script src="{{ root }}orb.js"></script>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true">
+{% for theme, theme_name, palettes in themes %}
+{% include "icons/" ~ theme ~ ".svg.j2" %}
+{% endfor %}
+</svg>
+<header class="doc-bar">
+  <nav class="doc-menu" aria-label="Pages">
+    <a href="{{ root }}screens.html"{% if current == "index" %} aria-current="page"{% endif %}>All screens</a>
+    {% for slug, name in areas %}
+      {% if slug in built %}
+    <a href="{{ root }}screens/{{ slug }}.html"{% if current == slug %} aria-current="page"{% endif %}>{{ name }}</a>
+      {% else %}
+    <span title="Not built yet">{{ name }}</span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  <div class="doc-switch" role="group" aria-label="Theme and palette">
+    {% for theme, theme_name, palettes in themes %}
+    <div class="doc-group">
+      <b>{{ theme_name }}</b>
+      {% for palette, palette_name in palettes %}
+      <button type="button" data-set-theme="{{ theme }}" data-set-palette="{{ palette }}">{{ palette_name }}</button>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</header>
+<main class="doc-main">
+<h1 class="doc-title">{{ page_title }}</h1>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

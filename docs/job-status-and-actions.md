@@ -90,7 +90,7 @@ stateDiagram-v2
 - **Resume** only from `paused`.
 - **Force start** from `queued` when not immediately schedulable, or from `cooldown` (not from `waitingForNetwork`). Eviction → oldest running job back to `queued`; **no Remark** on victim or forced job for that event. Confirm when eviction will happen (§6).
 - Auto-retry landing in `queued` (deferred) vs `cooldown` is an engine detail; row status stays honest. Backoff / host clock → Remark.
-- **`depMissing`:** keep `queueHalt` (nothing schedules); blocking dialog + the Tools health chip. Do **not** mass-flip jobs to `paused`. Product copy may say the queue is paused.
+- **`depMissing`:** keep `queueHalt` (nothing schedules); onboarding and the Tools health chip report it, with no dialog. Do **not** mass-flip jobs to `paused`. Product copy may say the queue is paused.
 
 ## 3b. Playlist group (second diagram)
 
@@ -192,12 +192,12 @@ Remark surfaces via hover + keyboard focus; optional Columns-menu column; a11y n
 | --- | --- |
 | **Cancel all** (playlist / batch) | Yes |
 | **Cancel** (single) | No |
-| **Remove** | Yes when non-terminal, or when Saved with file present (optional suppress) |
+| **Remove** | Yes when non-terminal, or when Saved with file present (optional suppress for one row; several rows always ask) |
 | **Force start** (no eviction) | No |
 | **Force start** (will evict) | Yes — _Start this now? The oldest download in progress will go back to the queue._ Confirm **Start now** |
 | **Restart** / **Restart with sign-in** | No |
 | **Quit** | Yes when `hasActiveJobs` or `queueHalt` (existing) |
-| **depMissing** | Blocking install/fix dialog (not a Cancel-style confirm) |
+| **depMissing** | No dialog; onboarding and the Tools health chip report it |
 
 ## 7. Active jobs (`hasActiveJobs` / quit)
 
